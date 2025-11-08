@@ -5,7 +5,7 @@
 
 ---
 
-> Projet de fin d'année – EMSI Rabat  
+> Projet – EMSI Rabat  
 > Réalisé par : **CHOUKHAIRI Noureddine, ELOUALI Haitam, MHAMDI ALAOUI Hamza, MOKADAMI Zouhair**  
 > Encadré par : **M. EL MIDAOUI Omar**
 
