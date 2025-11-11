@@ -388,7 +388,7 @@ Le document de spécification inclut les maquettes pour :
 ### Prérequis
 - Java JDK 11 ou supérieur
 - MySQL 8.0+
-- IntelliJ IDEA (recommandé)
+- IntelliJ IDEA
 - Maven
 
 ### Installation
