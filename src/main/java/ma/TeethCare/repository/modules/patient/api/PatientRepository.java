@@ -1,7 +1,7 @@
-package ma.dentalTech.repository.modules.patient.api;
+package ma.TeethCare.repository.modules.patient.api;
 
-import ma.dentalTech.entities.patient.Patient;
-import ma.dentalTech.repository.common.CrudRepository;
+import ma.TeethCare.entities.patient.Patient;
+import ma.TeethCare.repository.common.CrudRepository;
 
 public interface PatientRepository extends CrudRepository<Patient, Long>
 

@@ -1,4 +1,4 @@
-package ma.dentalTech.entities.patient;
+package ma.TeethCare.entities.patient;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -6,8 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ma.dentalTech.entities.enums.Assurance;
-import ma.dentalTech.entities.enums.Sexe;
+import ma.TeethCare.entities.enums.Assurance;
+import ma.TeethCare.entities.enums.Sexe;
 
 @Data @AllArgsConstructor @NoArgsConstructor @Builder
 public class Patient {

@@ -1,7 +1,7 @@
-package ma.dentalTech.common.validation;
+package ma.TeethCare.common.validation;
 
 import java.util.regex.Pattern;
-import ma.dentalTech.common.exceptions.ValidationException;
+import ma.TeethCare.common.exceptions.ValidationException;
 
 public final class Validators {
     private static final Pattern EMAIL = Pattern.compile("^[^\s@]+@[^\\s@]+\\.[^\\s@]+$");

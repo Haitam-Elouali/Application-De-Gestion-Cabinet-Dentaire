@@ -1,4 +1,4 @@
-package ma.dentalTech.mvc.dto;
+package ma.TeethCare.mvc.dto;
 
 import lombok.*;
 

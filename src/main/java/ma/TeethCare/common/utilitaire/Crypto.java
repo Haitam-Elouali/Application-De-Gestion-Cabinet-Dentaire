@@ -1,4 +1,4 @@
-package ma.dentalTech.common.utilitaire;
+package ma.TeethCare.common.utilitaire;
 
 import org.mindrot.jbcrypt.BCrypt;
 

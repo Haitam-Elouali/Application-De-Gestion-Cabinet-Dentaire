@@ -1,4 +1,4 @@
-package ma.dentalTech.mvc.controllers.modules.patient.api;
+package ma.TeethCare.mvc.controllers.modules.patient.api;
 
 public interface PatientController
 {

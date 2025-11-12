@@ -1,8 +1,8 @@
-package ma.dentalTech;
+package ma.TeethCare;
 
 
-import ma.dentalTech.conf.ApplicationContext;
-import ma.dentalTech.mvc.controllers.modules.patient.api.PatientController;
+import ma.TeethCare.conf.ApplicationContext;
+import ma.TeethCare.mvc.controllers.modules.patient.api.PatientController;
 
 public class MainApp
 {

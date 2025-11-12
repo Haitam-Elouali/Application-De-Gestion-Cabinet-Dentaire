@@ -1,11 +1,11 @@
-package ma.dentalTech.mvc.ui.modules.patient;
+package ma.TeethCare.mvc.ui.modules.patient;
 
 import java.awt.*;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import ma.dentalTech.mvc.dto.PatientDTO;
+import ma.TeethCare.mvc.dto.PatientDTO;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 

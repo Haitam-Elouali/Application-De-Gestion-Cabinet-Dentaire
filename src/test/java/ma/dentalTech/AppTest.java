@@ -1,4 +1,4 @@
-package ma.dentalTech;
+package ma.TeethCare;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

@@ -1,4 +1,4 @@
-package ma.dentalTech.repository.common;
+package ma.TeethCare.repository.common;
 
 import java.util.List;
 

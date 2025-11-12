@@ -1,4 +1,4 @@
-package ma.dentalTech.common.exceptions;
+package ma.TeethCare.common.exceptions;
 
 public class AuthException extends Exception {
     public AuthException(String m) {

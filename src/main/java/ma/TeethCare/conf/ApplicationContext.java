@@ -1,11 +1,11 @@
-package ma.dentalTech.conf;
+package ma.TeethCare.conf;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import ma.dentalTech.mvc.controllers.modules.patient.api.PatientController;
-import ma.dentalTech.repository.modules.patient.api.PatientRepository;
-import ma.dentalTech.service.modules.patient.api.PatientService;
+import ma.TeethCare.mvc.controllers.modules.patient.api.PatientController;
+import ma.TeethCare.repository.modules.patient.api.PatientRepository;
+import ma.TeethCare.service.modules.patient.api.PatientService;
 
 public class ApplicationContext {
 

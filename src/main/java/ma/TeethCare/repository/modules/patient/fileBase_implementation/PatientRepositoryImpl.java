@@ -1,8 +1,8 @@
-package ma.dentalTech.repository.modules.patient.fileBase_implementation;
+package ma.TeethCare.repository.modules.patient.fileBase_implementation;
 
-import ma.dentalTech.entities.enums.*;
-import ma.dentalTech.entities.patient.Patient;
-import ma.dentalTech.repository.modules.patient.api.PatientRepository;
+import ma.TeethCare.entities.enums.*;
+import ma.TeethCare.entities.patient.Patient;
+import ma.TeethCare.repository.modules.patient.api.PatientRepository;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
