@@ -5,7 +5,7 @@
 
 ---
 
-> Projet de fin d'année – EMSI Rabat  
+> Projet – EMSI Rabat  
 > Réalisé par : **CHOUKHAIRI Noureddine, ELOUALI Haitam, MHAMDI ALAOUI Hamza, MOKADAMI Zouhair**  
 > Encadré par : **M. EL MIDAOUI Omar**
 
@@ -388,7 +388,7 @@ Le document de spécification inclut les maquettes pour :
 ### Prérequis
 - Java JDK 11 ou supérieur
 - MySQL 8.0+
-- IntelliJ IDEA (recommandé)
+- IntelliJ IDEA
 - Maven
 
 ### Installation
