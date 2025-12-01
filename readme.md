@@ -810,8 +810,8 @@ public class PatientControllerImpl implements PatientController {
 
 ## 👨‍💻 Équipe projet
 
-| Étudiant | Email | LinkedIn |
-|----------|-------|----------|
+| Étudiant | Email |
+|----------|-------|
 | CHOUKHAIRI Noureddine | noureddine.choukhairi@emsi-edu.ma |
 | ELOUALI Haitam | haitam.elouali@emsi-edu.ma |
 | MHAMDI ALAOUI Hamza | hamza.mhamdialaoui@emsi-edu.ma |
