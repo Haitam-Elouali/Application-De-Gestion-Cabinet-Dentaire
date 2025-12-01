@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class revenues extends baseEntity {
+    private Long idRevenue;
+    private Long factureId;
     private String titre;
     private String description;
     private Double montant;

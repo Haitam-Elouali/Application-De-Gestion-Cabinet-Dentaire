@@ -6,11 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class dossierMedicale extends baseEntity {
     private Long idDM;
-    private String dateDeCreation;
+    private Long patientId;
+    private LocalDateTime dateDeCreation;
 }

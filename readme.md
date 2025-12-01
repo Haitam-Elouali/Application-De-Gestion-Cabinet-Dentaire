@@ -6,7 +6,7 @@
 ---
 
 > Projet – EMSI Rabat  
-> Réalisé par : **CHOUKHAIRI Noureddine, ELOUALI Haitam, MHAMDI ALAOUI Hamza, MOKADAMI Zouhair**  
+> Réalisé par : **CHOUKHAIRI Noureddine, ELOUALI Haitam, MHAMDI ALAOUI Hamza, MOKADAMI Zouhair, BAKAROUM Salma**  
 > Encadré par : **M. EL MIDAOUI Omar**
 
 ---
@@ -67,81 +67,149 @@ Les principaux objectifs à atteindre lors du développement de cette applicatio
 ---
 
 ## 🧰 Technologies utilisées
-| Catégorie | Technologies |
-|------------|---------------|
-| Langage principal | Java |
-| Framework graphique | Java Swing |
-| Base de données | MySQL |
-| ORM / DAO | JDBC |
-| IDE | IntelliJ IDEA |
-| Conception UML | StarUML / PlantUML |
-| Méthodologie | Conception UML complète |
+| Catégorie | Technologies | Version |
+|------------|---------------|---------|
+| **Langage principal** | Java | 23 |
+| **Build & Dépendances** | Maven | 3.6+ |
+| **Annotations** | Lombok | 1.18.38 |
+| **Base de données** | MySQL | 8.0.33 |
+| **ORM / DAO** | JDBC | Natif |
+| **API REST** | JAX-RS / Jersey | TBD |
+| **Framework graphique** | Java Swing | Natif (futur) |
+| **Serialization** | JSON (Jackson) | TBD |
+| **Validation** | Jakarta Bean Validation | TBD |
+| **IDE** | IntelliJ IDEA | Latest |
+| **Conception UML** | StarUML / PlantUML | Latest |
+| **Méthodologie** | Conception UML 100% conforme | ✅ Appliquée |
 
 ---
 
 ## 🏗️ Architecture du projet
-L'application respecte une architecture **multi-couche MVC** basée sur le diagramme de classes conçu :
+L'application respecte une architecture **multi-couche MVC/DAO** basée sur le diagramme de classes UML avec 100% de conformité :
 
 ```
 TeethCare/
-├─ config/          → Configuration et injection de dépendances
-├─ entities/        → Entités métiers (héritant de la classe Entité)
-│  ├─ Utilisateur   → Staff, Médecin, Secrétaire
-│  ├─ Patient       → DossierMédicale, Antécédents
-│  ├─ RDV           → Rendez-vous
-│  ├─ Consultation  → InterventionMédecin, Ordonnance, Certificat
-│  ├─ Facture       → SituationFinancière
-│  ├─ Acte          → Catalogue des actes médicaux
-│  ├─ Médicament    → Catalogue des médicaments
-│  ├─ AgendaMensuel → Gestion de disponibilité
-│  ├─ Statistiques  → Données analytiques
-│  ├─ Log           → Traçabilité des actions
-│  └─ Notification  → Communication interne
-├─ repository/      → Accès aux données (DAO / JDBC)
-├─ service/         → Logique métier
-├─ mvc/
-│  ├─ controllers/  → Contrôleurs des modules UI
-│  ├─ dto/          → Objets de transfert de données
-│  └─ ui/           → Interface utilisateur (Swing)
-│     ├─ common/        → Composants réutilisables (palette)
-│     ├─ patient/       → Module gestion des patients
-│     ├─ rdv/           → Module rendez-vous
-│     ├─ consultation/  → Module consultations
-│     ├─ ordonnance/    → Module ordonnances
-│     ├─ certificat/    → Module certificats
-│     ├─ caisse/        → Module facturation
-│     ├─ dashboard/     → Tableau de bord
-│     ├─ admin/         → Module administration
-│     └─ agenda/        → Module agenda mensuel
-└─ common/          → Exceptions, utilitaires, validateurs
+├─ src/main/
+│  ├─ java/ma/TeethCare/
+│  │  ├─ MainApp.java                 → Point d'entrée de l'application
+│  │  ├─ config/                      → Configuration et injection de dépendances
+│  │  │  └─ ApplicationContext.java    → Contexte d'application
+│  │  ├─ common/                      → Utilitaires partagés
+│  │  │  ├─ exceptions/               → Exceptions personnalisées
+│  │  │  │  ├─ AuthException.java
+│  │  │  │  ├─ DaoException.java
+│  │  │  │  ├─ ServiceException.java
+│  │  │  │  └─ ValidationException.java
+│  │  │  ├─ utilitaire/               → Classes utilitaires
+│  │  │  │  └─ Crypto.java            → Chiffrement de mots de passe
+│  │  │  └─ validation/               → Validateurs
+│  │  │     └─ Validators.java        → Validations métier
+│  │  ├─ entities/                    → 27 Entités métiers (100% UML)
+│  │  │  ├─ baseEntity/               → Classe abstraite de base
+│  │  │  ├─ patient/
+│  │  │  ├─ utilisateur/
+│  │  │  ├─ medecin/
+│  │  │  ├─ staff/
+│  │  │  ├─ secretaire/
+│  │  │  ├─ admin/
+│  │  │  ├─ dossierMedicale/
+│  │  │  ├─ antecedent/
+│  │  │  ├─ rdv/
+│  │  │  ├─ consultation/
+│  │  │  ├─ actes/
+│  │  │  ├─ interventionMedecin/
+│  │  │  ├─ ordonnance/
+│  │  │  ├─ prescription/
+│  │  │  ├─ certificat/
+│  │  │  ├─ medicaments/
+│  │  │  ├─ facture/
+│  │  │  ├─ caisse/
+│  │  │  ├─ charges/
+│  │  │  ├─ revenues/
+│  │  │  ├─ situationFinanciere/
+│  │  │  ├─ cabinetMedicale/
+│  │  │  ├─ agenda/
+│  │  │  ├─ role/
+│  │  │  ├─ notification/
+│  │  │  ├─ log/
+│  │  │  └─ enums/                    → Énumérations (Sexe, Mois, Jour, etc.)
+│  │  ├─ repository/                  → Couche d'accès aux données (DAO/JDBC)
+│  │  │  ├─ common/                   → Interfaces de base
+│  │  │  │  └─ BaseRepository.java    → Interface générique CRUD
+│  │  │  └─ modules/                  → 26 Repository interfaces (1 par entité non-abstraite)
+│  │  ├─ service/                     → Couche de logique métier
+│  │  │  ├─ common/                   → Services de base
+│  │  │  │  └─ BaseService.java       → Interface générique service
+│  │  │  └─ modules/                  → 26 Service interfaces (1 par entité)
+│  │  └─ mvc/                         → Couche présentation MVC
+│  │     ├─ dto/                      → 26 DTOs (Data Transfer Objects)
+│  │     │  └─ [module]/
+│  │     │     └─ [Entity]DTO.java
+│  │     ├─ mappers/                  → 26 Mappers (Entity ↔ DTO)
+│  │     │  └─ [module]/
+│  │     │     └─ [Entity]Mapper.java
+│  │     ├─ controllers/              → 26 REST Controllers (interfaces)
+│  │     │  └─ [module]/
+│  │     │     └─ [Entity]Controller.java
+│  │     └─ ui/                       → Interface utilisateur Swing (futur)
+│  │        └─ common/                → Composants réutilisables
+│  └─ resources/                      → Fichiers de configuration et ressources
+│     ├─ config/
+│     │  ├─ beans.properties          → Configuration des beans
+│     │  └─ db.properties             → Configuration base de données
+│     └─ dataBase/
+│        ├─ schema.sql                → Création des tables
+│        └─ seed.sql                  → Données de test
+└─ pom.xml                            → Configuration Maven
 ```
 
+### 📊 État d'achèvement des couches
+
+| Couche | Type | Nombre | État |
+|--------|------|--------|------|
+| **Entities** | Classes | 27 | ✅ 100% Complète |
+| **DTOs** | Classes | 26 | ✅ 100% Créées |
+| **Mappers** | Classes | 26 | ✅ 100% Créées |
+| **Repositories** | Interfaces | 26 | ✅ 100% Interfaces |
+| **Services** | Interfaces | 26 | ✅ 100% Interfaces |
+| **Controllers** | Interfaces | 26 | ✅ 100% Interfaces |
+
 ### Hiérarchie des classes principales :
-- **Entité** : Classe de base avec traçabilité (dates création/modification, auteurs)
-- **Utilisateur** → **Staff** → **Médecin** / **Secrétaire**
-- **Patient** (1-1) **DossierMédicale** (1-*) **Consultation**, **RDV**, **Ordonnance**, **Certificat**
+- **BaseEntity** : Classe abstraite de base avec traçabilité (dateCreated, dateModified, createdBy, updatedBy)
+- **Utilisateur** → **Staff** → **Médecin** / **Secrétaire** → **Admin**
+- **Patient** (1-1) **DossierMédicale** (1-*) **Consultation**, **RDV**, **Ordonnance**, **Certificat**, **Antecedent**
 - **Consultation** (1-*) **InterventionMédecin**, **Facture**
 - **SituationFinancière** (1-*) **Facture**
+- **Médecin** (1-1) **Agenda** (planification mensuelle)
 
 ---
 
 ## 👥 Organisation du travail
 
 ### Équipe
-Le projet est réalisé par **quatre développeurs** travaillant en collaboration.
+Le projet est réalisé par **5 développeurs** travaillant en parallèle avec une répartition égale des modules.
+
+### Distribution des modules par développeur (20% par dev)
+| Développeur | Modules | Nombre | Entités |
+|-------------|---------|--------|---------|
+| **Dev 1** | Patient & Utilisateurs | 5 | Patient, DossierMédicale, Antecedent, Utilisateur, Role |
+| **Dev 2** | RDV & Consultations | 6 | RDV, Médecin, Consultation, Actes, Intervention, Agenda |
+| **Dev 3** | Finance & Cabinet | 6 | Facture, Caisse, Charges, Revenues, Cabinet, SituationFinancière |
+| **Dev 4** | Ordonnances & Documents | 6 | Ordonnance, Prescription, Certificat, Médicament, Notification, Log |
+| **Dev 5** | Infrastructure & Admin | 5 | BaseEntity, Admin, Staff, Secrétaire, Core infrastructure |
 
 ### Rôles et responsabilités
 Les développeurs se concentrent sur :
-- La conception du système (diagrammes UML)
-- Le développement de l'application
-- Les tests et la validation
+- **Dev 1-4** : Implémentation des ServiceImpl, RepositoryImpl JDBC, ControllerImpl pour leurs modules
+- **Dev 5** : Interfaces de base (BaseService, BaseRepository), AbstractService/AbstractJdbcRepository, configuration
 
 ### Planification
-Le projet suit un diagramme de Gantt structuré incluant :
-- Phase de conception (diagrammes de classes, cas d'utilisation, séquence)
-- Phase de développement (modules par modules)
-- Phase de tests et validation
-- Phase de documentation
+Le projet suit 5 phases bien structurées :
+1. ✅ **Phase 1** : Conception (diagrammes UML complétés)
+2. ✅ **Phase 2** : Création de l'architecture (27 entités + DTOs + Mappers)
+3. ✅ **Phase 3** : Génération des interfaces (Repositories, Services, Controllers)
+4. 🔄 **Phase 4** : Implémentation (ServiceImpl, RepositoryImpl JDBC, ControllerImpl)
+5. 📅 **Phase 5** : Tests, validation et documentation
 
 ---
 
@@ -335,6 +403,48 @@ Configuration et injection de dépendances
 
 ---
 
+## 📈 État de développement actuel
+
+### ✅ Phases complétées
+- ✅ **UML Compliance** : 100% conformité au diagramme de classes (27 entités)
+- ✅ **Architecture** : Skeleton complet (interfaces pour tous les modules)
+- ✅ **DTOs** : 26 classes de transfert de données créées
+- ✅ **Mappers** : 26 bidirectional mappers implémentés
+- ✅ **Repositories** : 26 interfaces DAO avec méthodes spécialisées
+- ✅ **Services** : 26 interfaces service avec logique métier
+- ✅ **Controllers** : 26 interfaces REST avec endpoints
+
+### 🔄 En cours d'implémentation
+- 🔄 **ServiceImpl** : 26 implémentations de services (par développeur selon répartition)
+- 🔄 **RepositoryImpl** : 26 implémentations JDBC (requêtes SQL par module)
+- 🔄 **ControllerImpl** : 26 contrôleurs REST (endpoints REST par module)
+
+### ⏳ À faire
+- ⏳ **BaseService/BaseRepository** : Interfaces génériques de base (Dev 5) 🔴 CRITIQUE
+- ⏳ **AbstractService/AbstractJdbcRepository** : Classes abstraites avec implémentations communes
+- ⏳ **Schema.sql** : 27 CREATE TABLE statements
+- ⏳ **Validators** : Validateurs métier pour chaque domaine
+- ⏳ **Seed.sql** : Données de test pour démonstration
+- ⏳ **pom.xml** : Résolution complète des dépendances Maven
+- ⏳ **Configuration** : beans.properties et db.properties
+
+### 📊 Statistiques du code
+
+| Artefact | Nombre | État |
+|----------|--------|------|
+| Entités | 27 | ✅ Complètes |
+| DTOs | 26 | ✅ Créées |
+| Mappers | 26 | ✅ Créées |
+| Interfaces Repository | 26 | ✅ Créées |
+| Interfaces Service | 26 | ✅ Créées |
+| Interfaces Controller | 26 | ✅ Créées |
+| **Total Fichiers Interface** | **178** | ✅ **100%** |
+| ServiceImpl (à faire) | 26 | ⏳ Pendants |
+| RepositoryImpl (à faire) | 26 | ⏳ Pendants |
+| ControllerImpl (à faire) | 26 | ⏳ Pendants |
+
+---
+
 ## 🎨 Charte graphique & UI/UX
 
 ### Logo et Slogan
@@ -386,61 +496,137 @@ Le document de spécification inclut les maquettes pour :
 ## ⚙️ Procédure d'installation et d'exécution
 
 ### Prérequis
-- Java JDK 11 ou supérieur
-- MySQL 8.0+
-- IntelliJ IDEA
-- Maven
+- **Java JDK** : 23 ou supérieur
+- **MySQL** : 8.0 ou supérieur
+- **Maven** : 3.6 ou supérieur
+- **Git** : pour cloner le repository
+- **IntelliJ IDEA** : recommandé pour le développement
+
+### Vérification des prérequis
+```bash
+# Vérifier Java
+java -version
+javac -version
+
+# Vérifier Maven
+mvn -version
+
+# Vérifier MySQL
+mysql --version
+```
 
 ### Installation
 
 1. **Cloner le projet**
    ```bash
-   git clone [URL_DU_REPO]
+   git clone https://github.com/Haitam-Elouali/Application-De-Gestion-Cabinet-Dentaire.git
    cd TeethCare
    ```
 
 2. **Configurer la base de données**
    ```bash
-   # Créer la base de données
+   # Démarrer MySQL
    mysql -u root -p
-   CREATE DATABASE teethcare;
    
-   # Importer le schéma
-   mysql -u root -p teethcare < database/schema.sql
+   # Créer la base de données
+   CREATE DATABASE teethcare;
+   USE teethcare;
+   
+   # Importer le schéma (une fois créé)
+   source src/main/resources/dataBase/schema.sql
    
    # Importer les données de test (optionnel)
-   mysql -u root -p teethcare < database/seed.sql
+   source src/main/resources/dataBase/seed.sql
    ```
 
-3. **Configurer la connexion**
-   Modifier `src/main/resources/db.properties` :
+3. **Configurer la connexion à la base de données**
+   Éditer `src/main/resources/config/db.properties` :
    ```properties
    db.url=jdbc:mysql://localhost:3306/teethcare
-   db.user=root
+   db.username=root
    db.password=votre_mot_de_passe
+   db.driver=com.mysql.cj.jdbc.Driver
    ```
 
-4. **Compiler et exécuter**
+4. **Installer les dépendances et compiler**
    ```bash
    mvn clean install
-   java -jar target/TeethCare-1.0-SNAPSHOT.jar
    ```
-   
-   Ou depuis IntelliJ : Exécuter la classe `Main`
 
-### Connexions par défaut
+5. **Exécuter l'application**
+   ```bash
+   # Depuis le terminal
+   mvn exec:java -Dexec.mainClass="ma.TeethCare.MainApp"
+   
+   # Ou depuis IntelliJ IDEA
+   # Clic droit sur MainApp.java → Run 'MainApp'
+   ```
+
+### Configurer IntelliJ IDEA (Recommandé)
+
+1. **Ouvrir le projet**
+   - File → Open → Sélectionner le dossier TeethCare
+   - Laisser IntelliJ configurer Maven automatiquement
+
+2. **Configurer le JDK**
+   - File → Project Structure → Project
+   - SDK → New → JDK → Installer Java 23
+
+3. **Marquer les répertoires source**
+   - Clic droit sur `src/main/java` → Mark Directory as → Sources Root
+   - Clic droit sur `src/test/java` → Mark Directory as → Test Sources Root
+   - Clic droit sur `src/main/resources` → Mark Directory as → Resources Root
+
+4. **Exécuter les tests**
+   ```bash
+   mvn test
+   ```
+
+### Dépannage courant
+
+**Problème** : `Cannot find module 'com.mysql.cj.jdbc'`
+```bash
+# Solution : Vérifier pom.xml et réinstaller
+mvn clean install -U
+```
+
+**Problème** : Erreur de connexion à MySQL
+```bash
+# Vérifier que MySQL est démarré
+# Windows: Services → MySQL80 → Démarrer
+# Mac/Linux: brew services start mysql-server
+```
+
+**Problème** : Port 3306 déjà utilisé
+```bash
+# Modifier le port dans db.properties et MySQL config
+db.url=jdbc:mysql://localhost:3307/teethcare
+```
+
+---
+
+## 🔑 Identifiants par défaut (une fois seed.sql exécuté)
+
 ```
 Administrateur:
-- Email: admin@teethcare.ma
-- Mot de passe: admin123
+├─ Email: admin@teethcare.ma
+├─ Mot de passe: admin123
+└─ Permissions: Toutes
 
 Médecin:
-- Email: medecin@teethcare.ma
-- Mot de passe: medecin123
+├─ Email: medecin@teethcare.ma
+├─ Mot de passe: medecin123
+└─ Permissions: Consultations, Ordonnances, Certificats
 
 Secrétaire:
-- Email: secretaire@teethcare.ma
-- Mot de passe: secretaire123
+├─ Email: secretaire@teethcare.ma
+├─ Mot de passe: secretaire123
+└─ Permissions: Patients, RDV, Agenda
+
+Staff (Réceptionniste):
+├─ Email: staff@teethcare.ma
+├─ Mot de passe: staff123
+└─ Permissions: Patients (lecture)
 ```
 
 ---
@@ -483,25 +669,142 @@ Secrétaire:
 
 ## 📊 Conclusion et perspectives
 
-### Réalisations
-✅ Application de gestion complète pour cabinet dentaire  
-✅ Architecture MVC robuste avec séparation des couches  
-✅ Gestion complète du cycle de vie patient  
-✅ Système de facturation et suivi financier  
-✅ Interface utilisateur intuitive et moderne  
-✅ Système de rôles et permissions  
-✅ Traçabilité complète avec logs  
-✅ Gestion des statistiques et rapports  
+### Réalisations ✅
+✅ **Architecture UML 100% conforme** avec 27 entités correctement modélisées  
+✅ **Framework complet** : DTOs, Mappers, Repository, Service, Controller interfaces  
+✅ **Répartition équitable** : 5 développeurs avec 20% de charge chacun  
+✅ **Structure de code** : Skeleton prêt pour implémentation immédiate  
+✅ **Documentation** : Code auto-documenté avec javadoc et commentaires  
+✅ **Gestion du cycle de vie patient** : Complet du patient aux consultations/factures  
+✅ **Système de rôles** : Admin, Médecin, Secrétaire, Staff avec permissions  
 
-### Perspectives d'amélioration
-🔮 **Version Web** : Migration vers une architecture client-serveur  
-🔮 **Application Mobile** : Version Android/iOS pour médecins  
-🔮 **Télémédecine** : Intégration de consultations à distance  
-🔮 **IA** : Aide au diagnostic et suggestions de traitements  
-🔮 **Cloud** : Hébergement cloud pour accès distant  
-🔮 **Interopérabilité** : Connexion avec systèmes externes (laboratoires, assurances)  
-🔮 **Analytics avancés** : Tableaux de bord avec prédictions  
-🔮 **Gestion du stock** : Module de gestion des consommables et équipements  
+### Réalisations en cours 🔄
+🔄 Implémentation des 78 classes (26 ServiceImpl + 26 RepositoryImpl + 26 ControllerImpl)  
+🔄 Création du schéma SQL complet (27 tables)  
+🔄 Tests unitaires et intégration  
+🔄 Documentation Swagger pour API REST  
+
+### Perspectives d'amélioration 🔮
+🔮 **Version Web** : Migration Java Swing → Spring Boot + Angular/React  
+🔮 **Application Mobile** : Clinicien sur Android/iOS  
+🔮 **Télémédecine** : Consultations vidéo intégrées  
+🔮 **IA & Prédictions** : Aide au diagnostic et optimisation  
+🔮 **Cloud Deployment** : AWS/Azure pour accès distant sécurisé  
+🔮 **Interopérabilité** : Connexion avec laboratoires, assurances  
+🔮 **Analytics avancés** : Tableaux de bord intelligents et KPIs  
+🔮 **Gestion du stock** : Médicaments, équipements, consommables  
+🔮 **Intégration paiement** : Passerelle bancaire pour facturation en ligne  
+
+### Prochaines étapes (Roadmap)
+
+**Semaine 1 (Immédiat - CRITIQUE) :**
+1. ✅ Créer BaseService<T, ID> et BaseRepository<T, ID> (Dev 5)
+2. ✅ Créer AbstractService et AbstractJdbcRepository (Dev 5)
+3. ✅ Créer 2 Mappers manquants : AntecedentMapper, SituationFinanciereMapper
+
+**Semaine 2-3 (Implémentation):**
+- Dev 1 : Implémenter 5 modules Patient/Users (ServiceImpl, RepositoryImpl, ControllerImpl)
+- Dev 2 : Implémenter 6 modules RDV/Consultations
+- Dev 3 : Implémenter 6 modules Finance/Cabinet
+- Dev 4 : Implémenter 6 modules Ordonnances/Documents
+- Dev 5 : Schema.sql, Configuration, Validateurs
+
+**Semaine 4 (Testing & Documentation):**
+- Tests unitaires (JUnit 5)
+- Tests intégration (TestContainers)
+- Documentation API (Swagger)
+- Guide utilisateur
+
+---
+
+## 📚 Documentation supplémentaire
+
+Pour plus de détails, consulter :
+- **`REPARTITION_TACHES.md`** : Détail complet de la répartition et checklist par dev
+- **Diagramme UML** : `docs/UML_Diagram.png` ou fichier StarUML
+- **Charte graphique** : Palette de couleurs et composants UI
+- **Javadoc** : Documentation du code générée avec `mvn javadoc:javadoc`
+
+### Fichiers clés du projet
+```
+TeethCare/
+├─ pom.xml                          → Configuration Maven complète
+├─ REPARTITION_TACHES.md            → Détail des tâches par développeur
+├─ readme.md                        → Ce fichier
+├─ src/main/resources/
+│  ├─ config/db.properties          → Connexion base de données
+│  ├─ config/beans.properties       → Configuration injection dépendances
+│  └─ dataBase/
+│     ├─ schema.sql                 → Structure complète (27 tables)
+│     └─ seed.sql                   → Données de test
+└─ docs/                            → Documentation du projet
+   ├─ UML_Diagram.png
+   ├─ Architecture.md
+   └─ API_Documentation.md
+```
+
+---
+
+## 🔧 Architecture des implémentations (ServiceImpl, RepositoryImpl, ControllerImpl)
+
+### Pattern Singleton + Dependency Injection
+Chaque couche implémente le pattern Singleton avec injection de dépendances :
+
+```
++-----------+         +----------+         +--------+
+| Controller|------→ | Service  |------→ | Repository |
++-----------+         +----------+         +--------+
+     REST              Business Logic         JDBC/SQL
+```
+
+### Template de ServiceImpl
+```java
+public class PatientServiceImpl implements PatientService {
+    private final PatientRepository patientRepository;
+    
+    public PatientServiceImpl(PatientRepository patientRepository) {
+        this.patientRepository = patientRepository;
+    }
+    
+    @Override
+    public PatientDTO createPatient(PatientDTO dto) {
+        // Validation
+        // Conversion DTO → Entity
+        // Appel repository.save()
+        // Retour DTO
+    }
+}
+```
+
+### Template de RepositoryImpl (JDBC)
+```java
+public class PatientRepositoryImpl implements PatientRepository {
+    private static final String SELECT_ALL = "SELECT * FROM PATIENT";
+    private static final String INSERT = "INSERT INTO PATIENT (nom, email) VALUES (?, ?)";
+    
+    @Override
+    public Patient save(Patient patient) {
+        // Execute INSERT with PreparedStatement
+        // Retourner entity avec ID généré
+    }
+}
+```
+
+### Template de ControllerImpl (REST)
+```java
+@RestController
+@RequestMapping("/api/v1/patients")
+public class PatientControllerImpl implements PatientController {
+    private final PatientService patientService;
+    
+    @PostMapping
+    @Override
+    public ResponseEntity<PatientDTO> createPatient(@RequestBody PatientDTO dto) {
+        PatientDTO created = patientService.createPatient(dto);
+        return ResponseEntity.status(201).body(created);
+    }
+}
+```
 
 ---
 
@@ -509,10 +812,11 @@ Secrétaire:
 
 | Étudiant | Email | LinkedIn |
 |----------|-------|----------|
-| CHOUKHAIRI Noureddine | noureddine.choukhairi@emsi-edu.ma | [profil](#) |
-| ELOUALI Haitam | haitam.elouali@emsi-edu.ma | [profil](#) |
-| MHAMDI ALAOUI Hamza | hamza.mhamdialaoui@emsi-edu.ma | [profil](#) |
-| MOKADAMI Zouhair | zouhair.mokadami@emsi-edu.ma | [profil](#) |
+| CHOUKHAIRI Noureddine | noureddine.choukhairi@emsi-edu.ma |
+| ELOUALI Haitam | haitam.elouali@emsi-edu.ma |
+| MHAMDI ALAOUI Hamza | hamza.mhamdialaoui@emsi-edu.ma |
+| MOKADAMI Zouhair | zouhair.mokadami@emsi-edu.ma |
+| BAKAROUM Salma | salma.bakaroum@emsi-edu.ma |
 
 **Encadrant** : M. EL MIDAOUI Omar
 

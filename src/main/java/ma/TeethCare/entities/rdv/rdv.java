@@ -16,6 +16,8 @@ import java.time.LocalTime;
 @Builder
 public class rdv extends baseEntity {
     private Long idRDV;
+    private Long patientId;
+    private Long medecinId;
     private LocalDate date;
     private LocalTime heure;
     private String motif;

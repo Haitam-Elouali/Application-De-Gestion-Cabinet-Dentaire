@@ -11,6 +11,8 @@ import ma.TeethCare.entities.staff.staff;
 @NoArgsConstructor
 @Builder
 public class medecin extends staff {
+    private Long idMedecin;
     private String specialite;
-    //private AgendaDocteur agendaMensuel;
+    private String numeroOrdre;
+    private String diplome;
 }

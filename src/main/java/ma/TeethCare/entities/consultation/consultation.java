@@ -15,7 +15,11 @@ import java.time.LocalDate;
 @Builder
 public class consultation extends baseEntity {
     private Long idConsultation;
-    private LocalDate Date;
+    private Long rdvId;
+    private Long patientId;
+    private Long medecinId;
+    private LocalDate date;
     private Statut statut;
     private String observationMedecin;
+    private String diagnostique;
 }

@@ -13,8 +13,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class charges extends baseEntity {
+    private Long idCharge;
     private String titre;
     private String description;
+    private String categorie;
     private Double montant;
     private LocalDateTime date;
 }

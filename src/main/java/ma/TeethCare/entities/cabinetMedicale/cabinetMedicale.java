@@ -11,11 +11,11 @@ import ma.TeethCare.entities.baseEntity.baseEntity;
 @NoArgsConstructor
 @Builder
 public class cabinetMedicale extends baseEntity {
-    private Long idUser;
+    private Long idCabinet;
     private String nom;
     private String email;
     private String logo;
-    //private Adresse adresse;
+    private String adresse;
     private String cin;
     private String tel1;
     private String tel2;

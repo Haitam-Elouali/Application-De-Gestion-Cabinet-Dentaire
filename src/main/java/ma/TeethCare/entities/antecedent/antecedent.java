@@ -12,7 +12,8 @@ import ma.TeethCare.entities.enums.niveauDeRisque;
 @NoArgsConstructor
 @Builder
 public class antecedent extends baseEntity {
-    private Long id_Antecedent;
+    private Long idAntecedent;
+    private Long dossierMedicaleId;
     private String nom;
     private String categorie;
     private niveauDeRisque niveauRisque;

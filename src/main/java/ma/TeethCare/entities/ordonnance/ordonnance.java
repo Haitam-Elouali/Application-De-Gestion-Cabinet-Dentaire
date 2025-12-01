@@ -14,5 +14,10 @@ import java.time.LocalDate;
 @Builder
 public class ordonnance extends baseEntity {
     private Long idOrd;
+    private Long consultationId;
+    private Long medecinId;
+    private Long patientId;
     private LocalDate date;
+    private String duree;
+    private String frequence;
 }

@@ -12,6 +12,9 @@ import ma.TeethCare.entities.baseEntity.baseEntity;
 @Builder
 public class interventionMedecin extends baseEntity {
     private Long idIM;
+    private Long medecinId;
+    private Long acteId;
+    private Long consultationId;
     private Double prixDePatient;
     private Integer numDent;
 }

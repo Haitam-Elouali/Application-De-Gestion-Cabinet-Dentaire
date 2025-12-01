@@ -14,4 +14,5 @@ import ma.TeethCare.entities.enums.Libeller;
 public class role extends baseEntity {
     private Long idRole;
     private Libeller libeller;
+    private String description;
 }

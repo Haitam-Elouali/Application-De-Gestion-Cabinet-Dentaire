@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 @Builder
 public class facture extends baseEntity {
     private Long idFacture;
+    private Long consultationId;
+    private Long patientId;
     private Double totaleFacture;
     private Double totalPaye;
     private Double reste;

@@ -12,11 +12,13 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class certificat extends baseEntity {
     private Long idCertif;
+    private Long consultationId;
+    private Long medecinId;
+    private Long patientId;
     private LocalDate dateDebut;
     private LocalDate dateFin;
-    private int dureer;
+    private int duree;
     private String noteMedecin;
 }

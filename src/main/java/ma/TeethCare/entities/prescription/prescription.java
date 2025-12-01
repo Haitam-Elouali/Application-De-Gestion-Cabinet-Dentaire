@@ -12,6 +12,8 @@ import ma.TeethCare.entities.baseEntity.baseEntity;
 @Builder
 public class prescription extends baseEntity {
     private Long idPr;
+    private Long ordonnanceId;
+    private Long medicamentId;
     private int quantite;
     private String frequence;
     private int dureeEnjours;
