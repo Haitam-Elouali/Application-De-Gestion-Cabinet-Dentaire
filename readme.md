@@ -420,10 +420,11 @@ Configuration et injection de dépendances
 - 🔄 **RepositoryImpl** : 26 implémentations JDBC (requêtes SQL par module)
 - 🔄 **ControllerImpl** : 26 contrôleurs REST (endpoints REST par module)
 
-### ⏳ À faire
-- ⏳ **test** : test
-- ⏳ 
-- ⏳ 
+### ⏳ À faire (Roadmap Immédiate)
+- 🔴 **Test Repo Class** : Développement classe test pour CRUD
+- 🔴 **RowMappers** : Ajout des RowMappers dans `common`
+- 🔴 **Services & Tests** : 2 modules complets par développeur (avec tests unitaires)
+- ⏳ **Repository Completeness** : Vérification globale
 
 ## 🎨 Charte graphique & UI/UX
 

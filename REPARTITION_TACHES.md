@@ -2,145 +2,16 @@
 
 ## ✅ ÉTAT ACTUEL DU PROJET (Mise à jour 3 Décembre 2025)
 
-### État de complétude
-- **Entities:** 27/27 ✅ COMPLET
-- **DTOs:** 26/26 ✅ COMPLET  
-- **Mappers:** 0/26 ❌ MANQUANTS (Aucun fichier *Mapper.java trouvé)
-- **Repositories:** 26 interfaces ✅ COMPLET
-- **Services:** 26 interfaces ✅ COMPLET
-- **Controllers:** 26 interfaces ✅ COMPLET
-
-### Travail réalisé (Infrastructure)
-- ✅ **Gestion de connexion:** Centralisée dans `SessionFactory` (Singleton)
-- ✅ **Base Repository:** `GenericJdbcRepository` implémenté et utilisé par tous les modules
-- ✅ **Configuration:** `db.properties` et `pom.xml` à jour
-- ✅ **Refactoring:** Tous les `RepositoryImpl` utilisent désormais `SessionFactory`
-
 ### Travail restant
-- 🔴 **Création des Mappers** (Priorité absolue)
+- 🔴 **Création des RowMappers** (Priorité absolue)
 - 🔴 **Implémentation logique métier** (ServiceImpl)
 - 🔴 **Implémentation requêtes SQL** (RepositoryImpl - méthodes spécifiques)
-- 🔴 **Implémentation contrôleurs** (ControllerImpl)
 - 🔴 **Tests unitaires et intégration**
-
-## 🎯 Vue d'ensemble de l'architecture
-
-```
-TeethCare (module parent unique)
-    ├── src/main/java/ma/TeethCare/
-    │   ├── entities/ (27 entités - COMPLET ✅)
-    │   │   ├── actes/ (actes.java)
-    │   │   ├── admin/ (admin.java)
-    │   │   ├── agenda/ (agenda.java)
-    │   │   ├── antecedent/ (antecedent.java)
-    │   │   ├── baseEntity/ (baseEntity.java - abstraite)
-    │   │   ├── cabinetMedicale/ (cabinetMedicale.java)
-    │   │   ├── caisse/ (caisse.java)
-    │   │   ├── certificat/ (certificat.java)
-    │   │   ├── charges/ (charges.java)
-    │   │   ├── consultation/ (consultation.java)
-    │   │   ├── dossierMedicale/ (dossierMedicale.java)
-    │   │   ├── enums/ (8 fichiers - Sexe, Assurance, Statut, etc.)
-    │   │   ├── facture/ (facture.java)
-    │   │   ├── interventionMedecin/ (interventionMedecin.java)
-    │   │   ├── log/ (log.java)
-    │   │   ├── medecin/ (medecin.java)
-    │   │   ├── medicaments/ (medicaments.java)
-    │   │   ├── notification/ (notification.java)
-    │   │   ├── ordonnance/ (ordonnance.java)
-    │   │   ├── patient/ (Patient.java)
-    │   │   ├── prescription/ (prescription.java)
-    │   │   ├── rdv/ (rdv.java)
-    │   │   ├── revenues/ (revenues.java)
-    │   │   ├── role/ (role.java)
-    │   │   ├── secretaire/ (secretaire.java)
-    │   │   ├── situationFinanciere/ (situationFinanciere.java)
-    │   │   ├── staff/ (staff.java)
-    │   │   └── utilisateur/ (utilisateur.java)
-    │   ├── common/
-    │   │   ├── exceptions/ (AuthException, DaoException, ServiceException, ValidationException)
-    │   │   ├── utilitaire/ (Crypto.java)
-    │   │   └── validation/ (Validators.java)
-    │   ├── conf/ (ApplicationContext.java)
-    │   ├── mvc/
-    │   │   ├── dto/ (26 DTOs - COMPLET ✅)
-    │   │   ├── mappers/ (24 Mappers - ⚠️ Manquent 2)
-    │   │   └── controllers/ (26 Controller interfaces - COMPLET ✅)
-    │   ├── repository/
-    │   │   ├── api/ (26 Repository interfaces - COMPLET ✅)
-    │   │   ├── mySQLImpl/ (26 Repository implementations - COMPLET ✅)
-    │   │   └── common/ (GenericJdbcRepository - COMPLET ✅)
-    │   ├── service/
-    │   │   ├── common/ (BaseService interface - MANQUE)
-    │   │   └── modules/ (26 Service interfaces - COMPLET ✅)
-    │   └── MainApp.java
-    ├── src/main/resources/
-    │   ├── config/
-    │   │   ├── beans.properties
-    │   │   └── db.properties
-    │   └── dataBase/
-    │       ├── schema.sql (MANQUE)
-    │       ├── seed.sql (MANQUE)
-    │       └── patients.psv (données)
-    └── pom.xml
-```
-
----
 
 ## 👨‍💻 Développeur 1 : GESTION DES PATIENTS, DOSSIERS ET UTILISATEURS
 
 **Modules:** Patient, DossierMedicale, Antecedent, Utilisateur, Role
 **Charge:** ~20% (interfaces créées, implémentations à faire)
-
-### État actuel ✅
-- **Entity Patient.java:** ✅ EXISTE
-- **Entity DossierMedicale.java:** ✅ EXISTE
-- **Entity Antecedent.java:** ✅ EXISTE
-- **DTO PatientDTO.java:** ✅ EXISTE
-- **DTO DossierMedicaleDTO.java:** ✅ EXISTE
-- **DTO AntecedentDTO.java:** ✅ EXISTE
-- **Mapper PatientMapper.java:** ✅ EXISTE
-- **Mapper DossierMedicaleMapper.java:** ✅ EXISTE
-- **Mapper AntecedentMapper.java:** ❌ MANQUE
-- **Service PatientService.java:** ✅ INTERFACE créée
-- **Service DossierMedicaleService.java:** ✅ INTERFACE créée
-- **Service AntecedentService.java:** ✅ INTERFACE créée
-- **Repository PatientRepository.java:** ✅ INTERFACE créée
-- **Repository DossierMedicaleRepository.java:** ✅ INTERFACE créée
-- **Repository AntecedentRepository.java:** ✅ INTERFACE créée
-- **Controller PatientController.java:** ✅ INTERFACE créée
-- **Controller DossierMedicaleController.java:** ✅ INTERFACE créée
-- **Controller AntecedentController.java:** ✅ INTERFACE créée
-- **Entity Utilisateur.java:** ✅ EXISTE
-- **Entity Role.java:** ✅ EXISTE
-- **DTO UtilisateurDTO.java:** ✅ EXISTE
-- **DTO RoleDTO.java:** ✅ EXISTE
-- **Mapper UtilisateurMapper.java:** ✅ EXISTE
-- **Mapper RoleMapper.java:** ✅ EXISTE
-- **Service UtilisateurService.java:** ✅ INTERFACE créée
-- **Service RoleService.java:** ✅ INTERFACE créée
-- **Repository UtilisateurRepository.java:** ✅ INTERFACE créée
-- **Repository RoleRepository.java:** ✅ INTERFACE créée
-- **Controller UtilisateurController.java:** ✅ INTERFACE créée
-
-### Tâches restantes
-1. **Créer AntecedentMapper.java** (conversion DTO ↔ Entity)
-2. **Implémenter PatientServiceImpl.java** (logique métier)
-3. **Implémenter DossierMedicaleServiceImpl.java**
-4. **Implémenter AntecedentServiceImpl.java**
-5. **Implémenter UtilisateurServiceImpl.java** (gestion utilisateurs)
-6. **Implémenter RoleServiceImpl.java** (gestion rôles)
-7. **Implémenter PatientRepositoryImpl.java** (JDBC)
-8. **Implémenter DossierMedicaleRepositoryImpl.java** (JDBC)
-9. **Implémenter AntecedentRepositoryImpl.java** (JDBC)
-10. **Implémenter UtilisateurRepositoryImpl.java** (JDBC)
-11. **Implémenter RoleRepositoryImpl.java** (JDBC)
-12. **Implémenter PatientControllerImpl.java** (REST)
-13. **Implémenter DossierMedicaleControllerImpl.java** (REST)
-14. **Implémenter AntecedentControllerImpl.java** (REST)
-15. **Implémenter UtilisateurControllerImpl.java** (REST)
-16. **Créer validateurs** (PatientValidator, UtilisateurValidator)
-17. **Créer SQL tables** (PATIENT, DOSSIER_MEDICALE, ANTECEDENT, UTILISATEUR, ROLE)
 
 ### Points d'intégration
 - Utilise BaseEntity (Dev 5)
@@ -156,36 +27,6 @@ TeethCare (module parent unique)
 **Modules:** RDV, Agenda, Medecin, Consultation, Actes, InterventionMedecin
 **Charge:** ~18% (interfaces créées, implémentations à faire)
 
-### État actuel ✅
-- **Entity Rdv.java:** ✅ EXISTE
-- **Entity Medecin.java:** ✅ EXISTE
-- **Entity Consultation.java:** ✅ EXISTE
-- **Entity Actes.java:** ✅ EXISTE
-- **Entity Agenda.java:** ✅ EXISTE
-- **Entity InterventionMedecin.java:** ✅ EXISTE
-- **DTO RdvDTO.java:** ✅ EXISTE
-- **DTO MedecinDTO.java:** ✅ EXISTE
-- **DTO ConsultationDTO.java:** ✅ EXISTE
-- **DTO ActesDTO.java:** ✅ EXISTE
-- **DTO AgendaDTO.java:** ✅ EXISTE
-- **DTO InterventionMedecinDTO.java:** ✅ EXISTE
-- **Mapper RdvMapper.java:** ✅ EXISTE
-- **Mapper MedecinMapper.java:** ✅ EXISTE
-- **Mapper ConsultationMapper.java:** ✅ EXISTE
-- **Mapper ActesMapper.java:** ✅ EXISTE
-- **Mapper AgendaMapper.java:** ✅ EXISTE
-- **Mapper InterventionMedecinMapper.java:** ✅ EXISTE
-- **Services interfaces:** ✅ TOUTES créées (6 interfaces)
-- **Repositories interfaces:** ✅ TOUTES créées (6 interfaces)
-- **Controllers interfaces:** ✅ TOUTES créées (5 interfaces)
-
-### Tâches restantes
-1. **Implémenter 6 ServiceImpl** (RdvServiceImpl, MedecinServiceImpl, ConsultationServiceImpl, ActesServiceImpl, AgendaServiceImpl, InterventionMedecinServiceImpl)
-2. **Implémenter 6 RepositoryImpl** (JDBC - requêtes SELECT/INSERT/UPDATE/DELETE)
-3. **Implémenter 5 ControllerImpl** (REST - GET/POST/PUT/DELETE)
-4. **Créer validateurs** (RdvValidator, ConsultationValidator, etc.)
-5. **Créer SQL tables** (RDV, MEDECIN, CONSULTATION, ACTES, AGENDA, INTERVENTION_MEDECIN)
-
 ### Points d'intégration
 - Dépend de Patient (Dev 1)
 - Fournit Consultation à Dev 3 et Dev 4
@@ -198,38 +39,6 @@ TeethCare (module parent unique)
 **Modules:** Facture, Caisse, Charges, Revenues, CabinetMedicale, SituationFinanciere
 **Charge:** ~17% (interfaces créées, implémentations à faire)
 
-### État actuel ✅
-- **Entity Facture.java:** ✅ EXISTE
-- **Entity Caisse.java:** ✅ EXISTE
-- **Entity Charges.java:** ✅ EXISTE
-- **Entity Revenues.java:** ✅ EXISTE
-- **Entity CabinetMedicale.java:** ✅ EXISTE
-- **Entity SituationFinanciere.java:** ✅ EXISTE
-- **DTO FactureDTO.java:** ✅ EXISTE
-- **DTO CaisseDTO.java:** ✅ EXISTE
-- **DTO ChargesDTO.java:** ✅ EXISTE
-- **DTO RevenuesDTO.java:** ✅ EXISTE
-- **DTO CabinetMedicaleDTO.java:** ✅ EXISTE
-- **DTO SituationFinanciereDTO.java:** ✅ EXISTE
-- **Mapper FactureMapper.java:** ✅ EXISTE
-- **Mapper CaisseMapper.java:** ✅ EXISTE
-- **Mapper ChargesMapper.java:** ✅ EXISTE
-- **Mapper RevenuesMapper.java:** ✅ EXISTE
-- **Mapper CabinetMedicaleMapper.java:** ✅ EXISTE
-- **Mapper SituationFinanciereMapper.java:** ❌ MANQUE
-- **Services interfaces:** ✅ TOUTES créées (6 interfaces)
-- **Repositories interfaces:** ✅ TOUTES créées (6 interfaces)
-- **Controllers interfaces:** ✅ TOUTES créées (4 interfaces)
-
-### Tâches restantes
-1. **Créer SituationFinanciereMapper.java**
-2. **Implémenter 6 ServiceImpl** (FactureServiceImpl, CaisseServiceImpl, ChargesServiceImpl, RevenuesServiceImpl, CabinetMedicaleServiceImpl, SituationFinanciereServiceImpl)
-3. **Implémenter 6 RepositoryImpl** (JDBC)
-4. **Implémenter 4 ControllerImpl** (REST)
-5. **Créer validateurs** (FactureValidator, etc.)
-6. **Créer SQL tables** (FACTURE, CAISSE, CHARGES, REVENUES, CABINET_MEDICALE, SITUATION_FINANCIERE)
-7. **Implémentation logique financière:** calculs montants, synthèses, rapports
-
 ### Points d'intégration
 - Dépend de Consultation (Dev 2)
 - Dépend de Patient (Dev 1)
@@ -240,35 +49,6 @@ TeethCare (module parent unique)
 
 **Modules:** Ordonnance, Prescription, Certificat, Medicament, Notification, Log
 **Charge:** ~20% (interfaces créées, implémentations à faire)
-
-### État actuel ✅
-- **Entity Ordonnance.java:** ✅ EXISTE
-- **Entity Prescription.java:** ✅ EXISTE
-- **Entity Certificat.java:** ✅ EXISTE
-- **Entity Medicament.java:** ✅ EXISTE (medicaments.java)
-- **Entity Notification.java:** ✅ EXISTE
-- **Entity Log.java:** ✅ EXISTE
-- **DTO OrdonnanceDTO.java:** ✅ EXISTE
-- **DTO PrescriptionDTO.java:** ✅ EXISTE
-- **DTO CertificatDTO.java:** ✅ EXISTE
-- **DTO MedicamentDTO.java:** ✅ EXISTE
-- **DTO NotificationDTO.java:** ✅ EXISTE
-- **DTO LogDTO.java:** ✅ EXISTE
-- **Mappers:** ✅ TOUTES créées (6 mappers)
-- **Services interfaces:** ✅ TOUTES créées (6 interfaces)
-- **Repositories interfaces:** ✅ TOUTES créées (6 interfaces)
-- **Controllers interfaces:** ✅ TOUTES créées (5 interfaces)
-
-### Tâches restantes
-1. **Implémenter 6 ServiceImpl** (OrdonnanceServiceImpl, PrescriptionServiceImpl, CertificatServiceImpl, MedicamentServiceImpl, NotificationServiceImpl, LogServiceImpl)
-2. **Implémenter 6 RepositoryImpl** (JDBC)
-3. **Implémenter 5 ControllerImpl** (REST)
-4. **Créer validateurs** (PrescriptionValidator, etc.)
-5. **Créer SQL tables** (ORDONNANCE, PRESCRIPTION, CERTIFICAT, MEDICAMENT, NOTIFICATION, LOG)
-6. **Implémentation fonctionnalités:**
-   - Génération PDF pour certificats
-   - Envoi notifications (email, SMS)
-   - Historique logs complet
 
 ### Points d'intégration
 - Dépend de Consultation (Dev 2)
@@ -281,27 +61,6 @@ TeethCare (module parent unique)
 
 **Modules:** Core, BaseEntity, BaseService, BaseRepository, Auth, Utilisateur, Role, Admin, Staff, Secretaire
 **Charge:** ~10% (travail fondationnel - EN COURS)
-
-### État actuel ✅
-- **Entity BaseEntity.java:** ✅ EXISTE (classe abstraite)
-- **Entity Admin.java:** ✅ EXISTE
-- **Entity Staff.java:** ✅ EXISTE
-- **Entity Secretaire.java:** ✅ EXISTE
-- **Entity Log.java:** ✅ EXISTE
-- **Exceptions:** ✅ TOUTES créées (AuthException, DaoException, ServiceException, ValidationException)
-- **Utilitaires:** ✅ Crypto.java, Validators.java
-- **DTO AdminDTO.java:** ✅ EXISTE
-- **DTO StaffDTO.java:** ✅ EXISTE
-- **DTO SecretaireDTO.java:** ✅ EXISTE
-- **DTO LogDTO.java:** ✅ EXISTE
-- **Mappers:** ❌ MANQUANTS
-- **Services interfaces:** ✅ AdminService, StaffService, SecretaireService, LogService créées
-- **Repositories interfaces:** ✅ TOUTES créées
-- **Controllers interfaces:** ✅ AdminController, StaffController, SecretaireController, LogController créées
-- **BaseService interface:** ✅ EXISTE (`ma.TeethCare.service.common.BaseService`)
-- **BaseRepository interface:** ✅ EXISTE (`ma.TeethCare.repository.common.BaseRepository` - mais non utilisé, `CrudRepository` préféré)
-- **SessionFactory:** ✅ EXISTE (`ma.TeethCare.conf.SessionFactory`)
-- **GenericJdbcRepository:** ✅ EXISTE et utilisé par tous les modules
 
 ### Tâches restantes
 
@@ -408,26 +167,23 @@ Dev 5 (Core)
                     └── Notification et Log = utilisés partout
 ```
 
-**Ordre de développement recommandé:**
-1. **Dev 5:** Créer BaseService et BaseRepository interfaces (CRITIQUE)
-2. **Dev 5:** Créer classes abstraites (AbstractService, AbstractJdbcRepository)
-3. **Dev 1:** Implémenter Patient module (dépend de Dev 5 bases)
-4. **Dev 2:** Implémenter RDV/Consultation (dépend de Patient de Dev 1)
-5. **Dev 3:** Implémenter Finances (dépend de RDV de Dev 2)
-6. **Dev 4:** Implémenter Documents (dépend de Consultation de Dev 2)
-7. **Dev 5:** Complète AuthService, configuration, build final
-
 ---
 
-## 🚀 Priorités actuelles (Prochaines 48h)
+## 🚀 Priorités actuelles (Mise à jour 4 Décembre 2025)
 
-### 🟠 URGENT (Implémentation)
-3. **Implémentation des Services:** Commencer par les modules de base (Patient, Utilisateur).
-4. **Implémentation des Repositories:** Compléter les méthodes spécifiques (hors CRUD de base déjà géré par GenericJdbcRepository).
+### 🔴 CRITIQUE (Infrastructure & Tests)
+1. **Repository Completeness:** Vérifier que tous les repositories sont complets et fonctionnels.
+2. **Test Repo Class:** Développer une classe de test pour valider les processus CRUD (Create, Read, Update, Delete).
+3. **RowMappers:** Ajouter les classes `RowMapper` dans le dossier `TeethCare/common` pour standardiser le mapping JDBC.
+
+### 🟠 URGENT (Implémentation & Tests)
+4. **Services & Tests (2 modules/dev):** Chaque développeur doit finaliser les services pour 2 modules et ajouter les packages/classes de test correspondants.
+   - Créer les packages de test dans `src/test/java/ma/TeethCare/service/modules/...`
+   - Implémenter les tests unitaires pour chaque service.
 
 ### 🟡 IMPORTANT
-5. **Implémentation des Contrôleurs:** Exposer les API REST.
-6. **Tests:** Créer des tests unitaires pour valider la logique.
+5. **Création des Mappers:** Continuer la création des Mappers DTO <-> Entity.
+6. **Nettoyage:** Supprimer les fichiers obsolètes si ce n'est pas déjà fait.
 
 ---
 
@@ -494,68 +250,3 @@ ma/TeethCare/repository/common/AbstractJdbcRepository.java
 src/main/resources/dataBase/schema.sql
 src/main/resources/dataBase/seed.sql
 pom.xml (résolu)
-```
-
----
-
-## ✅ Checklist de completion
-
-### Phase 1: Infrastructure (Semaine 1)
-- [ ] BaseService interface créée (Dev 5)
-- [ ] BaseRepository interface créée (Dev 5)
-- [ ] AbstractService créée (Dev 5)
-- [ ] AbstractJdbcRepository créée (Dev 5)
-- [ ] AntecedentMapper créée (Dev 1)
-- [ ] SituationFinanciereMapper créée (Dev 3)
-- [ ] 2 Mappers manquants créés ✅
-
-### Phase 2: Implémentations services (Semaine 2-3)
-- [ ] 27 ServiceImpl créés (Dev 1-4)
-- [ ] Services testées JDBC stubs
-- [ ] Services connectées aux Repositories
-
-### Phase 3: Implémentations repositories (Semaine 3-4)
-- [ ] 26 RepositoryImpl créés (Dev 1-4)
-- [ ] SQL queries JDBC (CRUD complet)
-- [ ] Connexion base de données fonctionnelle
-- [ ] Tests unitaires repository
-
-### Phase 4: Implémentations controllers (Semaine 4-5)
-- [ ] 26 ControllerImpl créés (Dev 1-4)
-- [ ] Endpoints REST fonctionnels
-- [ ] DTO mapping complet (via Mappers)
-- [ ] Error handling et validation
-
-### Phase 5: Database et configuration (Semaine 5)
-- [ ] schema.sql complet créé (Dev 5)
-- [ ] seed.sql avec données test (Dev 5)
-- [ ] pom.xml résolu et buildi (Dev 5)
-- [ ] beans.properties configuré (Dev 5)
-- [ ] db.properties configuré (Dev 5)
-
-### Phase 6: Intégration et tests (Semaine 6)
-- [ ] Build complet `mvn clean install` ✅
-- [ ] Tests unitaires (50+ tests par couche)
-- [ ] Tests d'intégration
-- [ ] Documentation code complète
-- [ ] README et tutoriels
-
----
-
-## 📚 Documentation générée
-
-### Architecture décisions
-✅ **Diagramme UML:** 27 entités normalisées
-✅ **DTO/Mapper pattern:** Séparation Entity ↔ API
-✅ **Repository pattern:** Abstraction JDBC
-✅ **Service pattern:** Logique métier centralisée
-✅ **Single module Maven:** Pas de multi-module (simplification)
-
-### Conventions appliquées
-✅ **Package naming:** `ma.TeethCare.<layer>.<domain>`
-✅ **Class naming:** `XxxService`, `XxxRepository`, `XxxController`, `XxxDTO`, `XxxMapper`
-✅ **Impl naming:** `XxxServiceImpl`, `XxxRepositoryImpl`, `XxxControllerImpl`
-✅ **Exception handling:** Hierarchie d'exceptions personnalisées
-✅ **Logging:** SLF4J + Logback (à configurer dans pom.xml)
-
----
