@@ -134,9 +134,10 @@ TeethCare/
 │  │  │  ├─ log/
 │  │  │  └─ enums/                    → Énumérations (Sexe, Mois, Jour, etc.)
 │  │  ├─ repository/                  → Couche d'accès aux données (DAO/JDBC)
-│  │  │  ├─ common/                   → Interfaces de base
-│  │  │  │  └─ BaseRepository.java    → Interface générique CRUD
-│  │  │  └─ modules/                  → 26 Repository interfaces (1 par entité non-abstraite)
+│  │  │  ├─ api/                      → 26 Repository interfaces (1 par entité)
+│  │  │  ├─ mySQLImpl/                → 26 Repository implementations (JDBC)
+│  │  │  └─ common/                   → Interfaces de base
+│  │  │     └─ GenericJdbcRepository.java → Implémentation générique CRUD
 │  │  ├─ service/                     → Couche de logique métier
 │  │  │  ├─ common/                   → Services de base
 │  │  │  │  └─ BaseService.java       → Interface générique service
@@ -420,30 +421,9 @@ Configuration et injection de dépendances
 - 🔄 **ControllerImpl** : 26 contrôleurs REST (endpoints REST par module)
 
 ### ⏳ À faire
-- ⏳ **BaseService/BaseRepository** : Interfaces génériques de base (Dev 5) 🔴 CRITIQUE
-- ⏳ **AbstractService/AbstractJdbcRepository** : Classes abstraites avec implémentations communes
-- ⏳ **Schema.sql** : 27 CREATE TABLE statements
-- ⏳ **Validators** : Validateurs métier pour chaque domaine
-- ⏳ **Seed.sql** : Données de test pour démonstration
-- ⏳ **pom.xml** : Résolution complète des dépendances Maven
-- ⏳ **Configuration** : beans.properties et db.properties
-
-### 📊 Statistiques du code
-
-| Artefact | Nombre | État |
-|----------|--------|------|
-| Entités | 27 | ✅ Complètes |
-| DTOs | 26 | ✅ Créées |
-| Mappers | 26 | ✅ Créées |
-| Interfaces Repository | 26 | ✅ Créées |
-| Interfaces Service | 26 | ✅ Créées |
-| Interfaces Controller | 26 | ✅ Créées |
-| **Total Fichiers Interface** | **178** | ✅ **100%** |
-| ServiceImpl (à faire) | 26 | ⏳ Pendants |
-| RepositoryImpl (à faire) | 26 | ⏳ Pendants |
-| ControllerImpl (à faire) | 26 | ⏳ Pendants |
-
----
+- ⏳ **test** : test
+- ⏳ 
+- ⏳ 
 
 ## 🎨 Charte graphique & UI/UX
 
@@ -695,28 +675,6 @@ Staff (Réceptionniste):
 🔮 **Gestion du stock** : Médicaments, équipements, consommables  
 🔮 **Intégration paiement** : Passerelle bancaire pour facturation en ligne  
 
-### Prochaines étapes (Roadmap)
-
-**Semaine 1 (Immédiat - CRITIQUE) :**
-1. ✅ Créer BaseService<T, ID> et BaseRepository<T, ID> (Dev 5)
-2. ✅ Créer AbstractService et AbstractJdbcRepository (Dev 5)
-3. ✅ Créer 2 Mappers manquants : AntecedentMapper, SituationFinanciereMapper
-
-**Semaine 2-3 (Implémentation):**
-- Dev 1 : Implémenter 5 modules Patient/Users (ServiceImpl, RepositoryImpl, ControllerImpl)
-- Dev 2 : Implémenter 6 modules RDV/Consultations
-- Dev 3 : Implémenter 6 modules Finance/Cabinet
-- Dev 4 : Implémenter 6 modules Ordonnances/Documents
-- Dev 5 : Schema.sql, Configuration, Validateurs
-
-**Semaine 4 (Testing & Documentation):**
-- Tests unitaires (JUnit 5)
-- Tests intégration (TestContainers)
-- Documentation API (Swagger)
-- Guide utilisateur
-
----
-
 ## 📚 Documentation supplémentaire
 
 Pour plus de détails, consulter :
@@ -729,7 +687,6 @@ Pour plus de détails, consulter :
 ```
 TeethCare/
 ├─ pom.xml                          → Configuration Maven complète
-├─ REPARTITION_TACHES.md            → Détail des tâches par développeur
 ├─ readme.md                        → Ce fichier
 ├─ src/main/resources/
 │  ├─ config/db.properties          → Connexion base de données
@@ -774,36 +731,7 @@ public class PatientServiceImpl implements PatientService {
         // Retour DTO
     }
 }
-```
 
-### Template de RepositoryImpl (JDBC)
-```java
-public class PatientRepositoryImpl implements PatientRepository {
-    private static final String SELECT_ALL = "SELECT * FROM PATIENT";
-    private static final String INSERT = "INSERT INTO PATIENT (nom, email) VALUES (?, ?)";
-    
-    @Override
-    public Patient save(Patient patient) {
-        // Execute INSERT with PreparedStatement
-        // Retourner entity avec ID généré
-    }
-}
-```
-
-### Template de ControllerImpl (REST)
-```java
-@RestController
-@RequestMapping("/api/v1/patients")
-public class PatientControllerImpl implements PatientController {
-    private final PatientService patientService;
-    
-    @PostMapping
-    @Override
-    public ResponseEntity<PatientDTO> createPatient(@RequestBody PatientDTO dto) {
-        PatientDTO created = patientService.createPatient(dto);
-        return ResponseEntity.status(201).body(created);
-    }
-}
 ```
 
 ---
