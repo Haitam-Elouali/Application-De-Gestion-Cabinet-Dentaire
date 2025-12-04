@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import ma.TeethCare.mvc.controllers.modules.patient.api.PatientController;
-import ma.TeethCare.repository.modules.patient.api.PatientRepository;
+import ma.TeethCare.repository.api.PatientRepository;
 import ma.TeethCare.service.modules.patient.api.PatientService;
 
 public class ApplicationContext {
@@ -66,6 +66,7 @@ public class ApplicationContext {
 
 
 }
+
 
 
 
