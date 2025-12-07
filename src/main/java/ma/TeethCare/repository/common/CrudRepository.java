@@ -1,10 +1,11 @@
 package ma.TeethCare.repository.common;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public interface CrudRepository<T, ID> {
 
-    List<T> findAll();
+    List<T> findAll() throws SQLException;
 
     T findById(ID id);
 

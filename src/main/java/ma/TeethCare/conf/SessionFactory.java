@@ -3,10 +3,11 @@ package ma.TeethCare.conf;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import ma.dentalTech.conf.util.PropertiesExtractor;
+import ma.TeethCare.conf.util.PropertiesExtractor;
 
 /**
- * Classe responsable de la création et de la gestion d'une connexion JDBC unique.
+ * Classe responsable de la création et de la gestion d'une connexion JDBC
+ * unique.
  *
  * Pattern utilisé : Singleton (avec double-checked locking)
  * ------------------------------------------------------------
@@ -20,25 +21,29 @@ import ma.dentalTech.conf.util.PropertiesExtractor;
  * - getConnection() → retourne une connexion valide (et la recrée si besoin)
  *
  * Auteur : Pr O. El Midaoui
- * Date    : 2025
+ * Date : 2025
  */
 public final class SessionFactory {
 
     /**
-     * Instance unique du singleton (volatile = visibilité mémoire correcte entre threads)
+     * Instance unique du singleton (volatile = visibilité mémoire correcte entre
+     * threads)
      * Quand plusieurs threads travaillent en parallèle,
-     * chacun a souvent une copie locale en mémoire des variables statiques/globales,
+     * chacun a souvent une copie locale en mémoire des variables
+     * statiques/globales,
      * pour aller plus vite (optimisation du processeur).
      *
-     * Du coup, si un thread crée une nouvelle instance : INSTANCE = new SessionFactory()
+     * Du coup, si un thread crée une nouvelle instance : INSTANCE = new
+     * SessionFactory()
      * un autre thread pourrait ne pas encore voir ce changement tout de suite,
      * et croire INSTANCE == null.
      * Résultat : il crée une deuxième instance
      * → Le Singleton n’est plus vraiment “unique”.
-     * Avec volatile : la variable est lue et écrite par la JVM directement depuis la mémoire principale
+     * Avec volatile : la variable est lue et écrite par la JVM directement depuis
+     * la mémoire principale
      * partagée entre tous les threads.
      *
-     * */
+     */
     private static volatile SessionFactory INSTANCE;
 
     /** Objet connexion JDBC unique */
@@ -46,9 +51,9 @@ public final class SessionFactory {
 
     /** Propriétés de configuration (fichier .properties) */
     private static final String PROPS_PATH = "config/db.properties";
-    private static final String URL_KEY    = "datasource.url";
-    private static final String USER_KEY   = "datasource.user";
-    private static final String PASS_KEY   = "datasource.password";
+    private static final String URL_KEY = "datasource.url";
+    private static final String USER_KEY = "datasource.user";
+    private static final String PASS_KEY = "datasource.password";
     private static final String DRIVER_KEY = "datasource.driver";
 
     /** Valeurs lues depuis le fichier de configuration */
@@ -64,10 +69,10 @@ public final class SessionFactory {
     private SessionFactory() {
         var properties = PropertiesExtractor.loadConfigFile(PROPS_PATH);
 
-        this.url      = PropertiesExtractor.getPropertyValue(URL_KEY, properties);
-        this.user     = PropertiesExtractor.getPropertyValue(USER_KEY, properties);
+        this.url = PropertiesExtractor.getPropertyValue(URL_KEY, properties);
+        this.user = PropertiesExtractor.getPropertyValue(USER_KEY, properties);
         this.password = PropertiesExtractor.getPropertyValue(PASS_KEY, properties);
-        this.driver   = PropertiesExtractor.getPropertyValue(DRIVER_KEY, properties);
+        this.driver = PropertiesExtractor.getPropertyValue(DRIVER_KEY, properties);
 
         // Charger explicitement le driver si défini (bonne pratique)
         if (driver != null && !driver.isBlank()) {
@@ -79,8 +84,6 @@ public final class SessionFactory {
             }
         }
     }
-
-
 
     /**
      * Retourne l'unique instance du Singleton.
@@ -98,11 +101,10 @@ public final class SessionFactory {
         return INSTANCE;
     }
 
-
-
     /**
      * Retourne une connexion JDBC active et valide.
-     * Si la connexion n'existe pas, est fermée ou n'est plus valide, elle est recréée.
+     * Si la connexion n'existe pas, est fermée ou n'est plus valide, elle est
+     * recréée.
      *
      * @return une instance valide de {@link Connection}.
      * @throws SQLException en cas d'erreur de création.
@@ -114,6 +116,7 @@ public final class SessionFactory {
         }
         return connection;
     }
+
     /**
      * Vérifie si la connexion est encore valide.
      *
@@ -127,8 +130,6 @@ public final class SessionFactory {
             return false;
         }
     }
-
-
 
     /**
      * Ferme proprement la connexion si elle est ouverte.
@@ -144,6 +145,5 @@ public final class SessionFactory {
             System.err.println("Erreur lors de la fermeture de la connexion : " + e.getMessage());
         }
     }
-
 
 }

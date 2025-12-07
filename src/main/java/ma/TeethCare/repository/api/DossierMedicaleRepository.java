@@ -6,5 +6,4 @@ import ma.TeethCare.repository.common.CrudRepository;
 import java.util.Optional;
 
 public interface DossierMedicaleRepository extends CrudRepository<dossierMedicale, Long> {
-    Optional<dossierMedicale> findByIdDM(Long idDM);
 }

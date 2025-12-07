@@ -1,4 +1,4 @@
-package ma.TeethCare.repository.modules.consultation.inMemDB_implementation;
+package ma.TeethCare.repository.mySQLImpl;
 
 import ma.TeethCare.conf.SessionFactory;
 import java.sql.Connection;
@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import ma.TeethCare.entities.consultation.consultation;
 import ma.TeethCare.entities.enums.Statut;
 import ma.TeethCare.repository.api.ConsultationRepository;
-import ma.TeethCare.repository.common.DbConnection;
+import ma.TeethCare.repository.common.RowMappers;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -18,68 +18,36 @@ import java.util.Optional;
 
 public class ConsultationRepositoryImpl implements ConsultationRepository {
 
-    private consultation mapResultSetToEntity(ResultSet rs) throws SQLException {
-        consultation c = new consultation();
-
-        c.setIdEntite(rs.getLong("idEntite"));
-
-        Date dateCreationSql = rs.getDate("dateCreation");
-        if (dateCreationSql != null) {
-            c.setDateCreation(dateCreationSql.toLocalDate());
-        }
-        Timestamp dateModifSql = rs.getTimestamp("dateDerniereModification");
-        if (dateModifSql != null) {
-            c.setDateDerniereModification(dateModifSql.toLocalDateTime());
-        }
-        c.setCreePar(rs.getString("creePar"));
-        c.setModifierPar(rs.getString("modifierPar"));
-
-        c.setIdConsultation(rs.getLong("idConsultation"));
-
-        Date dateSql = rs.getDate("Date");
-        if (dateSql != null) {
-            c.setDate(dateSql.toLocalDate());
-        }
-
-        String statutStr = rs.getString("statut");
-        if (statutStr != null) {
-            c.setStatut(Statut.valueOf(statutStr));
-        }
-
-        c.setObservationMedecin(rs.getString("observationMedecin"));
-
-        return c;
-    }
-
     @Override
-    public List<consultation> findAll() {
+    public List<consultation> findAll() throws SQLException {
         List<consultation> consultationList = new ArrayList<>();
         String sql = "SELECT * FROM Consultation";
 
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                consultationList.add(mapResultSetToEntity(rs));
+                consultationList.add(RowMappers.mapConsultation(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
         return consultationList;
     }
 
     @Override
     public consultation findById(Long id) {
-        String sql = "SELECT * FROM Consultation WHERE idEntite = ?";
+        String sql = "SELECT * FROM Consultation WHERE idConsultation = ?";
 
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToEntity(rs);
+                    return RowMappers.mapConsultation(rs);
                 }
             }
         } catch (SQLException e) {
@@ -91,20 +59,25 @@ public class ConsultationRepositoryImpl implements ConsultationRepository {
     @Override
     public void create(consultation c) {
         c.setDateCreation(LocalDate.now());
-        if (c.getCreePar() == null) c.setCreePar("SYSTEM");
+        if (c.getCreePar() == null)
+            c.setCreePar("SYSTEM");
 
-        String sql = "INSERT INTO Consultation (dateCreation, creePar, idConsultation, Date, statut, observationMedecin) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Consultation (dateCreation, creePar, idConsultation, rdvId, patientId, medecinId, Date, statut, observationMedecin, diagnostique) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setDate(1, Date.valueOf(c.getDateCreation()));
             ps.setString(2, c.getCreePar());
 
             ps.setLong(3, c.getIdConsultation());
-            ps.setDate(4, c.getDate() != null ? Date.valueOf(c.getDate()) : null);
-            ps.setString(5, c.getStatut() != null ? c.getStatut().name() : null);
-            ps.setString(6, c.getObservationMedecin());
+            ps.setLong(4, c.getRdvId());
+            ps.setLong(5, c.getPatientId());
+            ps.setLong(6, c.getMedecinId());
+            ps.setDate(7, c.getDate() != null ? Date.valueOf(c.getDate()) : null);
+            ps.setString(8, c.getStatut() != null ? c.getStatut().name() : null);
+            ps.setString(9, c.getObservationMedecin());
+            ps.setString(10, c.getDiagnostique());
 
             ps.executeUpdate();
 
@@ -121,22 +94,27 @@ public class ConsultationRepositoryImpl implements ConsultationRepository {
     @Override
     public void update(consultation c) {
         c.setDateDerniereModification(LocalDateTime.now());
-        if (c.getModifierPar() == null) c.setModifierPar("SYSTEM");
+        if (c.getModifierPar() == null)
+            c.setModifierPar("SYSTEM");
 
-        String sql = "UPDATE Consultation SET idConsultation = ?, Date = ?, statut = ?, observationMedecin = ?, dateDerniereModification = ?, modifierPar = ? WHERE idEntite = ?";
+        String sql = "UPDATE Consultation SET idConsultation = ?, rdvId = ?, patientId = ?, medecinId = ?, Date = ?, statut = ?, observationMedecin = ?, diagnostique = ?, dateDerniereModification = ?, modifierPar = ? WHERE idConsultation = ?";
 
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, c.getIdConsultation());
-            ps.setDate(2, c.getDate() != null ? Date.valueOf(c.getDate()) : null);
-            ps.setString(3, c.getStatut() != null ? c.getStatut().name() : null);
-            ps.setString(4, c.getObservationMedecin());
+            ps.setLong(2, c.getRdvId());
+            ps.setLong(3, c.getPatientId());
+            ps.setLong(4, c.getMedecinId());
+            ps.setDate(5, c.getDate() != null ? Date.valueOf(c.getDate()) : null);
+            ps.setString(6, c.getStatut() != null ? c.getStatut().name() : null);
+            ps.setString(7, c.getObservationMedecin());
+            ps.setString(8, c.getDiagnostique());
 
-            ps.setTimestamp(5, Timestamp.valueOf(c.getDateDerniereModification()));
-            ps.setString(6, c.getModifierPar());
+            ps.setTimestamp(9, Timestamp.valueOf(c.getDateDerniereModification()));
+            ps.setString(10, c.getModifierPar());
 
-            ps.setLong(7, c.getIdEntite());
+            ps.setLong(11, c.getIdConsultation());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -146,16 +124,16 @@ public class ConsultationRepositoryImpl implements ConsultationRepository {
 
     @Override
     public void delete(consultation c) {
-        if (c != null && c.getIdEntite() != null) {
-            deleteById(c.getIdEntite());
+        if (c != null && c.getIdConsultation() != null) {
+            deleteById(c.getIdConsultation());
         }
     }
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Consultation WHERE idEntite = ?";
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "DELETE FROM Consultation WHERE idConsultation = ?";
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -163,29 +141,4 @@ public class ConsultationRepositoryImpl implements ConsultationRepository {
         }
     }
 
-    @Override
-    public Optional<consultation> findByIdConsultation(Long idConsultation) {
-        String sql = "SELECT * FROM Consultation WHERE idConsultation = ?";
-
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setLong(1, idConsultation);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapResultSetToEntity(rs));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    protected Connection getConnection() throws SQLException {
-        return SessionFactory.getInstance().getConnection();
-    }
 }
-
-

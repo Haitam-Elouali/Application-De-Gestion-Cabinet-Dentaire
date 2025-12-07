@@ -17,22 +17,13 @@
     <!-- ==================================================================== -->
 
     <!-- ================== IDENTITÉ DU PROJET ====================== -->
-<<<<<<< HEAD
     <groupId>ma.dentalTech</groupId>        <!-- Domaine ou organisation -->
-=======
-    <groupId>ma.TeethCare</groupId>        <!-- Domaine ou organisation -->
->>>>>>> 68527035ccde42edd5376587031052fa3f97916b
-    <artifactId>TeethCare</artifactId>     <!-- Nom du projet -->
+    <artifactId>DentalTech</artifactId>     <!-- Nom du projet -->
     <version>1.0-SNAPSHOT</version>         <!-- Version du projet -->
     <packaging>jar</packaging>              <!-- Type de livrable généré -->
 
-<<<<<<< HEAD
     <name>DentalTech</name>
     <url>http://dentalTech.ma</url>
-=======
-    <name>TeethCare</name>
-    <url>http://TeethCare.ma</url>
->>>>>>> 68527035ccde42edd5376587031052fa3f97916b
     <description>Application de gestion complète d’un cabinet dentaire :
         gestion des patients, consultations, rendez-vous, facturation et suivi médical.
     </description>
@@ -71,6 +62,32 @@
             <version>8.0.33</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+            <exclusions>
+                <!-- au cas où une autre lib collerait slf4j-api 1.7.x -->
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Force la pile SLF4J en 2.0.13 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+        <!-- Couper tous les logs SLF4J -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+
         <!-- === Lombok (simplifie le code Java) === -->
         <!-- Génère automatiquement les getters, setters, constructeurs, etc.
              Nécessite d’activer l’annotation processing dans l’IDE -->
@@ -80,6 +97,7 @@
             <version>1.18.38</version>
             <scope>provided</scope>
         </dependency>
+
 
         <!-- === BCrypt (cryptage des mot de passe utilisateur) === -->
         <dependency>
@@ -92,27 +110,17 @@
         <!-- === JUnit (tests unitaires) === -->
         <!-- Librairie utilisée pour écrire et exécuter des tests -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>RELEASE</version>
+            <version>5.11.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- (Optionnel) Assertions plus lisibles -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.26.3</version>
             <scope>test</scope>
         </dependency>
 
@@ -184,7 +192,7 @@
                             <!-- Classe principale à ADAPTER si différente -->
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>ma.TeethCare.MainApp</mainClass>
+                                    <mainClass>ma.dentalTech.MainApp</mainClass>
                                 </transformer>
                             </transformers>
                             <!-- Rendre le JAR reproductible (ordre stable, pas d’horodatage variable) -->

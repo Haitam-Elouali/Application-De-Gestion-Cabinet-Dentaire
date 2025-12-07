@@ -1,4 +1,4 @@
-package ma.TeethCare.repository.modules.revenues.inMemDB_implementation;
+package ma.TeethCare.repository.mySQLImpl;
 
 import ma.TeethCare.conf.SessionFactory;
 import java.sql.Connection;
@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 import ma.TeethCare.entities.revenues.revenues;
 import ma.TeethCare.repository.api.RevenuesRepository;
-import ma.TeethCare.repository.common.DbConnection;
+import ma.TeethCare.repository.common.RowMappers;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -17,63 +17,36 @@ import java.util.Optional;
 
 public class RevenuesRepositoryImpl implements RevenuesRepository {
 
-    private revenues mapResultSetToEntity(ResultSet rs) throws SQLException {
-        revenues r = new revenues();
-
-        r.setIdEntite(rs.getLong("idEntite"));
-
-        Date dateCreationSql = rs.getDate("dateCreation");
-        if (dateCreationSql != null) {
-            r.setDateCreation(dateCreationSql.toLocalDate());
-        }
-        Timestamp dateModifSql = rs.getTimestamp("dateDerniereModification");
-        if (dateModifSql != null) {
-            r.setDateDerniereModification(dateModifSql.toLocalDateTime());
-        }
-        r.setCreePar(rs.getString("creePar"));
-        r.setModifierPar(rs.getString("modifierPar"));
-
-        r.setTitre(rs.getString("titre"));
-        r.setDescription(rs.getString("description"));
-        r.setMontant(rs.getDouble("montant"));
-
-        Timestamp dateSql = rs.getTimestamp("date");
-        if (dateSql != null) {
-            r.setDate(dateSql.toLocalDateTime());
-        }
-
-        return r;
-    }
-
     @Override
-    public List<revenues> findAll() {
+    public List<revenues> findAll() throws SQLException {
         List<revenues> revenuesList = new ArrayList<>();
         String sql = "SELECT * FROM Revenues";
 
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                revenuesList.add(mapResultSetToEntity(rs));
+                revenuesList.add(RowMappers.mapRevenues(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
         return revenuesList;
     }
 
     @Override
     public revenues findById(Long id) {
-        String sql = "SELECT * FROM Revenues WHERE idEntite = ?";
+        String sql = "SELECT * FROM Revenues WHERE idRevenue = ?";
 
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToEntity(rs);
+                    return RowMappers.mapRevenues(rs);
                 }
             }
         } catch (SQLException e) {
@@ -85,20 +58,23 @@ public class RevenuesRepositoryImpl implements RevenuesRepository {
     @Override
     public void create(revenues r) {
         r.setDateCreation(LocalDate.now());
-        if (r.getCreePar() == null) r.setCreePar("SYSTEM");
+        if (r.getCreePar() == null)
+            r.setCreePar("SYSTEM");
 
-        String sql = "INSERT INTO Revenues (dateCreation, creePar, titre, description, montant, date) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Revenues (dateCreation, creePar, idRevenue, factureId, titre, description, montant, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setDate(1, Date.valueOf(r.getDateCreation()));
             ps.setString(2, r.getCreePar());
 
-            ps.setString(3, r.getTitre());
-            ps.setString(4, r.getDescription());
-            ps.setDouble(5, r.getMontant());
-            ps.setTimestamp(6, r.getDate() != null ? Timestamp.valueOf(r.getDate()) : null);
+            ps.setLong(3, r.getIdRevenue());
+            ps.setLong(4, r.getFactureId());
+            ps.setString(5, r.getTitre());
+            ps.setString(6, r.getDescription());
+            ps.setDouble(7, r.getMontant());
+            ps.setTimestamp(8, r.getDate() != null ? Timestamp.valueOf(r.getDate()) : null);
 
             ps.executeUpdate();
 
@@ -115,22 +91,25 @@ public class RevenuesRepositoryImpl implements RevenuesRepository {
     @Override
     public void update(revenues r) {
         r.setDateDerniereModification(LocalDateTime.now());
-        if (r.getModifierPar() == null) r.setModifierPar("SYSTEM");
+        if (r.getModifierPar() == null)
+            r.setModifierPar("SYSTEM");
 
-        String sql = "UPDATE Revenues SET titre = ?, description = ?, montant = ?, date = ?, dateDerniereModification = ?, modifierPar = ? WHERE idEntite = ?";
+        String sql = "UPDATE Revenues SET idRevenue = ?, factureId = ?, titre = ?, description = ?, montant = ?, date = ?, dateDerniereModification = ?, modifierPar = ? WHERE idRevenue = ?";
 
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, r.getTitre());
-            ps.setString(2, r.getDescription());
-            ps.setDouble(3, r.getMontant());
-            ps.setTimestamp(4, r.getDate() != null ? Timestamp.valueOf(r.getDate()) : null);
+            ps.setLong(1, r.getIdRevenue());
+            ps.setLong(2, r.getFactureId());
+            ps.setString(3, r.getTitre());
+            ps.setString(4, r.getDescription());
+            ps.setDouble(5, r.getMontant());
+            ps.setTimestamp(6, r.getDate() != null ? Timestamp.valueOf(r.getDate()) : null);
 
-            ps.setTimestamp(5, Timestamp.valueOf(r.getDateDerniereModification()));
-            ps.setString(6, r.getModifierPar());
+            ps.setTimestamp(7, Timestamp.valueOf(r.getDateDerniereModification()));
+            ps.setString(8, r.getModifierPar());
 
-            ps.setLong(7, r.getIdEntite());
+            ps.setLong(9, r.getIdRevenue());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -140,16 +119,16 @@ public class RevenuesRepositoryImpl implements RevenuesRepository {
 
     @Override
     public void delete(revenues r) {
-        if (r != null && r.getIdEntite() != null) {
-            deleteById(r.getIdEntite());
+        if (r != null && r.getIdRevenue() != null) {
+            deleteById(r.getIdRevenue());
         }
     }
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Revenues WHERE idEntite = ?";
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "DELETE FROM Revenues WHERE idRevenue = ?";
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -161,13 +140,13 @@ public class RevenuesRepositoryImpl implements RevenuesRepository {
     public Optional<revenues> findByTitre(String titre) {
         String sql = "SELECT * FROM Revenues WHERE titre = ?";
 
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, titre);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(mapResultSetToEntity(rs));
+                    return Optional.of(RowMappers.mapRevenues(rs));
                 }
             }
         } catch (SQLException e) {
@@ -181,15 +160,15 @@ public class RevenuesRepositoryImpl implements RevenuesRepository {
         List<revenues> revenuesList = new ArrayList<>();
         String sql = "SELECT * FROM Revenues WHERE date BETWEEN ? AND ?";
 
-        try (Connection conn = DbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setTimestamp(1, Timestamp.valueOf(startDate));
             ps.setTimestamp(2, Timestamp.valueOf(endDate));
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    revenuesList.add(mapResultSetToEntity(rs));
+                    revenuesList.add(RowMappers.mapRevenues(rs));
                 }
             }
         } catch (SQLException e) {
@@ -197,11 +176,4 @@ public class RevenuesRepositoryImpl implements RevenuesRepository {
         }
         return revenuesList;
     }
-
-    @Override
-    protected Connection getConnection() throws SQLException {
-        return SessionFactory.getInstance().getConnection();
-    }
 }
-
-

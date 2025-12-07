@@ -6,5 +6,4 @@ import ma.TeethCare.repository.common.CrudRepository;
 import java.util.Optional;
 
 public interface FactureRepository extends CrudRepository<facture, Long> {
-    Optional<facture> findByIdFacture(Long idFacture);
 }

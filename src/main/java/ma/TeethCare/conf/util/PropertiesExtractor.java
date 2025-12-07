@@ -1,4 +1,4 @@
-package ma.dentalTech.conf.util;
+package ma.TeethCare.conf.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,10 +14,10 @@ public class PropertiesExtractor {
         Properties properties = new Properties();
 
         try (InputStream in = Thread.currentThread()
-                                    .getContextClassLoader()
-                                    .getResourceAsStream(PROPS_PATH)) {
+                .getContextClassLoader()
+                .getResourceAsStream(PROPS_PATH)) {
             if (in == null)
-                  throw new IllegalStateException("config file not found: " + PROPS_PATH);
+                throw new IllegalStateException("config file not found: " + PROPS_PATH);
             properties.load(in);
             return properties;
 
@@ -35,4 +35,3 @@ public class PropertiesExtractor {
         return v.trim();
     }
 }
-

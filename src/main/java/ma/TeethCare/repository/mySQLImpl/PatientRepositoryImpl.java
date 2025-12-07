@@ -1,138 +1,126 @@
 package ma.TeethCare.repository.mySQLImpl;
 
 import ma.TeethCare.conf.SessionFactory;
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import lombok.extern.slf4j.Slf4j;
 import ma.TeethCare.entities.patient.Patient;
-import ma.TeethCare.repository.common.GenericJdbcRepository;
 import ma.TeethCare.repository.api.PatientRepository;
+import ma.TeethCare.repository.common.RowMappers;
 
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Implémentation JDBC MySQL du repository Patient avec réflexion Java.
- * Utilise GenericJdbcRepository pour automatiser les opérations CRUD.
- * 
- * - Charge le driver MySQL via Class.forName (réflexion)
- * - Mappe automatiquement les attributs Java aux colonnes SQL via réflexion
- * - Gère les connexions et les PreparedStatements
- */
-@Slf4j
-public class PatientRepositoryImpl extends GenericJdbcRepository<Patient> implements PatientRepository {
-
-    // Configuration de connexion - à adapter selon votre environnement
-    private static final String TABLE_NAME = "PATIENT";
-
-    /**
-     * Constructeur initialisant le GenericJdbcRepository
-     */
-    public PatientRepositoryImpl() {
-        super(Patient.class, TABLE_NAME);
-        log.info("✓ PatientRepositoryImpl initialisé (MySQL JDBC avec réflexion)");
-    }
+public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
-    public List<Patient> findAll() {
-        log.info("Recherche de tous les patients");
-        String sql = buildSelectQuery(null);
-        return executeQuery(sql);
+    public List<Patient> findAll() throws SQLException {
+        String sql = "SELECT * FROM Patient";
+        List<Patient> patients = new ArrayList<>();
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                patients.add(RowMappers.mapPatient(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+        return patients;
     }
 
     @Override
     public Patient findById(Long id) {
-        log.info("Recherche du patient avec l'ID: {}", id);
-        String sql = buildSelectQuery("id = ?");
-        return executeSingleQuery(sql, id);
+        String sql = "SELECT * FROM Patient WHERE id = ?";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return RowMappers.mapPatient(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
-    public void create(Patient patient) {
-        log.info("Création d'un nouveau patient: {}", patient.getNom());
-        String sql = buildInsertQuery(List.of("nom", "prenom", "email", "telephone", "dateNaissance", "sexe", "assurance", "dateCreation"));
-        
-        Long generatedId = executeInsertAndGetId(sql,
-                patient.getNom(),
-                patient.getPrenom(),
-                patient.getEmail(),
-                patient.getTelephone(),
-                patient.getDateNaissance(),
-                patient.getSexe(),
-                patient.getAssurance(),
-                patient.getDateCreation()
-        );
-        
-        if (generatedId != null) {
-            patient.setId(generatedId);
-            log.info("✓ Patient créé avec l'ID: {}", generatedId);
-        } else {
-            log.warn("⚠ Patient créé mais ID non récupéré");
+    public void create(Patient p) {
+        p.setDateCreation(LocalDateTime.now());
+
+        String sql = "INSERT INTO Patient (dateCreation, nom, prenom, adresse, telephone, email, dateNaissance, sexe, assurance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            stmt.setTimestamp(1, Timestamp.valueOf(p.getDateCreation()));
+            stmt.setString(2, p.getNom());
+            stmt.setString(3, p.getPrenom());
+            stmt.setString(4, p.getAdresse());
+            stmt.setString(5, p.getTelephone());
+            stmt.setString(6, p.getEmail());
+            stmt.setDate(7, p.getDateNaissance() != null ? Date.valueOf(p.getDateNaissance()) : null);
+            stmt.setString(8, p.getSexe() != null ? p.getSexe().name() : null);
+            stmt.setString(9, p.getAssurance() != null ? p.getAssurance().name() : null);
+
+            stmt.executeUpdate();
+
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    p.setId(generatedKeys.getLong(1));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void update(Patient patient) {
-        log.info("Mise à jour du patient ID: {}", patient.getId());
-        String sql = buildUpdateQuery(
-                List.of("nom", "prenom", "email", "telephone", "dateNaissance", "sexe", "assurance", "dateModification"),
-                "id = ?"
-        );
-        
-        executeUpdate(sql,
-                patient.getNom(),
-                patient.getPrenom(),
-                patient.getEmail(),
-                patient.getTelephone(),
-                patient.getDateNaissance(),
-                patient.getSexe(),
-                patient.getAssurance(),
-                patient.getDateModification(),
-                patient.getId()
-        );
-        log.info("✓ Patient ID {} mise à jour", patient.getId());
+    public void update(Patient p) {
+        String sql = "UPDATE Patient SET nom = ?, prenom = ?, adresse = ?, telephone = ?, email = ?, dateNaissance = ?, sexe = ?, assurance = ? WHERE id = ?";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, p.getNom());
+            stmt.setString(2, p.getPrenom());
+            stmt.setString(3, p.getAdresse());
+            stmt.setString(4, p.getTelephone());
+            stmt.setString(5, p.getEmail());
+            stmt.setDate(6, p.getDateNaissance() != null ? Date.valueOf(p.getDateNaissance()) : null);
+            stmt.setString(7, p.getSexe() != null ? p.getSexe().name() : null);
+            stmt.setString(8, p.getAssurance() != null ? p.getAssurance().name() : null);
+
+            stmt.setLong(9, p.getId());
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public void delete(Patient patient) {
-        if (patient != null && patient.getId() != null) {
-            deleteById(patient.getId());
+    public void delete(Patient p) {
+        if (p != null && p.getId() != null) {
+            deleteById(p.getId());
         }
     }
 
     @Override
     public void deleteById(Long id) {
-        log.info("Suppression du patient ID: {}", id);
-        String sql = buildDeleteQuery("id = ?");
-        int rowsAffected = executeUpdate(sql, id);
-        log.info("✓ {} patient(s) supprimé(s)", rowsAffected);
-    }
-
-    @Override
-    public List<Patient> findByNom(String nom) {
-        log.info("Recherche des patients avec le nom: {}", nom);
-        String sql = buildSelectQuery("nom LIKE ?");
-        return executeQuery(sql, "%" + nom + "%");
-    }
-
-    @Override
-    public List<Patient> findByPrenom(String prenom) {
-        log.info("Recherche des patients avec le prénom: {}", prenom);
-        String sql = buildSelectQuery("prenom LIKE ?");
-        return executeQuery(sql, "%" + prenom + "%");
-    }
-
-    @Override
-    public List<Patient> findByEmail(String email) {
-        log.info("Recherche du patient avec l'email: {}", email);
-        String sql = buildSelectQuery("email = ?");
-        return executeQuery(sql, email);
-    }
-
-    @Override
-    protected Connection getConnection() throws SQLException {
-        return SessionFactory.getInstance().getConnection();
+        String sql = "DELETE FROM Patient WHERE id = ?";
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
-
-

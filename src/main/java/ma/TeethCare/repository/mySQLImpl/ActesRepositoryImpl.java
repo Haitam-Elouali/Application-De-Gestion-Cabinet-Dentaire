@@ -1,82 +1,99 @@
 package ma.TeethCare.repository.mySQLImpl;
 
 import ma.TeethCare.conf.SessionFactory;
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import lombok.extern.slf4j.Slf4j;
 import ma.TeethCare.entities.actes.actes;
-import ma.TeethCare.repository.common.GenericJdbcRepository;
 import ma.TeethCare.repository.api.ActesRepository;
+import ma.TeethCare.repository.common.RowMappers;
 
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-/**
- * Implémentation JDBC MySQL du repository Actes avec réflexion Java.
- * Utilise GenericJdbcRepository pour automatiser les opérations CRUD.
- * 
- * Features:
- * - Chargement du driver MySQL via Class.forName
- * - Mapping automatique par réflexion des champs de classe aux colonnes SQL
- * - Gestion des PreparedStatements et des résultats
- */
-@Slf4j
-public class ActesRepositoryImpl extends GenericJdbcRepository<actes> implements ActesRepository {
-
-    private static final String TABLE_NAME = "ACTES";
-
-    public ActesRepositoryImpl() {
-        super(actes.class, TABLE_NAME);
-        log.info("✓ ActesRepositoryImpl initialisé (MySQL JDBC avec réflexion)");
-    }
+public class ActesRepositoryImpl implements ActesRepository {
 
     @Override
-    public List<actes> findAll() {
-        log.info("Recherche de tous les actes");
-        String sql = buildSelectQuery(null);
-        return executeQuery(sql);
+    public List<actes> findAll() throws SQLException {
+        System.out.println("Recherche de tous les actes");
+        String sql = "SELECT * FROM ACTES";
+        List<actes> results = new ArrayList<>();
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                results.add(RowMappers.mapActes(rs));
+            }
+            return results;
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de la recherche des actes: " + e.getMessage());
+            throw e;
+        }
     }
 
     @Override
     public actes findById(Long id) {
-        log.info("Recherche de l'acte avec l'ID: {}", id);
-        String sql = buildSelectQuery("idEntite = ?");
-        return executeSingleQuery(sql, id);
+        System.out.println("Recherche de l'acte avec l'ID: " + id);
+        String sql = "SELECT * FROM ACTES WHERE idEntite = ?";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return RowMappers.mapActes(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de la recherche de l'acte par ID: " + e.getMessage());
+        }
+        return null;
     }
 
     @Override
     public void create(actes acte) {
-        log.info("Création d'un nouvel acte: {}", acte.getLibeller());
-        String sql = buildInsertQuery(List.of("libeller", "categorie", "prixDeBase"));
-        
-        Long generatedId = executeInsertAndGetId(sql,
-                acte.getLibeller(),
-                acte.getCategorie(),
-                acte.getPrixDeBase()
-        );
-        
-        if (generatedId != null) {
-            acte.setIdEntite(generatedId);
-            log.info("✓ Acte créé avec l'ID: {}", generatedId);
+        System.out.println("Création d'un nouvel acte: " + acte.getLibeller());
+        String sql = "INSERT INTO ACTES (libeller, categorie, prixDeBase) VALUES (?, ?, ?)";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            stmt.setString(1, acte.getLibeller());
+            stmt.setString(2, acte.getCategorie());
+            stmt.setDouble(3, acte.getPrixDeBase());
+
+            stmt.executeUpdate();
+
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    acte.setIdEntite(generatedKeys.getLong(1));
+                    System.out.println("✓ Acte créé avec l'ID: " + acte.getIdEntite());
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de la création de l'acte: " + e.getMessage());
         }
     }
 
     @Override
     public void update(actes acte) {
-        log.info("Mise à jour de l'acte ID: {}", acte.getIdEntite());
-        String sql = buildUpdateQuery(
-                List.of("libeller", "categorie", "prixDeBase"),
-                "idEntite = ?"
-        );
-        
-        executeUpdate(sql,
-                acte.getLibeller(),
-                acte.getCategorie(),
-                acte.getPrixDeBase(),
-                acte.getIdEntite()
-        );
-        log.info("✓ Acte ID {} mis à jour", acte.getIdEntite());
+        System.out.println("Mise à jour de l'acte ID: " + acte.getIdEntite());
+        String sql = "UPDATE ACTES SET libeller = ?, categorie = ?, prixDeBase = ? WHERE idEntite = ?";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, acte.getLibeller());
+            stmt.setString(2, acte.getCategorie());
+            stmt.setDouble(3, acte.getPrixDeBase());
+            stmt.setLong(4, acte.getIdEntite());
+
+            stmt.executeUpdate();
+            System.out.println("✓ Acte ID " + acte.getIdEntite() + " mis à jour");
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de la mise à jour de l'acte: " + e.getMessage());
+        }
     }
 
     @Override
@@ -88,25 +105,37 @@ public class ActesRepositoryImpl extends GenericJdbcRepository<actes> implements
 
     @Override
     public void deleteById(Long id) {
-        log.info("Suppression de l'acte ID: {}", id);
-        String sql = buildDeleteQuery("idEntite = ?");
-        executeUpdate(sql, id);
+        System.out.println("Suppression de l'acte ID: " + id);
+        String sql = "DELETE FROM ACTES WHERE idEntite = ?";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de la suppression de l'acte: " + e.getMessage());
+        }
     }
 
     @Override
     public List<actes> findByCategorie(String categorie) {
-        log.info("Recherche des actes par catégorie: {}", categorie);
-        String sql = buildSelectQuery("categorie = ?");
-        List<actes> results = executeQuery(sql, categorie);
-        return results.stream()
-                .filter(a -> a.getCategorie().equalsIgnoreCase(categorie))
-                .collect(Collectors.toList());
-    }
+        System.out.println("Recherche des actes par catégorie: " + categorie);
+        String sql = "SELECT * FROM ACTES WHERE categorie = ?";
+        List<actes> results = new ArrayList<>();
 
-    @Override
-    protected Connection getConnection() throws SQLException {
-        return SessionFactory.getInstance().getConnection();
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, categorie);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    results.add(RowMappers.mapActes(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de la recherche des actes par catégorie: " + e.getMessage());
+        }
+        return results;
     }
 }
-
-

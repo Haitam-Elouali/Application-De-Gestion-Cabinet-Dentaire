@@ -6,5 +6,5 @@ import ma.TeethCare.repository.common.CrudRepository;
 import java.util.Optional;
 
 public interface ConsultationRepository extends CrudRepository<consultation, Long> {
-    Optional<consultation> findByIdConsultation(Long idConsultation);
+
 }

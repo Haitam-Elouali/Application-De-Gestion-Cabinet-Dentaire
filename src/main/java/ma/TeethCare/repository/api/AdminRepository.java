@@ -1,11 +1,10 @@
-package ma.TeethCare.repository.modules.admin;
+package ma.TeethCare.repository.api;
 
 import ma.TeethCare.entities.admin.admin;
-import ma.TeethCare.repository.common.BaseRepository;
+import ma.TeethCare.repository.common.CrudRepository;
+
 import java.util.List;
 
-public interface AdminRepository extends BaseRepository<admin, Long> {
+public interface AdminRepository extends CrudRepository<admin, Long> {
     List<admin> findByDomaine(String domaine) throws Exception;
-    List<admin> findAll() throws Exception;
 }
-

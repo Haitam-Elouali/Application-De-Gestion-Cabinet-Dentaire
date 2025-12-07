@@ -4,168 +4,186 @@ import ma.TeethCare.conf.SessionFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import lombok.extern.slf4j.Slf4j;
 import ma.TeethCare.entities.log.log;
-import ma.TeethCare.repository.common.GenericJdbcRepository;
-import ma.TeethCare.repository.modules.log.LogRepository;
+import ma.TeethCare.repository.api.LogRepository;
+import ma.TeethCare.repository.common.RowMappers;
 
+import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
-public class LogRepositoryImpl extends GenericJdbcRepository<log> 
-        implements LogRepository {
-
-            "useUnicode=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false";
-    private static final String TABLE_NAME = "LOG";
-
-    public LogRepositoryImpl() {
-        super(log.class, TABLE_NAME);
-        log.info("✓ LogRepositoryImpl initialisé avec table: {}", TABLE_NAME);
-    }
+public class LogRepositoryImpl implements LogRepository {
 
     @Override
-    public List<log> findAll() throws Exception {
-        try {
-            String sql = buildSelectQuery(null);
-            log.info("Récupération de tous les logs");
-            List<log> result = executeQuery(sql);
-            log.info("✓ {} log(s) récupéré(s)", result.size());
-            return result;
-        } catch (Exception e) {
-            log.error("✗ Erreur lors de findAll() pour Log", e);
-            throw e;
-        }
-    }
+    public List<log> findAll() throws SQLException {
+        List<log> logList = new ArrayList<>();
+        String sql = "SELECT * FROM Log";
 
-    @Override
-    public log findById(Long id) throws Exception {
-        try {
-            String sql = buildSelectQuery("id = ?");
-            log.info("Recherche du log avec id: {}", id);
-            log result = executeSingleQuery(sql, id);
-            if (result != null) {
-                log.info("✓ Log trouvé avec id: {}", id);
-            } else {
-                log.warn("⚠ Log non trouvé avec id: {}", id);
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                logList.add(RowMappers.mapLog(rs));
             }
-            return result;
-        } catch (Exception e) {
-            log.error("✗ Erreur lors de findById({}) pour Log", id, e);
-            throw e;
+        }
+        return logList;
+    }
+
+    @Override
+    public log findById(Long id) {
+        String sql = "SELECT * FROM Log WHERE idLog = ?";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return RowMappers.mapLog(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public void create(log l) {
+        l.setDateCreation(LocalDate.now());
+        if (l.getCreePar() == null)
+            l.setCreePar("SYSTEM");
+
+        String sql = "INSERT INTO Log (dateCreation, creePar, idLog, action, utilisateur, dateAction, description, adresseIP) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setDate(1, Date.valueOf(l.getDateCreation()));
+            ps.setString(2, l.getCreePar());
+
+            ps.setLong(3, l.getIdLog());
+            ps.setString(4, l.getAction());
+            ps.setString(5, l.getUtilisateur());
+            ps.setTimestamp(6, l.getDateAction() != null ? Timestamp.valueOf(l.getDateAction()) : null);
+            ps.setString(7, l.getDescription());
+            ps.setString(8, l.getAdresseIP());
+
+            ps.executeUpdate();
+
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    l.setIdEntite(generatedKeys.getLong(1));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void create(log entity) throws Exception {
-        try {
-            log.info("Création d'un nouveau log: action={}", entity.getAction());
-            String sql = buildInsertQuery(List.of(
-                    "idLog", "action", "utilisateur", "dateAction", "description", "adresseIP"
-            ));
-            Long id = executeInsertAndGetId(sql,
-                    entity.getIdLog(),
-                    entity.getAction(),
-                    entity.getUtilisateur(),
-                    entity.getDateAction(),
-                    entity.getDescription(),
-                    entity.getAdresseIP()
-            );
-            entity.setId(id);
-            log.info("✓ Log créé avec id: {}", id);
-        } catch (Exception e) {
-            log.error("✗ Erreur lors de create() pour Log", e);
-            throw e;
+    public void update(log l) {
+        l.setDateDerniereModification(LocalDateTime.now());
+        if (l.getModifierPar() == null)
+            l.setModifierPar("SYSTEM");
+
+        String sql = "UPDATE Log SET idLog = ?, action = ?, utilisateur = ?, dateAction = ?, description = ?, adresseIP = ?, dateDerniereModification = ?, modifierPar = ? WHERE idLog = ?";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, l.getIdLog());
+            ps.setString(2, l.getAction());
+            ps.setString(3, l.getUtilisateur());
+            ps.setTimestamp(4, l.getDateAction() != null ? Timestamp.valueOf(l.getDateAction()) : null);
+            ps.setString(5, l.getDescription());
+            ps.setString(6, l.getAdresseIP());
+
+            ps.setTimestamp(7, Timestamp.valueOf(l.getDateDerniereModification()));
+            ps.setString(8, l.getModifierPar());
+
+            ps.setLong(9, l.getIdLog());
+
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
-    public void update(log entity) throws Exception {
-        try {
-            log.info("Mise à jour du log avec id: {}", entity.getId());
-            String sql = buildUpdateQuery(
-                    List.of("action", "utilisateur", "dateAction", "description", "adresseIP"),
-                    "id = ?"
-            );
-            executeUpdate(sql,
-                    entity.getAction(),
-                    entity.getUtilisateur(),
-                    entity.getDateAction(),
-                    entity.getDescription(),
-                    entity.getAdresseIP(),
-                    entity.getId()
-            );
-            log.info("✓ Log mis à jour avec id: {}", entity.getId());
-        } catch (Exception e) {
-            log.error("✗ Erreur lors de update() pour Log", e);
-            throw e;
+    public void delete(log l) {
+        if (l != null && l.getIdLog() != null) {
+            deleteById(l.getIdLog());
         }
     }
 
     @Override
-    public void delete(log entity) throws Exception {
-        deleteById(entity.getId());
-    }
-
-    @Override
-    public void deleteById(Long id) throws Exception {
-        try {
-            log.info("Suppression du log avec id: {}", id);
-            String sql = buildDeleteQuery("id = ?");
-            executeUpdate(sql, id);
-            log.info("✓ Log supprimé avec id: {}", id);
-        } catch (Exception e) {
-            log.error("✗ Erreur lors de deleteById({}) pour Log", id, e);
-            throw e;
+    public void deleteById(Long id) {
+        String sql = "DELETE FROM Log WHERE idLog = ?";
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
-    public List<log> findByUtilisateur(String utilisateur) throws Exception {
-        try {
-            log.info("Recherche des logs pour l'utilisateur: {}", utilisateur);
-            String sql = buildSelectQuery("utilisateur = ?");
-            List<log> result = executeQuery(sql, utilisateur);
-            log.info("✓ {} log(s) trouvé(s) pour l'utilisateur: {}", result.size(), utilisateur);
-            return result;
-        } catch (Exception e) {
-            log.error("✗ Erreur lors de findByUtilisateur({}) pour Log", utilisateur, e);
-            throw e;
+    public List<log> findByUtilisateur(String utilisateur) throws SQLException {
+        List<log> logList = new ArrayList<>();
+        String sql = "SELECT * FROM Log WHERE utilisateur = ?";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, utilisateur);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    logList.add(RowMappers.mapLog(rs));
+                }
+            }
         }
+        return logList;
     }
 
     @Override
-    public List<log> findByAction(String action) throws Exception {
-        try {
-            log.info("Recherche des logs pour l'action: {}", action);
-            String sql = buildSelectQuery("action = ?");
-            List<log> result = executeQuery(sql, action);
-            log.info("✓ {} log(s) trouvé(s) pour l'action: {}", result.size(), action);
-            return result;
-        } catch (Exception e) {
-            log.error("✗ Erreur lors de findByAction({}) pour Log", action, e);
-            throw e;
+    public List<log> findByAction(String action) throws SQLException {
+        List<log> logList = new ArrayList<>();
+        String sql = "SELECT * FROM Log WHERE action = ?";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, action);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    logList.add(RowMappers.mapLog(rs));
+                }
+            }
         }
+        return logList;
     }
 
     @Override
-    public List<log> findByDateRange(LocalDateTime debut, LocalDateTime fin) throws Exception {
-        try {
-            log.info("Recherche des logs entre {} et {}", debut, fin);
-            String sql = buildSelectQuery("dateAction BETWEEN ? AND ?");
-            List<log> result = executeQuery(sql, debut, fin);
-            log.info("✓ {} log(s) trouvé(s) dans la plage de dates", result.size());
-            return result;
-        } catch (Exception e) {
-            log.error("✗ Erreur lors de findByDateRange({}, {}) pour Log", debut, fin, e);
-            throw e;
-        }
-    }
+    public List<log> findByDateRange(LocalDateTime debut, LocalDateTime fin) throws SQLException {
+        List<log> logList = new ArrayList<>();
+        String sql = "SELECT * FROM Log WHERE dateAction BETWEEN ? AND ?";
 
-    @Override
-    protected Connection getConnection() throws SQLException {
-        return SessionFactory.getInstance().getConnection();
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setTimestamp(1, Timestamp.valueOf(debut));
+            ps.setTimestamp(2, Timestamp.valueOf(fin));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    logList.add(RowMappers.mapLog(rs));
+                }
+            }
+        }
+        return logList;
     }
 }
-
-
