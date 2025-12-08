@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
+import ma.TeethCare.entities.medecin.medecin;
+import ma.TeethCare.entities.actes.actes;
+import ma.TeethCare.entities.consultation.consultation;
 
 @Data
 @AllArgsConstructor
@@ -17,4 +20,8 @@ public class interventionMedecin extends baseEntity {
     private Long consultationId;
     private Double prixDePatient;
     private Integer numDent;
+    
+    private medecin medecin;
+    private actes acte;
+    private consultation consultation;
 }

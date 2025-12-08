@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
+import ma.TeethCare.entities.facture.facture;
 
 import java.time.LocalDateTime;
 
@@ -19,4 +20,6 @@ public class revenues extends baseEntity {
     private String description;
     private Double montant;
     private LocalDateTime date;
+    
+    private facture facture;
 }

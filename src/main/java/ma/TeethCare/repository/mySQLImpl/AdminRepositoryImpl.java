@@ -13,7 +13,7 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     @Override
     public List<admin> findAll() throws SQLException {
-        String sql = "SELECT * FROM ADMIN";
+        String sql = "SELECT * FROM Admin";
         System.out.println("Récupération de tous les admins");
         List<admin> results = new ArrayList<>();
 
@@ -35,7 +35,7 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     @Override
     public admin findById(Long id) {
-        String sql = "SELECT * FROM ADMIN WHERE id = ?";
+        String sql = "SELECT * FROM Admin WHERE idAdmin = ?";
         System.out.println("Recherche de l'admin avec id: " + id);
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
@@ -61,8 +61,8 @@ public class AdminRepositoryImpl implements AdminRepository {
     @Override
     public void create(admin entity) {
         System.out.println("Création d'un nouveau admin: domaine=" + entity.getDomaine());
-        String sql = "INSERT INTO ADMIN"
-                + " (permissionAdmin, domaine, nom, email, telephone, dateCreation, dateModification) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Admin"
+                + " (permissionAdmin, domaine, nom, email, tel, dateCreation, dateDerniereModification) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -74,7 +74,7 @@ public class AdminRepositoryImpl implements AdminRepository {
             stmt.setString(4, entity.getEmail());
             stmt.setString(5, entity.getTel()); // Changed from getTelephone to getTel
             stmt.setObject(6, entity.getDateCreation());
-            stmt.setObject(7, entity.getDateDerniereModification()); // Changed from getDateModification to
+            stmt.setObject(7, entity.getDateDerniereModification());
                                                                      // getDateDerniereModification
 
             stmt.executeUpdate();
@@ -82,7 +82,7 @@ public class AdminRepositoryImpl implements AdminRepository {
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     Long id = generatedKeys.getLong(1);
-                    entity.setIdEntite(id); // Changed setId to setIdEntite
+                    entity.setIdUser(id);
                     System.out.println("✓ Admin créé avec id: " + id);
                 }
             }
@@ -95,8 +95,8 @@ public class AdminRepositoryImpl implements AdminRepository {
     @Override
     public void update(admin entity) {
         System.out.println("Mise à jour de l'admin avec id: " + entity.getIdEntite());
-        String sql = "UPDATE ADMIN"
-                + " SET permissionAdmin = ?, domaine = ?, nom = ?, email = ?, telephone = ?, dateModification = ? WHERE id = ?";
+        String sql = "UPDATE Admin"
+                + " SET permissionAdmin = ?, domaine = ?, nom = ?, email = ?, tel = ?, dateDerniereModification = ? WHERE idAdmin = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -108,7 +108,7 @@ public class AdminRepositoryImpl implements AdminRepository {
             stmt.setString(4, entity.getEmail());
             stmt.setString(5, entity.getTel());
             stmt.setObject(6, entity.getDateDerniereModification());
-            stmt.setLong(7, entity.getIdEntite());
+            stmt.setLong(7, entity.getIdUser());
 
             stmt.executeUpdate();
             System.out.println("✓ Admin mis à jour avec id: " + entity.getIdEntite());
@@ -121,13 +121,13 @@ public class AdminRepositoryImpl implements AdminRepository {
     @Override
     public void delete(admin entity) {
         if (entity != null)
-            deleteById(entity.getIdEntite());
+            deleteById(entity.getIdUser());
     }
 
     @Override
     public void deleteById(Long id) {
         System.out.println("Suppression de l'admin avec id: " + id);
-        String sql = "DELETE FROM ADMIN WHERE id = ?";
+        String sql = "DELETE FROM Admin WHERE idAdmin = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -143,7 +143,7 @@ public class AdminRepositoryImpl implements AdminRepository {
     @Override
     public List<admin> findByDomaine(String domaine) throws Exception {
         System.out.println("Recherche des admins pour le domaine: " + domaine);
-        String sql = "SELECT * FROM ADMIN WHERE domaine = ?";
+        String sql = "SELECT * FROM Admin WHERE domaine = ?";
         List<admin> results = new ArrayList<>();
 
         try (Connection conn = SessionFactory.getInstance().getConnection();

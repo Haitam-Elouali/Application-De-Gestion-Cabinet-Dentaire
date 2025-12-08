@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
+import ma.TeethCare.entities.ordonnance.ordonnance;
+import ma.TeethCare.entities.medicaments.medicaments;
 
 @Data
 @AllArgsConstructor
@@ -17,4 +19,7 @@ public class prescription extends baseEntity {
     private int quantite;
     private String frequence;
     private int dureeEnjours;
+    
+    private ordonnance ordonnance;
+    private medicaments medicament;
 }

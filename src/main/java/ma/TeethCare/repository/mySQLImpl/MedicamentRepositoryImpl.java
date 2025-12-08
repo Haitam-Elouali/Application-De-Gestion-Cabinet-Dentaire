@@ -81,7 +81,7 @@ public class MedicamentRepositoryImpl implements MedicamentRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    m.setIdEntite(generatedKeys.getLong(1));
+                    m.setIdMed(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

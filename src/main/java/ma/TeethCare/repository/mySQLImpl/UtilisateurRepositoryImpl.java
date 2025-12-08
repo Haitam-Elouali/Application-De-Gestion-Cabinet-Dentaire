@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import ma.TeethCare.entities.utilisateur.utilisateur;
-import ma.TeethCare.entities.enums.Sexe;
+import ma.TeethCare.common.enums.Sexe;
 import ma.TeethCare.repository.api.UtilisateurRepository;
 import ma.TeethCare.repository.common.RowMappers;
 
@@ -86,7 +86,7 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    u.setIdEntite(generatedKeys.getLong(1));
+                    u.setIdUser(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

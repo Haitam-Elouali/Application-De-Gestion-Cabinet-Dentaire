@@ -5,6 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
+import ma.TeethCare.entities.utilisateur.utilisateur;
+import ma.TeethCare.entities.medicaments.medicaments;
+import ma.TeethCare.entities.revenues.revenues;
+import ma.TeethCare.entities.charges.charges;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -23,4 +28,9 @@ public class cabinetMedicale extends baseEntity {
     private String instagram;
     private String facebook;
     private String description;
+    
+    private List<utilisateur> staff;
+    private List<medicaments> stock;
+    private List<revenues> revenues;
+    private List<charges> charges;
 }

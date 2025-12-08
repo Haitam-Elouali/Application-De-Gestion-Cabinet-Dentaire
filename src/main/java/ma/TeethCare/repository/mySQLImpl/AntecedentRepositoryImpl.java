@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import ma.TeethCare.entities.antecedent.antecedent;
-import ma.TeethCare.entities.enums.niveauDeRisque;
+import ma.TeethCare.common.enums.niveauDeRisque;
 import ma.TeethCare.repository.api.AntecedentRepository;
 import ma.TeethCare.repository.common.RowMappers;
 
@@ -79,7 +79,7 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    a.setIdEntite(generatedKeys.getLong(1));
+                    a.setIdAntecedent(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

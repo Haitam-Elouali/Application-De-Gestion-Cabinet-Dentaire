@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import ma.TeethCare.entities.consultation.consultation;
-import ma.TeethCare.entities.enums.Statut;
+import ma.TeethCare.common.enums.Statut;
 import ma.TeethCare.repository.api.ConsultationRepository;
 import ma.TeethCare.repository.common.RowMappers;
 
@@ -83,7 +83,7 @@ public class ConsultationRepositoryImpl implements ConsultationRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    c.setIdEntite(generatedKeys.getLong(1));
+                    c.setIdConsultation(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

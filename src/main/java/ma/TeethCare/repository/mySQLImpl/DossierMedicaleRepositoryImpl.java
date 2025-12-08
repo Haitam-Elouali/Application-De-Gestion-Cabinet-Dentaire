@@ -77,7 +77,7 @@ public class DossierMedicaleRepositoryImpl implements DossierMedicaleRepository 
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    d.setIdEntite(generatedKeys.getLong(1));
+                    d.setIdDM(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

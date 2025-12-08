@@ -5,7 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
-import ma.TeethCare.entities.enums.Statut;
+import ma.TeethCare.entities.baseEntity.baseEntity;
+import ma.TeethCare.common.enums.Statut;
+import ma.TeethCare.entities.patient.Patient;
+import ma.TeethCare.entities.medecin.medecin;
+import ma.TeethCare.entities.consultation.consultation;
+import ma.TeethCare.entities.dossierMedicale.dossierMedicale;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -23,4 +28,9 @@ public class rdv extends baseEntity {
     private String motif;
     private Statut statut;
     private String noteMedecin;
+    
+    private Patient patient;
+    private medecin medecin;
+    private consultation consultation;
+    private dossierMedicale dossierMedicale;
 }

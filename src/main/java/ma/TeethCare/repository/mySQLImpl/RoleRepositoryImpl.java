@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import ma.TeethCare.entities.role.role;
-import ma.TeethCare.entities.enums.Libeller;
+import ma.TeethCare.common.enums.Libeller;
 import ma.TeethCare.repository.api.RoleRepository;
 import ma.TeethCare.repository.common.RowMappers;
 
@@ -78,7 +78,7 @@ public class RoleRepositoryImpl implements RoleRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    r.setIdEntite(generatedKeys.getLong(1));
+                    r.setIdRole(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

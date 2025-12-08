@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import ma.TeethCare.entities.facture.facture;
-import ma.TeethCare.entities.enums.Statut;
+import ma.TeethCare.common.enums.Statut;
 import ma.TeethCare.repository.api.FactureRepository;
 import ma.TeethCare.repository.common.RowMappers;
 
@@ -83,7 +83,7 @@ public class FactureRepositoryImpl implements FactureRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    f.setIdEntite(generatedKeys.getLong(1));
+                    f.setIdFacture(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

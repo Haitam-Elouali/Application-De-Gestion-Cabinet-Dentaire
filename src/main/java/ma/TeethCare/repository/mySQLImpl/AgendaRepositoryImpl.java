@@ -5,8 +5,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import ma.TeethCare.entities.agenda.agenda;
-import ma.TeethCare.entities.enums.Jour;
-import ma.TeethCare.entities.enums.Mois;
+import ma.TeethCare.common.enums.Jour;
+import ma.TeethCare.common.enums.Mois;
 import ma.TeethCare.repository.api.AgendaRepository;
 import ma.TeethCare.repository.common.RowMappers;
 
@@ -63,7 +63,7 @@ public class AgendaRepositoryImpl implements AgendaRepository {
         if (a.getCreePar() == null)
             a.setCreePar("SYSTEM");
 
-        String sql = "INSERT INTO Agenda (dateCreation, creePar, idAgenda, medecinId, mois, joursDisponible, dateDebut, dateFin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Agenda (dateCreation, creePar, medecinId, mois, joursDisponible, dateDebut, dateFin) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -71,9 +71,9 @@ public class AgendaRepositoryImpl implements AgendaRepository {
             ps.setDate(1, Date.valueOf(a.getDateCreation()));
             ps.setString(2, a.getCreePar());
 
-            ps.setLong(3, a.getIdAgenda());
-            ps.setLong(4, a.getMedecinId());
-            ps.setString(5, a.getMois() != null ? a.getMois().name() : null);
+
+            ps.setLong(3, a.getMedecinId());
+            ps.setString(4, a.getMois() != null ? a.getMois().name() : null);
 
             String joursStr = null;
             if (a.getJoursDisponible() != null && !a.getJoursDisponible().isEmpty()) {
@@ -81,16 +81,16 @@ public class AgendaRepositoryImpl implements AgendaRepository {
                         .map(Enum::name)
                         .collect(Collectors.joining(","));
             }
-            ps.setString(6, joursStr);
+            ps.setString(5, joursStr);
 
-            ps.setDate(7, a.getDateDebut() != null ? Date.valueOf(a.getDateDebut()) : null);
-            ps.setDate(8, a.getDateFin() != null ? Date.valueOf(a.getDateFin()) : null);
+            ps.setDate(6, a.getDateDebut() != null ? Date.valueOf(a.getDateDebut()) : null);
+            ps.setDate(7, a.getDateFin() != null ? Date.valueOf(a.getDateFin()) : null);
 
             ps.executeUpdate();
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    a.setIdEntite(generatedKeys.getLong(1));
+                    a.setIdAgenda(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {
@@ -104,14 +104,14 @@ public class AgendaRepositoryImpl implements AgendaRepository {
         if (a.getModifierPar() == null)
             a.setModifierPar("SYSTEM");
 
-        String sql = "UPDATE Agenda SET idAgenda = ?, medecinId = ?, mois = ?, joursDisponible = ?, dateDebut = ?, dateFin = ?, dateDerniereModification = ?, modifierPar = ? WHERE idAgenda = ?";
+        String sql = "UPDATE Agenda SET medecinId = ?, mois = ?, joursDisponible = ?, dateDebut = ?, dateFin = ?, dateDerniereModification = ?, modifierPar = ? WHERE idAgenda = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setLong(1, a.getIdAgenda());
-            ps.setLong(2, a.getMedecinId());
-            ps.setString(3, a.getMois() != null ? a.getMois().name() : null);
+
+            ps.setLong(1, a.getMedecinId());
+            ps.setString(2, a.getMois() != null ? a.getMois().name() : null);
 
             String joursStr = null;
             if (a.getJoursDisponible() != null && !a.getJoursDisponible().isEmpty()) {
@@ -119,15 +119,15 @@ public class AgendaRepositoryImpl implements AgendaRepository {
                         .map(Enum::name)
                         .collect(Collectors.joining(","));
             }
-            ps.setString(4, joursStr);
+            ps.setString(3, joursStr);
 
-            ps.setDate(5, a.getDateDebut() != null ? Date.valueOf(a.getDateDebut()) : null);
-            ps.setDate(6, a.getDateFin() != null ? Date.valueOf(a.getDateFin()) : null);
+            ps.setDate(4, a.getDateDebut() != null ? Date.valueOf(a.getDateDebut()) : null);
+            ps.setDate(5, a.getDateFin() != null ? Date.valueOf(a.getDateFin()) : null);
 
-            ps.setTimestamp(7, Timestamp.valueOf(a.getDateDerniereModification()));
-            ps.setString(8, a.getModifierPar());
+            ps.setTimestamp(6, Timestamp.valueOf(a.getDateDerniereModification()));
+            ps.setString(7, a.getModifierPar());
 
-            ps.setLong(9, a.getIdAgenda());
+            ps.setLong(8, a.getIdAgenda());
 
             ps.executeUpdate();
         } catch (SQLException e) {

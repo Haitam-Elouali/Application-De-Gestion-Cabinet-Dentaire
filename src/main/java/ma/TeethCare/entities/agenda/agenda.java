@@ -5,8 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
-import ma.TeethCare.entities.enums.Jour;
-import ma.TeethCare.entities.enums.Mois;
+import ma.TeethCare.common.enums.Jour;
+import ma.TeethCare.common.enums.Mois;
+import ma.TeethCare.entities.medecin.medecin;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,4 +23,6 @@ public class agenda extends baseEntity {
     private List<Jour> joursDisponible;
     private LocalDate dateDebut;
     private LocalDate dateFin;
+    
+    private medecin medecin;
 }

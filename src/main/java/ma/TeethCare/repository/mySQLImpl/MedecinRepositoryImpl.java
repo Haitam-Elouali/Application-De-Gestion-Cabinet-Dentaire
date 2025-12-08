@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import ma.TeethCare.entities.medecin.medecin;
-import ma.TeethCare.entities.enums.Sexe;
+import ma.TeethCare.common.enums.Sexe;
 import ma.TeethCare.repository.api.MedecinRepository;
 import ma.TeethCare.repository.common.RowMappers;
 
@@ -98,7 +98,7 @@ public class MedecinRepositoryImpl implements MedecinRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    m.setIdEntite(generatedKeys.getLong(1));
+                    m.setIdMedecin(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

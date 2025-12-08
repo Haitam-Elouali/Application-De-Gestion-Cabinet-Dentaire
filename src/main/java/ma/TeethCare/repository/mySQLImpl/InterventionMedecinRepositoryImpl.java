@@ -80,7 +80,7 @@ public class InterventionMedecinRepositoryImpl implements InterventionMedecinRep
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    i.setIdEntite(generatedKeys.getLong(1));
+                    i.setIdIM(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

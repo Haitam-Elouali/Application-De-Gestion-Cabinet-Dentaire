@@ -5,9 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
-import ma.TeethCare.entities.enums.Statut;
-
+import ma.TeethCare.common.enums.Statut;
+import ma.TeethCare.entities.consultation.consultation;
+import ma.TeethCare.entities.situationFinanciere.situationFinanciere;
+import ma.TeethCare.entities.revenues.revenues;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -22,4 +25,8 @@ public class facture extends baseEntity {
     private Double reste;
     private Statut statut;
     private LocalDateTime dateFacture;
+    
+    private consultation consultation;
+    private situationFinanciere situationFinanciere;
+    private List<revenues> revenues;
 }

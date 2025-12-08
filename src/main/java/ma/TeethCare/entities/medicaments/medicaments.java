@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
-
+import ma.TeethCare.entities.prescription.prescription;
+import java.util.List;
+  
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,4 +21,6 @@ public class medicaments extends baseEntity {
     private boolean remboursable;
     private Double prixUnitaire;
     private String description;
+    
+    private List<prescription> prescriptions;
 }

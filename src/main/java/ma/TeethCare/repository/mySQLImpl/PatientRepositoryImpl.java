@@ -6,6 +6,7 @@ import ma.TeethCare.repository.api.PatientRepository;
 import ma.TeethCare.repository.common.RowMappers;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,14 +53,14 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public void create(Patient p) {
-        p.setDateCreation(LocalDateTime.now());
+        p.setDateCreation(LocalDate.now());
 
         String sql = "INSERT INTO Patient (dateCreation, nom, prenom, adresse, telephone, email, dateNaissance, sexe, assurance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setTimestamp(1, Timestamp.valueOf(p.getDateCreation()));
+            stmt.setDate(1, Date.valueOf(p.getDateCreation()));
             stmt.setString(2, p.getNom());
             stmt.setString(3, p.getPrenom());
             stmt.setString(4, p.getAdresse());
@@ -73,7 +74,7 @@ public class PatientRepositoryImpl implements PatientRepository {
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    p.setId(generatedKeys.getLong(1));
+                    p.setIdEntite(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {
@@ -97,7 +98,7 @@ public class PatientRepositoryImpl implements PatientRepository {
             stmt.setString(7, p.getSexe() != null ? p.getSexe().name() : null);
             stmt.setString(8, p.getAssurance() != null ? p.getAssurance().name() : null);
 
-            stmt.setLong(9, p.getId());
+            stmt.setLong(9, p.getIdEntite());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -107,8 +108,8 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public void delete(Patient p) {
-        if (p != null && p.getId() != null) {
-            deleteById(p.getId());
+        if (p != null && p.getIdEntite() != null) {
+            deleteById(p.getIdEntite());
         }
     }
 

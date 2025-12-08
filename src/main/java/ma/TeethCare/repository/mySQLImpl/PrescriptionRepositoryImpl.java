@@ -80,7 +80,7 @@ public class PrescriptionRepositoryImpl implements PrescriptionRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    p.setIdEntite(generatedKeys.getLong(1));
+                    p.setIdPr(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

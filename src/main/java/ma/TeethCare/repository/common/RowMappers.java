@@ -9,7 +9,7 @@ import ma.TeethCare.entities.facture.facture;
 import ma.TeethCare.entities.log.log;
 import ma.TeethCare.entities.medecin.medecin;
 import ma.TeethCare.entities.patient.Patient;
-import ma.TeethCare.entities.enums.*;
+import ma.TeethCare.common.enums.*;
 import ma.TeethCare.entities.antecedent.antecedent;
 import ma.TeethCare.entities.actes.actes;
 import ma.TeethCare.entities.admin.admin;
@@ -76,7 +76,7 @@ public final class RowMappers {
             Long id = getLongOrNull(rs, "id");
             if (id == null)
                 id = getLongOrNull(rs, "idEntite");
-            p.setId(id);
+            p.setIdEntite(id);
         } catch (Exception e) {
         }
 
@@ -90,9 +90,9 @@ public final class RowMappers {
         if (dn != null)
             p.setDateNaissance(dn.toLocalDate());
 
-        Timestamp dc = rs.getTimestamp("dateCreation");
+        Date dc = rs.getDate("dateCreation");
         if (dc != null)
-            p.setDateCreation(dc.toLocalDateTime());
+            p.setDateCreation(dc.toLocalDate());
 
         String sexeStr = getStringOrNull(rs, "sexe");
         if (sexeStr != null)
@@ -126,7 +126,14 @@ public final class RowMappers {
 
         String niveauRisqueStr = getStringOrNull(rs, "niveauRisque");
         if (niveauRisqueStr != null) {
-            a.setNiveauRisque(ma.TeethCare.entities.enums.niveauDeRisque.valueOf(niveauRisqueStr));
+            a.setNiveauRisque(niveauDeRisque.valueOf(niveauRisqueStr));
+        }
+        
+        Long patientId = getLongOrNull(rs, "patientId");
+        if (patientId != null) {
+            Patient p = new Patient();
+            p.setIdEntite(patientId);
+            a.setPatient(p);
         }
         return a;
     }
@@ -183,6 +190,13 @@ public final class RowMappers {
             Timestamp t = rs.getTimestamp("dateModification");
             if (t != null)
                 entity.setDateDerniereModification(t.toLocalDateTime());
+        }
+        
+        Long cabinetId = getLongOrNull(rs, "cabinetId");
+        if (cabinetId != null) {
+             cabinetMedicale c = new cabinetMedicale();
+             c.setIdEntite(cabinetId);
+             entity.setCabinetMedicale(c);
         }
         return entity;
     }
@@ -241,6 +255,25 @@ public final class RowMappers {
 
         c.setDuree(rs.getInt("dureer"));
         c.setNoteMedecin(getStringOrNull(rs, "noteMedecin"));
+        
+        Long consultId = getLongOrNull(rs, "consultationId");
+        if (consultId != null) {
+            consultation cons = new consultation();
+            cons.setIdEntite(consultId);
+            c.setConsultation(cons);
+        }
+        Long medId = getLongOrNull(rs, "medecinId");
+        if (medId != null) {
+            medecin m = new medecin();
+            m.setIdEntite(medId);
+            c.setMedecin(m);
+        }
+        Long patId = getLongOrNull(rs, "patientId");
+        if (patId != null) {
+            Patient p = new Patient();
+            p.setIdEntite(patId);
+            c.setPatient(p);
+        }
         return c;
     }
 
@@ -266,6 +299,13 @@ public final class RowMappers {
         Timestamp dateSql = rs.getTimestamp("date");
         if (dateSql != null)
             c.setDate(dateSql.toLocalDateTime());
+            
+        Long cabId = getLongOrNull(rs, "cabinetId");
+        if (cabId != null) {
+            cabinetMedicale cab = new cabinetMedicale();
+            cab.setIdEntite(cabId);
+            c.setCabinetMedicale(cab);
+        }
         return c;
     }
 
@@ -294,6 +334,13 @@ public final class RowMappers {
             c.setStatut(Statut.valueOf(statutStr));
 
         c.setObservationMedecin(getStringOrNull(rs, "observationMedecin"));
+        
+        Long rdvId = getLongOrNull(rs, "rdvId");
+        if (rdvId != null) {
+            rdv r = new rdv();
+            r.setIdEntite(rdvId);
+            c.setRdv(r);
+        }
         return c;
     }
 
@@ -319,6 +366,11 @@ public final class RowMappers {
         }
 
         d.setPatientId(getLongOrNull(rs, "patientId"));
+        if (d.getPatientId() != null) {
+            Patient p = new Patient();
+            p.setIdEntite(d.getPatientId());
+            d.setPatient(p);
+        }
         return d;
     }
 
@@ -339,6 +391,25 @@ public final class RowMappers {
         i.setIdIM(getLongOrNull(rs, "idIM"));
         i.setPrixDePatient(rs.getDouble("prixDePatient"));
         i.setNumDent(rs.getInt("numDent"));
+        
+        Long medId = getLongOrNull(rs, "medecinId");
+        if (medId != null) {
+            medecin m = new medecin();
+            m.setIdEntite(medId);
+            i.setMedecin(m);
+        }
+        Long acteId = getLongOrNull(rs, "acteId");
+        if (acteId != null) {
+            actes a = new actes();
+            a.setIdEntite(acteId);
+            i.setActe(a);
+        }
+        Long consId = getLongOrNull(rs, "consultationId");
+        if (consId != null) {
+            consultation cons = new consultation();
+            cons.setIdEntite(consId);
+            i.setConsultation(cons);
+        }
         return i;
     }
 
@@ -384,6 +455,13 @@ public final class RowMappers {
         Date dateSql = rs.getDate("date");
         if (dateSql != null)
             o.setDate(dateSql.toLocalDate());
+            
+        Long consultId = getLongOrNull(rs, "consultationId");
+        if (consultId != null) {
+            consultation c = new consultation();
+            c.setIdEntite(consultId);
+            o.setConsultation(c);
+        }
         return o;
     }
 
@@ -405,6 +483,19 @@ public final class RowMappers {
         p.setQuantite(rs.getInt("quantite"));
         p.setFrequence(getStringOrNull(rs, "frequence"));
         p.setDureeEnjours(rs.getInt("dureeEnjours"));
+        
+        Long ordId = getLongOrNull(rs, "ordonnanceId");
+        if (ordId != null) {
+            ordonnance o = new ordonnance();
+            o.setIdEntite(ordId);
+            p.setOrdonnance(o);
+        }
+        Long medId = getLongOrNull(rs, "medicamentId");
+        if (medId != null) {
+            medicaments m = new medicaments();
+            m.setIdEntite(medId);
+            p.setMedicament(m);
+        }
         return p;
     }
 
@@ -439,6 +530,21 @@ public final class RowMappers {
             r.setStatut(Statut.valueOf(statutStr));
 
         r.setNoteMedecin(getStringOrNull(rs, "noteMedecin"));
+        
+        Long patId = getLongOrNull(rs, "patientId");
+        if (patId != null) {
+            r.setPatientId(patId); 
+            Patient p = new Patient();
+            p.setIdEntite(patId);
+            r.setPatient(p);
+        }
+        Long medId = getLongOrNull(rs, "medecinId");
+        if (medId != null) {
+            r.setMedecinId(medId);
+            medecin m = new medecin();
+            m.setIdEntite(medId);
+            r.setMedecin(m);
+        }
         return r;
     }
 
@@ -463,6 +569,13 @@ public final class RowMappers {
         Timestamp dateSql = rs.getTimestamp("date");
         if (dateSql != null)
             r.setDate(dateSql.toLocalDateTime());
+            
+        Long facId = getLongOrNull(rs, "factureId");
+        if (facId != null) {
+            facture f = new facture();
+            f.setIdEntite(facId);
+            r.setFacture(f);
+        }
         return r;
     }
 
@@ -532,6 +645,13 @@ public final class RowMappers {
             s.setDateRecrutement(dateRecrutementSql.toLocalDate());
 
         s.setSoldeConge(rs.getInt("soldeConge"));
+        
+        Long cabId = getLongOrNull(rs, "cabinetId");
+        if (cabId != null) {
+            cabinetMedicale c = new cabinetMedicale();
+            c.setIdEntite(cabId);
+            s.setCabinetMedicale(c);
+        }
         return s;
     }
 
@@ -561,6 +681,13 @@ public final class RowMappers {
         String promoStr = getStringOrNull(rs, "enPromo");
         if (promoStr != null)
             sf.setEnPromo(Promo.valueOf(promoStr));
+            
+        Long dmId = getLongOrNull(rs, "dossierId"); // Assuming dossierId column
+        if (dmId != null) {
+             dossierMedicale dm = new dossierMedicale();
+             dm.setIdEntite(dmId);
+             sf.setDossierMedicale(dm);
+        }
         return sf;
     }
 
@@ -675,6 +802,13 @@ public final class RowMappers {
 
         l.setDescription(getStringOrNull(rs, "description"));
         l.setAdresseIP(getStringOrNull(rs, "adresseIP"));
+        
+        Long userId = getLongOrNull(rs, "utilisateurId");
+        if (userId != null) {
+            utilisateur u = new utilisateur();
+            u.setIdEntite(userId);
+            l.setUtilisateurEntity(u);
+        }
         return l;
     }
 
@@ -706,6 +840,19 @@ public final class RowMappers {
         Timestamp dateFactureSql = rs.getTimestamp("dateFacture");
         if (dateFactureSql != null)
             f.setDateFacture(dateFactureSql.toLocalDateTime());
+            
+        Long consId = getLongOrNull(rs, "consultationId");
+        if (consId != null) {
+            consultation c = new consultation();
+            c.setIdEntite(consId);
+            f.setConsultation(c);
+        }
+        Long sfId = getLongOrNull(rs, "situationFinanciereId");
+        if (sfId != null) {
+            situationFinanciere sf = new situationFinanciere();
+            sf.setIdEntite(sfId);
+            f.setSituationFinanciere(sf);
+        }
         return f;
     }
 
@@ -786,6 +933,13 @@ public final class RowMappers {
 
         n.setType(getStringOrNull(rs, "type"));
         n.setLue(rs.getBoolean("lue"));
+        
+        Long userId = getLongOrNull(rs, "utilisateurId");
+        if (userId != null) {
+            utilisateur u = new utilisateur();
+            u.setIdEntite(userId);
+            n.setUtilisateur(u);
+        }
         return n;
     }
 
@@ -813,7 +967,13 @@ public final class RowMappers {
 
         c.setModeEncaissement(getStringOrNull(rs, "modeEncaissement"));
         c.setReference(getStringOrNull(rs, "reference"));
-
+        
+        Long facId = getLongOrNull(rs, "factureId");
+        if (facId != null) {
+            facture f = new facture();
+            f.setIdEntite(facId);
+            c.setFacture(f);
+        }
         return c;
     }
 
@@ -859,6 +1019,14 @@ public final class RowMappers {
             a.setJoursDisponible(jours);
         }
 
+
+        
+        Long medId = getLongOrNull(rs, "medecinId");
+        if (medId != null) {
+            medecin m = new medecin();
+            m.setIdEntite(medId);
+            a.setMedecin(m);
+        }
         return a;
     }
 }

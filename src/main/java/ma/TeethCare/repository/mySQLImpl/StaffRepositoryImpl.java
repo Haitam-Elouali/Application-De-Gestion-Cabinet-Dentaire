@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import ma.TeethCare.entities.staff.staff;
-import ma.TeethCare.entities.enums.Sexe;
+import ma.TeethCare.common.enums.Sexe;
 import ma.TeethCare.repository.api.StaffRepository;
 
 import ma.TeethCare.repository.common.RowMappers;

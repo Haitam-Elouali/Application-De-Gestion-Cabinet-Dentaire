@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
+import ma.TeethCare.entities.utilisateur.utilisateur;
 
 import java.time.LocalDateTime;
 
@@ -19,4 +20,6 @@ public class log extends baseEntity {
     private LocalDateTime dateAction;
     private String description;
     private String adresseIP;
+    
+    private utilisateur utilisateurEntity;
 }

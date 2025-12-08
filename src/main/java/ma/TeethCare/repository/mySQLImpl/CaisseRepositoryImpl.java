@@ -80,7 +80,7 @@ public class CaisseRepositoryImpl implements CaisseRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    c.setIdEntite(generatedKeys.getLong(1));
+                    c.setIdCaisse(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

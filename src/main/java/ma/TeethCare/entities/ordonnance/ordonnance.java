@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
-
+import ma.TeethCare.entities.consultation.consultation;
+import ma.TeethCare.entities.prescription.prescription;
+import java.util.List;
 import java.time.LocalDate;
 
 @Data
@@ -20,4 +22,7 @@ public class ordonnance extends baseEntity {
     private LocalDate date;
     private String duree;
     private String frequence;
+    
+    private consultation consultation;
+    private List<prescription> prescriptions;
 }

@@ -76,7 +76,7 @@ public class LogRepositoryImpl implements LogRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    l.setIdEntite(generatedKeys.getLong(1));
+                    l.setIdLog(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

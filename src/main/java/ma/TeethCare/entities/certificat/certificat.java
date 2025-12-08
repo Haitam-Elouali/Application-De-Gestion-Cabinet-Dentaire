@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
+import ma.TeethCare.entities.consultation.consultation;
+import ma.TeethCare.entities.medecin.medecin;
+import ma.TeethCare.entities.patient.Patient;
 
 import java.time.LocalDate;
 
@@ -21,4 +24,8 @@ public class certificat extends baseEntity {
     private LocalDate dateFin;
     private int duree;
     private String noteMedecin;
+    
+    private consultation consultation;
+    private medecin medecin;
+    private Patient patient;
 }

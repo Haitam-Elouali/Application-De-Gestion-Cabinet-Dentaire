@@ -81,7 +81,7 @@ public class OrdonnanceRepositoryImpl implements OrdonnanceRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    o.setIdEntite(generatedKeys.getLong(1));
+                    o.setIdOrd(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

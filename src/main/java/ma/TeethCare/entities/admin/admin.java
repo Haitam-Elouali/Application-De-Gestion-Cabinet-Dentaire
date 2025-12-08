@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.utilisateur.utilisateur;
+import ma.TeethCare.entities.cabinetMedicale.cabinetMedicale;
 
 @Data
 @AllArgsConstructor
@@ -13,4 +14,6 @@ import ma.TeethCare.entities.utilisateur.utilisateur;
 public class admin extends utilisateur {
     private String permissionAdmin;
     private String domaine;
+    
+    private cabinetMedicale cabinetMedicale;
 }

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
+import ma.TeethCare.entities.cabinetMedicale.cabinetMedicale;
 
 import java.time.LocalDateTime;
 
@@ -19,4 +20,6 @@ public class charges extends baseEntity {
     private String categorie;
     private Double montant;
     private LocalDateTime date;
+    
+    private cabinetMedicale cabinetMedicale;
 }

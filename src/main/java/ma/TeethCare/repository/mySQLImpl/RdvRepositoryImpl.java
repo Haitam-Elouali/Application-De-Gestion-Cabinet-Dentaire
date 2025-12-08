@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import ma.TeethCare.entities.rdv.rdv;
-import ma.TeethCare.entities.enums.Statut;
+import ma.TeethCare.common.enums.Statut;
 import ma.TeethCare.repository.api.RdvRepository;
 import ma.TeethCare.repository.common.RowMappers;
 
@@ -83,7 +83,7 @@ public class RdvRepositoryImpl implements RdvRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    r.setIdEntite(generatedKeys.getLong(1));
+                    r.setIdRDV(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {

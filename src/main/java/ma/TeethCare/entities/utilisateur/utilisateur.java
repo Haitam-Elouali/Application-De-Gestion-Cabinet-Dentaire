@@ -5,8 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
-import ma.TeethCare.entities.enums.Sexe;
+import ma.TeethCare.common.enums.Sexe;
 
+import ma.TeethCare.entities.role.role;
+import ma.TeethCare.entities.notification.notification;
+import ma.TeethCare.entities.log.log;
+import java.util.List;
 import java.time.LocalDate;
 
 @Data
@@ -25,4 +29,8 @@ public class utilisateur extends baseEntity {
     private String motDePasse;
     private LocalDate lastLoginDate;
     private LocalDate dateNaissance;
+    
+    private List<role> roles;
+    private List<notification> notifications;
+    private List<log> logs;
 }

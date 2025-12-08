@@ -5,8 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
-import ma.TeethCare.entities.enums.Promo;
-import ma.TeethCare.entities.enums.Statut;
+import ma.TeethCare.common.enums.Promo;
+import ma.TeethCare.common.enums.Statut;
+import ma.TeethCare.entities.dossierMedicale.dossierMedicale;
+import ma.TeethCare.entities.facture.facture;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -21,4 +24,7 @@ public class situationFinanciere extends baseEntity {
     private Double reste;
     private Statut statut;
     private Promo enPromo;
+    
+    private dossierMedicale dossierMedicale;
+    private List<facture> factures;
 }

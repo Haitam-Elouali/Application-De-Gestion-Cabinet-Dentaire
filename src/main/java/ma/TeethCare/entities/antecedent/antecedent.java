@@ -5,7 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
-import ma.TeethCare.entities.enums.niveauDeRisque;
+import ma.TeethCare.common.enums.niveauDeRisque;
+import ma.TeethCare.entities.patient.Patient;
 
 @Data
 @AllArgsConstructor
@@ -17,4 +18,6 @@ public class antecedent extends baseEntity {
     private String nom;
     private String categorie;
     private niveauDeRisque niveauRisque;
+    
+    private Patient patient;
 }

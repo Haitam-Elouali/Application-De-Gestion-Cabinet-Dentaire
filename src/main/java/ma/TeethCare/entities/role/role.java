@@ -5,8 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
-import ma.TeethCare.entities.enums.Libeller;
+import ma.TeethCare.common.enums.Libeller;
+import ma.TeethCare.entities.utilisateur.utilisateur;
 
+import java.util.List;
+  
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,4 +18,6 @@ public class role extends baseEntity {
     private Long idRole;
     private Libeller libeller;
     private String description;
+    
+    private List<utilisateur> utilisateurs;
 }

@@ -79,7 +79,7 @@ public class CertificatRepositoryImpl implements CertificatRepository {
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    c.setIdEntite(generatedKeys.getLong(1));
+                    c.setIdCertif(generatedKeys.getLong(1));
                 }
             }
         } catch (SQLException e) {
