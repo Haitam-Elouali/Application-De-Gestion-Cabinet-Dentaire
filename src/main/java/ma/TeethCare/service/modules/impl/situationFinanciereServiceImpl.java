@@ -1,4 +1,4 @@
-package ma.TeethCare.service.impl;
+package ma.TeethCare.service.modules.impl;
 
 import ma.TeethCare.entities.situationFinanciere.situationFinanciere;
 import ma.TeethCare.service.api.situationFinanciereService;

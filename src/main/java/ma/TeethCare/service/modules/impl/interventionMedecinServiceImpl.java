@@ -1,5 +1,4 @@
-package ma.TeethCare.service.impl;
-
+package ma.TeethCare.service.modules.impl;
 import ma.TeethCare.entities.interventionMedecin.interventionMedecin;
 import ma.TeethCare.service.api.interventionMedecinService;
 import java.util.List;

@@ -1,5 +1,4 @@
-package ma.TeethCare.service.impl;
-
+package ma.TeethCare.service.modules.impl;
 import ma.TeethCare.entities.facture.facture;
 import ma.TeethCare.service.api.factureService;
 import java.util.List;
