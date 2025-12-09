@@ -1,50 +1,58 @@
 package ma.TeethCare.service.modules.impl;
 import ma.TeethCare.entities.facture.facture;
 import ma.TeethCare.service.modules.api.factureService;
+import ma.TeethCare.repository.api.FactureRepository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author ELOUALI Haitam
+ * @date 2025-12-09
+ */
+
 public class factureServiceImpl implements factureService {
+
+    private final FactureRepository repository;
+
+    public factureServiceImpl(FactureRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public facture create(facture entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        repository.create(entity);
+        return entity;
     }
 
     @Override
     public Optional<facture> findById(Long id) throws Exception {
-        // TODO: Implement method
-        return Optional.empty();
+        return Optional.ofNullable(repository.findById(id));
     }
 
     @Override
     public List<facture> findAll() throws Exception {
-        // TODO: Implement method
-        return null;
+        return repository.findAll();
     }
 
     @Override
     public facture update(facture entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        repository.update(entity);
+        return entity;
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        repository.deleteById(id);
+        return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        return repository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        // TODO: Implement method
-        return 0;
+        return repository.findAll().size();
     }
 }
