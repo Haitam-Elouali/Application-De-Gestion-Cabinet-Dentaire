@@ -1,5 +1,4 @@
-package ma.TeethCare.service.api;
-
+package ma.TeethCare.service.modules.api;
 import ma.TeethCare.entities.staff.staff;
 import ma.TeethCare.service.common.BaseService;
 
