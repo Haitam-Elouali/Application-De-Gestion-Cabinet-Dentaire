@@ -1,8 +1,8 @@
 package ma.TeethCare.repository.test;
 
+import ma.TeethCare.common.enums.Promo;
 import ma.TeethCare.entities.situationFinanciere.situationFinanciere;
 import ma.TeethCare.common.enums.Statut;
-import ma.TeethCare.common.enums.EnPromo;
 import ma.TeethCare.repository.mySQLImpl.SituationFinanciereRepositoryImpl;
 import java.sql.SQLException;
 import java.util.List;
@@ -32,8 +32,8 @@ public class SituationFinanciereRepositoryTest {
         sf.setTotalPaye(500.0);
         sf.setCredit(500.0);
         sf.setReste(500.0);
-        sf.setStatut(Statut.EnAttent);
-        sf.setEnPromo(EnPromo.Non);
+        sf.setStatut(Statut.En_attente);
+        sf.setEnPromo(Promo.Fidelite);
         repository.create(sf);
     }
 

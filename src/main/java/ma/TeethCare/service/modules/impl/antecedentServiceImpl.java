@@ -1,6 +1,6 @@
 package ma.TeethCare.service.modules.impl;
 import ma.TeethCare.entities.antecedent.antecedent;
-import ma.TeethCare.service.api.antecedentService;
+import ma.TeethCare.service.modules.api.antecedentService;
 import java.util.List;
 import java.util.Optional;
 

@@ -1,6 +1,6 @@
 package ma.TeethCare.service.modules.impl;
 import ma.TeethCare.entities.rdv.rdv;
-import ma.TeethCare.service.api.rdvService;
+import ma.TeethCare.service.modules.api.rdvService;
 import java.util.List;
 import java.util.Optional;
 

@@ -32,7 +32,7 @@ public class FactureRepositoryTest {
         f.setTotaleFacture(1000.0);
         f.setTotalPaye(500.0);
         f.setReste(500.0);
-        f.setStatut(Statut.EnAttent); // Might be typo in enum "EnAttent" vs "EnAttente"
+        f.setStatut(Statut.En_attente); // Might be typo in enum "EnAttent" vs "EnAttente"
         f.setDateFacture(LocalDateTime.now());
         repository.create(f);
     }

@@ -1,6 +1,6 @@
 package ma.TeethCare.service.modules.impl;
 import ma.TeethCare.entities.certificat.certificat;
-import ma.TeethCare.service.api.certificatService;
+import ma.TeethCare.service.modules.api.certificatService;
 import java.util.List;
 import java.util.Optional;
 

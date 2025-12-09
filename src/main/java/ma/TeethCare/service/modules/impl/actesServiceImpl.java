@@ -1,7 +1,7 @@
 package ma.TeethCare.service.modules.impl;
 
 import ma.TeethCare.entities.actes.actes;
-import ma.TeethCare.service.api.actesService;
+import ma.TeethCare.service.modules.api.actesService;
 import java.util.List;
 import java.util.Optional;
 

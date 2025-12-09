@@ -33,7 +33,7 @@ public class RdvRepositoryTest {
         r.setDate(LocalDate.now().plusDays(1));
         r.setHeure(LocalTime.of(10, 0));
         r.setMotif("Consultation standard");
-        r.setStatut(Statut.EnAttent);
+        r.setStatut(Statut.En_attente);
         r.setNoteMedecin("Premier RDV");
         repository.create(r);
     }
@@ -51,7 +51,7 @@ public class RdvRepositoryTest {
         List<rdv> list = repository.findAll();
         if (!list.isEmpty()) {
             rdv last = list.get(list.size() - 1);
-            last.setStatut(Statut.Confirmer);
+            last.setStatut(Statut.Planifiee);
             repository.update(last);
         }
     }

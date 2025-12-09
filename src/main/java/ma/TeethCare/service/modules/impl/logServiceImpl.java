@@ -1,6 +1,6 @@
 package ma.TeethCare.service.modules.impl;
 import ma.TeethCare.entities.log.log;
-import ma.TeethCare.service.api.logService;
+import ma.TeethCare.service.modules.api.logService;
 import java.util.List;
 import java.util.Optional;
 

@@ -1,7 +1,7 @@
 package ma.TeethCare.service.modules.impl;
 
 import ma.TeethCare.entities.cabinetMedicale.cabinetMedicale;
-import ma.TeethCare.service.api.cabinetMedicaleService;
+import ma.TeethCare.service.modules.api.cabinetMedicaleService;
 import java.util.List;
 import java.util.Optional;
 

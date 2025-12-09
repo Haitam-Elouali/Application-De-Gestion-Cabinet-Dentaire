@@ -31,7 +31,7 @@ public class ConsultationRepositoryTest {
         c.setPatientId(1L); // FK placeholder
         c.setMedecinId(1L); // FK placeholder
         c.setDate(LocalDate.now());
-        c.setStatut(Statut.Confirmer);
+        c.setStatut(Statut.Planifiee);
         c.setObservationMedecin("Rien à signaler");
         c.setDiagnostique("Carie simple");
         repository.create(c);
