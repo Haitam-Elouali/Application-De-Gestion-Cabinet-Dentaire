@@ -1,7 +1,5 @@
 package ma.TeethCare.service.test;
 
-import ma.TeethCare.service.impl.antecedentServiceImpl;
-
 public class AntecedentServiceTest {
 
     public static void main(String[] args) {

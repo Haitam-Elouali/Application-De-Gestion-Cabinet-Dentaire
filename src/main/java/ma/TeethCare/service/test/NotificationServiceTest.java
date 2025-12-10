@@ -1,7 +1,5 @@
 package ma.TeethCare.service.test;
 
-import ma.TeethCare.service.impl.notificationServiceImpl;
-
 public class NotificationServiceTest {
 
     public static void main(String[] args) {

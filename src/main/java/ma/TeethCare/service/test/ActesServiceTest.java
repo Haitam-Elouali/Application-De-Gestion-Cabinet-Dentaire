@@ -1,7 +1,5 @@
 package ma.TeethCare.service.test;
 
-import ma.TeethCare.service.impl.actesServiceImpl;
-
 public class ActesServiceTest {
 
     public static void main(String[] args) {

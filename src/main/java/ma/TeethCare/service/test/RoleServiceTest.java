@@ -1,7 +1,5 @@
 package ma.TeethCare.service.test;
 
-import ma.TeethCare.service.impl.roleServiceImpl;
-
 public class RoleServiceTest {
 
     public static void main(String[] args) {

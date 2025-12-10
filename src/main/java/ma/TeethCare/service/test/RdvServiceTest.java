@@ -1,7 +1,5 @@
 package ma.TeethCare.service.test;
 
-import ma.TeethCare.service.impl.rdvServiceImpl;
-
 public class RdvServiceTest {
 
     public static void main(String[] args) {
