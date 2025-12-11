@@ -1,4 +1,4 @@
-gepackage ma.TeethCare.repository.test;
+package ma.TeethCare.repository.test;
 
 public class TestRepo {
     void insertProcess(){
