@@ -21,7 +21,20 @@ public class RdvRepositoryImpl implements RdvRepository {
     @Override
     public List<rdv> findAll() throws SQLException {
         List<rdv> rdvList = new ArrayList<>();
-        String sql = "SELECT * FROM Rdv";
+        // Table: rdv
+        // Columns: id, numero, date, heure, statut, patient_id, situationfinancier_id
+        // Entity: patientId, medecinId, motif, noteMedecin, date, heure, statut
+        // Mapping:
+        // id -> idEntite, id -> idRDV
+        // patient_id -> patientId
+        // medecinId -> ignored (not in schema)
+        // motif -> ignored (not in schema)
+        // noteMedecin -> ignored (not in schema)
+        // numero -> ? (Entity doesn't have it)
+        String sql = "SELECT t.id as idEntite, t.id as idRDV, t.date, t.heure, t.statut, t.patient_id as patientId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM rdv t " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -39,7 +52,11 @@ public class RdvRepositoryImpl implements RdvRepository {
 
     @Override
     public rdv findById(Long id) {
-        String sql = "SELECT * FROM Rdv WHERE idRDV = ?";
+        String sql = "SELECT t.id as idEntite, t.id as idRDV, t.date, t.heure, t.statut, t.patient_id as patientId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM rdv t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -58,36 +75,74 @@ public class RdvRepositoryImpl implements RdvRepository {
 
     @Override
     public void create(rdv r) {
-        r.setDateCreation(LocalDate.now());
-        if (r.getCreePar() == null)
-            r.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtRdv = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO Rdv (dateCreation, creePar, idRDV, patientId, medecinId, date, heure, motif, statut, noteMedecin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, r.getDateCreation() != null ? r.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, r.getCreePar() != null ? r.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, r.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(r.getDateCreation()));
-            ps.setString(2, r.getCreePar());
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                r.setIdEntite(id);
+                r.setIdRDV(id);
+            } else {
+                throw new SQLException("Creating Entite for RDV failed, no ID obtained.");
+            }
 
-            ps.setLong(3, r.getIdRDV());
-            ps.setLong(4, r.getPatientId());
-            ps.setLong(5, r.getMedecinId());
-            ps.setDate(6, r.getDate() != null ? Date.valueOf(r.getDate()) : null);
-            ps.setTime(7, r.getHeure() != null ? Time.valueOf(r.getHeure()) : null);
-            ps.setString(8, r.getMotif());
-            ps.setString(9, r.getStatut() != null ? r.getStatut().name() : null);
-            ps.setString(10, r.getNoteMedecin());
+            // 2. Insert into Rdv
+            // Schema: id, numero, date, heure, statut, patient_id, situationfinancier_id
+            // Skipping medecinId, motif, noteMedecin as not in schema.
+            // Using "RDV-{id}" for numero as placeholder if needed, or null.
+            String sqlRdv = "INSERT INTO rdv (id, date, heure, statut, patient_id, numero) VALUES (?, ?, ?, ?, ?, ?)";
+            
+            stmtRdv = conn.prepareStatement(sqlRdv);
+            stmtRdv.setLong(1, id);
+            stmtRdv.setDate(2, r.getDate() != null ? Date.valueOf(r.getDate()) : null);
+            stmtRdv.setTime(3, r.getHeure() != null ? Time.valueOf(r.getHeure()) : null);
+            stmtRdv.setString(4, r.getStatut() != null ? r.getStatut().name() : null);
+            stmtRdv.setLong(5, r.getPatientId() != null ? r.getPatientId() : 0);
+            stmtRdv.setString(6, "RDV-"+id); // Generate a numero
 
-            ps.executeUpdate();
+            stmtRdv.executeUpdate();
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    r.setIdRDV(generatedKeys.getLong(1));
+            conn.commit();
+            System.out.println("✓ RDV créé avec id: " + id);
+
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour Rdv: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtRdv != null) stmtRdv.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -96,42 +151,68 @@ public class RdvRepositoryImpl implements RdvRepository {
         r.setDateDerniereModification(LocalDateTime.now());
         if (r.getModifierPar() == null)
             r.setModifierPar("SYSTEM");
+        
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtRdv = null;
 
-        String sql = "UPDATE Rdv SET idRDV = ?, patientId = ?, medecinId = ?, date = ?, heure = ?, motif = ?, statut = ?, noteMedecin = ?, dateDerniereModification = ?, modifierPar = ? WHERE idRDV = ?";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(r.getDateDerniereModification()));
+            stmtEntite.setString(2, r.getModifierPar());
+            stmtEntite.setLong(3, r.getIdEntite());
+            stmtEntite.executeUpdate();
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Update Rdv
+            String sqlRdv = "UPDATE rdv SET date = ?, heure = ?, statut = ?, patient_id = ? WHERE id = ?";
+            stmtRdv = conn.prepareStatement(sqlRdv);
+            stmtRdv.setDate(1, r.getDate() != null ? Date.valueOf(r.getDate()) : null);
+            stmtRdv.setTime(2, r.getHeure() != null ? Time.valueOf(r.getHeure()) : null);
+            stmtRdv.setString(3, r.getStatut() != null ? r.getStatut().name() : null);
+            stmtRdv.setLong(4, r.getPatientId());
+            stmtRdv.setLong(5, r.getIdRDV());
 
-            ps.setLong(1, r.getIdRDV());
-            ps.setLong(2, r.getPatientId());
-            ps.setLong(3, r.getMedecinId());
-            ps.setDate(4, r.getDate() != null ? Date.valueOf(r.getDate()) : null);
-            ps.setTime(5, r.getHeure() != null ? Time.valueOf(r.getHeure()) : null);
-            ps.setString(6, r.getMotif());
-            ps.setString(7, r.getStatut() != null ? r.getStatut().name() : null);
-            ps.setString(8, r.getNoteMedecin());
+            stmtRdv.executeUpdate();
 
-            ps.setTimestamp(9, Timestamp.valueOf(r.getDateDerniereModification()));
-            ps.setString(10, r.getModifierPar());
-
-            ps.setLong(11, r.getIdRDV());
-
-            ps.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtRdv != null) stmtRdv.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void delete(rdv r) {
-        if (r != null && r.getIdRDV() != null) {
-            deleteById(r.getIdRDV());
+        if (r != null && r.getIdEntite() != null) {
+            deleteById(r.getIdEntite());
         }
     }
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Rdv WHERE idRDV = ?";
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -143,27 +224,18 @@ public class RdvRepositoryImpl implements RdvRepository {
 
     @Override
     public Optional<rdv> findByIdRDV(Long idRDV) {
-        String sql = "SELECT * FROM Rdv WHERE idRDV = ?";
-
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setLong(1, idRDV);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(RowMappers.mapRdv(rs));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return Optional.empty();
+        // Delegate to findById as idRDV == idEntite
+        return Optional.ofNullable(findById(idRDV));
     }
 
     @Override
     public List<rdv> findByDate(LocalDate date) {
         List<rdv> rdvList = new ArrayList<>();
-        String sql = "SELECT * FROM Rdv WHERE date = ?";
+        String sql = "SELECT t.id as idEntite, t.id as idRDV, t.date, t.heure, t.statut, t.patient_id as patientId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM rdv t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.date = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

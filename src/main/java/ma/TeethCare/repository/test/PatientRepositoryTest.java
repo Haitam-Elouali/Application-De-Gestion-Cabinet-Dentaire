@@ -30,9 +30,9 @@ public class PatientRepositoryTest {
         Patient p = new Patient();
         p.setNom("PatientTest");
         p.setPrenom("Test");
-        p.setAdresse("Rue de test");
+        // p.setAdresse("Rue de test"); // Not in schema
         p.setTelephone("0612345678");
-        p.setEmail("patient@test.com");
+        // p.setEmail("patient@test.com"); // Not in schema
         p.setDateNaissance(LocalDate.of(1990, 1, 1));
         p.setSexe(Sexe.Homme);
         p.setAssurance(Assurance.CNOPS);
@@ -52,7 +52,8 @@ public class PatientRepositoryTest {
         List<Patient> list = repository.findAll();
         if (!list.isEmpty()) {
             Patient last = list.get(list.size() - 1);
-            last.setAdresse("Nouvelle adresse");
+            last.setNom("Updated Name");
+            // last.setAdresse("Nouvelle adresse"); // Not in schema
             repository.update(last);
         }
     }

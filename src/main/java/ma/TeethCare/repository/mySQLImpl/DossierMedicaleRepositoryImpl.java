@@ -20,7 +20,11 @@ public class DossierMedicaleRepositoryImpl implements DossierMedicaleRepository 
     @Override
     public List<dossierMedicale> findAll() throws SQLException {
         List<dossierMedicale> dmList = new ArrayList<>();
-        String sql = "SELECT * FROM DossierMedicale";
+        // Table: dossiermedicale (id, dateDeCreation, patient_id)
+        String sql = "SELECT t.id as idEntite, t.id as idDM, t.dateDeCreation, t.patient_id as patientId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM dossiermedicale t " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -38,7 +42,11 @@ public class DossierMedicaleRepositoryImpl implements DossierMedicaleRepository 
 
     @Override
     public dossierMedicale findById(Long id) {
-        String sql = "SELECT * FROM DossierMedicale WHERE idDM = ?";
+        String sql = "SELECT t.id as idEntite, t.id as idDM, t.dateDeCreation, t.patient_id as patientId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM dossiermedicale t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -127,37 +135,66 @@ public class DossierMedicaleRepositoryImpl implements DossierMedicaleRepository 
         d.setDateDerniereModification(LocalDateTime.now());
         if (d.getModifierPar() == null)
             d.setModifierPar("SYSTEM");
+        
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtDM = null;
 
-        String sql = "UPDATE DossierMedicale SET idDM = ?, patientId = ?, dateDeCreation = ?, dateDerniereModification = ?, modifierPar = ? WHERE idDM = ?";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(d.getDateDerniereModification()));
+            stmtEntite.setString(2, d.getModifierPar());
+            stmtEntite.setLong(3, d.getIdEntite());
+            stmtEntite.executeUpdate();
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Update DossierMedicale
+            String sqlDM = "UPDATE dossiermedicale SET dateDeCreation = ?, patient_id = ? WHERE id = ?";
+            stmtDM = conn.prepareStatement(sqlDM);
+            stmtDM.setTimestamp(1, d.getDateDeCreation() != null ? Timestamp.valueOf(d.getDateDeCreation()) : null);
+            stmtDM.setLong(2, d.getPatientId());
+            stmtDM.setLong(3, d.getIdDM());
 
-            ps.setLong(1, d.getIdDM());
-            ps.setLong(2, d.getPatientId());
-            ps.setTimestamp(3, d.getDateDeCreation() != null ? Timestamp.valueOf(d.getDateDeCreation()) : null);
+            stmtDM.executeUpdate();
 
-            ps.setTimestamp(4, Timestamp.valueOf(d.getDateDerniereModification()));
-            ps.setString(5, d.getModifierPar());
-
-            ps.setLong(6, d.getIdDM());
-
-            ps.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtDM != null) stmtDM.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void delete(dossierMedicale d) {
-        if (d != null && d.getIdDM() != null) {
-            deleteById(d.getIdDM());
+        if (d != null && d.getIdEntite() != null) {
+            deleteById(d.getIdEntite());
         }
     }
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM DossierMedicale WHERE idDM = ?";
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);

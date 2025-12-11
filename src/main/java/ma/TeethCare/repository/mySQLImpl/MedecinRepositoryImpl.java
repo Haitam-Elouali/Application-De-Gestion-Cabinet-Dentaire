@@ -21,7 +21,14 @@ public class MedecinRepositoryImpl implements MedecinRepository {
     @Override
     public List<medecin> findAll() throws SQLException {
         List<medecin> medecinList = new ArrayList<>();
-        String sql = "SELECT * FROM Medecin";
+        String sql = "SELECT t.id as idEntite, t.id as idMedecin, t.id as idUser, t.specialite, " +
+                     "s.salaire, s.dateRecrutement, s.dateDepart, " + 
+                     "u.nom, u.prenom, u.email, u.tele as tel, u.username as login, u.password as motDePasse, u.sexe, u.dateNaissance, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM medecin t " + 
+                     "JOIN staff s ON t.id = s.id " + 
+                     "JOIN utilisateur u ON t.id = u.id " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -39,7 +46,15 @@ public class MedecinRepositoryImpl implements MedecinRepository {
 
     @Override
     public medecin findById(Long id) {
-        String sql = "SELECT * FROM Medecin WHERE idMedecin = ?";
+        String sql = "SELECT t.id as idEntite, t.id as idMedecin, t.id as idUser, t.specialite, " +
+                     "s.salaire, s.dateRecrutement, s.dateDepart, " + 
+                     "u.nom, u.prenom, u.email, u.tele as tel, u.username as login, u.password as motDePasse, u.sexe, u.dateNaissance, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM medecin t " + 
+                     "JOIN staff s ON t.id = s.id " + 
+                     "JOIN utilisateur u ON t.id = u.id " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -94,8 +109,6 @@ public class MedecinRepositoryImpl implements MedecinRepository {
             stmtUser.setLong(1, id);
             stmtUser.setString(2, m.getNom());
             stmtUser.setString(3, m.getEmail());
-            // Mapping 'tele' -> 'tele' or 'tel'. Schema says 'tele', Entity says 'tel'. 
-            // Previous analysis showed 'tele' in DB.
             stmtUser.setString(4, m.getTel());
             stmtUser.setString(5, m.getLogin());
             stmtUser.setString(6, m.getMotDePasse());
@@ -104,7 +117,6 @@ public class MedecinRepositoryImpl implements MedecinRepository {
             stmtUser.executeUpdate();
 
             // 3. Insert into Staff
-            // Staff table: id, salaire, dateRecrutement, dateDepart (no soldeConge/prime in DB based on previous fix)
             String sqlStaff = "INSERT INTO staff (id, salaire, dateRecrutement) VALUES (?, ?, ?)";
             stmtStaff = conn.prepareStatement(sqlStaff);
             stmtStaff.setLong(1, id);
@@ -113,7 +125,6 @@ public class MedecinRepositoryImpl implements MedecinRepository {
             stmtStaff.executeUpdate();
 
             // 4. Insert into Medecin
-            // Medecin table: id, specialite (no numeroOrdre/diplome in DB based on text.txt)
             String sqlMed = "INSERT INTO medecin (id, specialite) VALUES (?, ?)";
             stmtMed = conn.prepareStatement(sqlMed);
             stmtMed.setLong(1, id);
@@ -156,54 +167,88 @@ public class MedecinRepositoryImpl implements MedecinRepository {
         if (m.getModifierPar() == null)
             m.setModifierPar("SYSTEM");
 
-        String sql = "UPDATE Medecin SET idUser = ?, nom = ?, email = ?, adresse = ?, cin = ?, tel = ?, sexe = ?, login = ?, motDePasse = ?, lastLoginDate = ?, dateNaissance = ?, salaire = ?, prime = ?, dateRecrutement = ?, soldeConge = ?, idMedecin = ?, specialite = ?, numeroOrdre = ?, diplome = ?, dateDerniereModification = ?, modifierPar = ? WHERE idMedecin = ?";
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtUser = null;
+        PreparedStatement stmtStaff = null;
+        PreparedStatement stmtMed = null;
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-            ps.setLong(1, m.getIdUser());
-            ps.setString(2, m.getNom());
-            ps.setString(3, m.getEmail());
-            ps.setString(4, m.getAdresse());
-            ps.setString(5, m.getCin());
-            ps.setString(6, m.getTel());
-            ps.setString(7, m.getSexe() != null ? m.getSexe().name() : null);
-            ps.setString(8, m.getLogin());
-            ps.setString(9, m.getMotDePasse());
-            ps.setDate(10, m.getLastLoginDate() != null ? Date.valueOf(m.getLastLoginDate()) : null);
-            ps.setDate(11, m.getDateNaissance() != null ? Date.valueOf(m.getDateNaissance()) : null);
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(m.getDateDerniereModification()));
+            stmtEntite.setString(2, m.getModifierPar());
+            stmtEntite.setLong(3, m.getIdEntite());
+            stmtEntite.executeUpdate();
 
-            ps.setDouble(12, m.getSalaire());
-            ps.setDouble(13, m.getPrime());
-            ps.setDate(14, m.getDateRecrutement() != null ? Date.valueOf(m.getDateRecrutement()) : null);
-            ps.setInt(15, m.getSoldeConge());
+            // Update Utilisateur
+            String sqlUser = "UPDATE utilisateur SET nom = ?, email = ?, tele = ?, username = ?, password = ?, sexe = ?, dateNaissance = ? WHERE id = ?";
+            stmtUser = conn.prepareStatement(sqlUser);
+            stmtUser.setString(1, m.getNom());
+            stmtUser.setString(2, m.getEmail());
+            stmtUser.setString(3, m.getTel());
+            stmtUser.setString(4, m.getLogin());
+            stmtUser.setString(5, m.getMotDePasse());
+            stmtUser.setString(6, m.getSexe() != null ? m.getSexe().name() : null);
+            stmtUser.setObject(7, m.getDateNaissance());
+            stmtUser.setLong(8, m.getIdEntite());
+            stmtUser.executeUpdate();
 
-            ps.setLong(16, m.getIdMedecin());
-            ps.setString(17, m.getSpecialite());
-            ps.setString(18, m.getNumeroOrdre());
-            ps.setString(19, m.getDiplome());
+            // Update Staff
+            String sqlStaff = "UPDATE staff SET salaire = ?, dateRecrutement = ? WHERE id = ?";
+            stmtStaff = conn.prepareStatement(sqlStaff);
+            stmtStaff.setDouble(1, m.getSalaire() != null ? m.getSalaire() : 0.0);
+            stmtStaff.setObject(2, m.getDateRecrutement());
+            stmtStaff.setLong(3, m.getIdEntite());
+            stmtStaff.executeUpdate();
 
-            ps.setTimestamp(20, Timestamp.valueOf(m.getDateDerniereModification()));
-            ps.setString(21, m.getModifierPar());
+            // Update Medecin
+            String sqlMed = "UPDATE medecin SET specialite = ? WHERE id = ?";
+            stmtMed = conn.prepareStatement(sqlMed);
+            stmtMed.setString(1, m.getSpecialite());
+            stmtMed.setLong(2, m.getIdMedecin());
+            stmtMed.executeUpdate();
 
-            ps.setLong(22, m.getIdMedecin());
-
-            ps.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtUser != null) stmtUser.close();
+                if (stmtStaff != null) stmtStaff.close();
+                if (stmtMed != null) stmtMed.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void delete(medecin m) {
-        if (m != null && m.getIdMedecin() != null) {
-            deleteById(m.getIdMedecin());
+        if (m != null && m.getIdEntite() != null) {
+            deleteById(m.getIdEntite());
         }
     }
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Medecin WHERE idMedecin = ?";
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -215,26 +260,21 @@ public class MedecinRepositoryImpl implements MedecinRepository {
 
     @Override
     public Optional<medecin> findByCin(String cin) {
-        String sql = "SELECT * FROM Medecin WHERE cin = ?";
-
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, cin);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(RowMappers.mapMedecin(rs));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // CIN is not in schema. Returning empty.
         return Optional.empty();
     }
 
     @Override
     public Optional<medecin> findByEmail(String email) {
-        String sql = "SELECT * FROM Medecin WHERE email = ?";
+        String sql = "SELECT t.id as idEntite, t.id as idMedecin, t.id as idUser, t.specialite, " +
+                     "s.salaire, s.dateRecrutement, s.dateDepart, " + 
+                     "u.nom, u.prenom, u.email, u.tele as tel, u.username as login, u.password as motDePasse, u.sexe, u.dateNaissance, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM medecin t " + 
+                     "JOIN staff s ON t.id = s.id " + 
+                     "JOIN utilisateur u ON t.id = u.id " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE u.email = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

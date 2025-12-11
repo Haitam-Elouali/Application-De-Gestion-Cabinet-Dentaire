@@ -21,7 +21,10 @@ public class RoleRepositoryImpl implements RoleRepository {
     @Override
     public List<role> findAll() throws SQLException {
         List<role> roleList = new ArrayList<>();
-        String sql = "SELECT * FROM Role";
+        String sql = "SELECT t.id as idRole, t.id as idEntite, t.libelle as libeller, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM Role t " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -30,16 +33,17 @@ public class RoleRepositoryImpl implements RoleRepository {
             while (rs.next()) {
                 roleList.add(RowMappers.mapRole(rs));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw e;
         }
         return roleList;
     }
 
     @Override
     public role findById(Long id) {
-        String sql = "SELECT * FROM Role WHERE idRole = ?";
+        String sql = "SELECT t.id as idRole, t.id as idEntite, t.libelle as libeller, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM Role t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -58,31 +62,68 @@ public class RoleRepositoryImpl implements RoleRepository {
 
     @Override
     public void create(role r) {
-        r.setDateCreation(LocalDate.now());
-        if (r.getCreePar() == null)
-            r.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtRole = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO Role (dateCreation, creePar, idRole, libelle, description) VALUES (?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, r.getDateCreation() != null ? r.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, r.getCreePar() != null ? r.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, r.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(r.getDateCreation()));
-            ps.setString(2, r.getCreePar());
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                r.setIdEntite(id);
+                r.setIdRole(id);
+            } else {
+                throw new SQLException("Creating Entite for Role failed, no ID obtained.");
+            }
 
-            ps.setLong(3, r.getIdRole());
-            ps.setString(4, r.getLibeller() != null ? r.getLibeller().name() : null);
-            ps.setString(5, r.getDescription());
+            // 2. Insert into Role
+            // Schema: id, libelle
+            String sqlRole = "INSERT INTO Role (id, libelle) VALUES (?, ?)";
+            
+            stmtRole = conn.prepareStatement(sqlRole);
+            stmtRole.setLong(1, id);
+            stmtRole.setString(2, r.getLibeller() != null ? r.getLibeller().name() : null);
 
-            ps.executeUpdate();
+            stmtRole.executeUpdate();
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    r.setIdRole(generatedKeys.getLong(1));
+            conn.commit();
+            System.out.println("✓ Role créé avec id: " + id);
+
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour Role: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtRole != null) stmtRole.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -91,24 +132,52 @@ public class RoleRepositoryImpl implements RoleRepository {
         r.setDateDerniereModification(LocalDateTime.now());
         if (r.getModifierPar() == null)
             r.setModifierPar("SYSTEM");
+        
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtRole = null;
 
-        String sql = "UPDATE Role SET idRole = ?, libelle = ?, description = ?, dateDerniereModification = ?, modifierPar = ? WHERE idRole = ?";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(r.getDateDerniereModification()));
+            stmtEntite.setString(2, r.getModifierPar());
+            stmtEntite.setLong(3, r.getIdEntite());
+            stmtEntite.executeUpdate();
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Update Role
+            String sqlRole = "UPDATE Role SET libelle = ? WHERE id = ?";
+            stmtRole = conn.prepareStatement(sqlRole);
+            stmtRole.setString(1, r.getLibeller() != null ? r.getLibeller().name() : null);
+            stmtRole.setLong(2, r.getIdRole());
 
-            ps.setLong(1, r.getIdRole());
-            ps.setString(2, r.getLibeller() != null ? r.getLibeller().name() : null);
-            ps.setString(3, r.getDescription());
+            stmtRole.executeUpdate();
 
-            ps.setTimestamp(4, Timestamp.valueOf(r.getDateDerniereModification()));
-            ps.setString(5, r.getModifierPar());
-
-            ps.setLong(6, r.getIdRole());
-
-            ps.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtRole != null) stmtRole.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -121,7 +190,7 @@ public class RoleRepositoryImpl implements RoleRepository {
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Role WHERE idRole = ?";
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -133,7 +202,11 @@ public class RoleRepositoryImpl implements RoleRepository {
 
     @Override
     public Optional<role> findByLibeller(Libeller libeller) {
-        String sql = "SELECT * FROM Role WHERE libelle = ?";
+        String sql = "SELECT t.id as idRole, t.id as idEntite, t.libelle as libeller, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM Role t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.libelle = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

@@ -4,47 +4,54 @@ import ma.TeethCare.service.modules.api.revenuesService;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author ELOUALI Haitam
+ * @date 2025-12-09
+ */
+
 public class revenuesServiceImpl implements revenuesService {
+    
+    // Dependency Injection would be better, but for now manual instantiation as per pattern
+    private final ma.TeethCare.repository.api.RevenuesRepository revenuesRepository = new ma.TeethCare.repository.mySQLImpl.RevenuesRepositoryImpl();
 
     @Override
     public revenues create(revenues entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        revenuesRepository.create(entity);
+        return entity;
     }
 
     @Override
     public Optional<revenues> findById(Long id) throws Exception {
-        // TODO: Implement method
-        return Optional.empty();
+        return Optional.ofNullable(revenuesRepository.findById(id));
     }
 
     @Override
     public List<revenues> findAll() throws Exception {
-        // TODO: Implement method
-        return null;
+        return revenuesRepository.findAll();
     }
 
     @Override
     public revenues update(revenues entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        revenuesRepository.update(entity);
+        return entity;
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        // TODO: Implement method
+        if (exists(id)) {
+            revenuesRepository.deleteById(id);
+            return true;
+        }
         return false;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        return revenuesRepository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        // TODO: Implement method
-        return 0;
+        return findAll().size();
     }
 }

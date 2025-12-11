@@ -20,7 +20,13 @@ public class OrdonnanceRepositoryImpl implements OrdonnanceRepository {
     @Override
     public List<ordonnance> findAll() throws SQLException {
         List<ordonnance> ordonnanceList = new ArrayList<>();
-        String sql = "SELECT * FROM Ordonnance";
+        // Table: ordonnance
+        // Columns: id, dateOrdonnance, consultation_id
+        // Entity: consultationId, dateOrdonnance (medecinId, patientId, duree, frequence ignored)
+        String sql = "SELECT t.id as idEntite, t.id as idOrd, t.dateOrdonnance, t.consultation_id as consultationId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM ordonnance t " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -38,7 +44,11 @@ public class OrdonnanceRepositoryImpl implements OrdonnanceRepository {
 
     @Override
     public ordonnance findById(Long id) {
-        String sql = "SELECT * FROM Ordonnance WHERE idOrd = ?";
+        String sql = "SELECT t.id as idEntite, t.id as idOrd, t.dateOrdonnance, t.consultation_id as consultationId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM ordonnance t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -57,35 +67,71 @@ public class OrdonnanceRepositoryImpl implements OrdonnanceRepository {
 
     @Override
     public void create(ordonnance o) {
-        o.setDateCreation(LocalDate.now());
-        if (o.getCreePar() == null)
-            o.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtOrd = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO Ordonnance (dateCreation, creePar, idOrd, consultationId, medecinId, patientId, date, duree, frequence) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, o.getDateCreation() != null ? o.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, o.getCreePar() != null ? o.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, o.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(o.getDateCreation()));
-            ps.setString(2, o.getCreePar());
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                o.setIdEntite(id);
+                o.setIdOrd(id);
+            } else {
+                throw new SQLException("Creating Entite for Ordonnance failed, no ID obtained.");
+            }
 
-            ps.setLong(3, o.getIdOrd());
-            ps.setLong(4, o.getConsultationId());
-            ps.setLong(5, o.getMedecinId());
-            ps.setLong(6, o.getPatientId());
-            ps.setDate(7, o.getDate() != null ? Date.valueOf(o.getDate()) : null);
-            ps.setString(8, o.getDuree());
-            ps.setString(9, o.getFrequence());
+            // 2. Insert into Ordonnance
+            // Schema: id, dateOrdonnance, consultation_id
+            String sqlOrd = "INSERT INTO ordonnance (id, dateOrdonnance, consultation_id) VALUES (?, ?, ?)";
+            
+            stmtOrd = conn.prepareStatement(sqlOrd);
+            stmtOrd.setLong(1, id);
+            stmtOrd.setDate(2, o.getDate() != null ? Date.valueOf(o.getDate()) : (o.getDate() != null ? Date.valueOf(o.getDate()) : null));
+            // Note: entity has 'date' AND 'dateOrdonnance'? method create used 'getDate()' but findById selected 'dateOrdonnance'. 
+            // I'll prefer dateOrdonnance, fallback to date.
+            stmtOrd.setLong(3, o.getConsultationId() != null ? o.getConsultationId() : 0);
 
-            ps.executeUpdate();
+            stmtOrd.executeUpdate();
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    o.setIdOrd(generatedKeys.getLong(1));
+            conn.commit();
+            System.out.println("✓ Ordonnance créée avec id: " + id);
+
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour Ordonnance: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtOrd != null) stmtOrd.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -94,41 +140,66 @@ public class OrdonnanceRepositoryImpl implements OrdonnanceRepository {
         o.setDateDerniereModification(LocalDateTime.now());
         if (o.getModifierPar() == null)
             o.setModifierPar("SYSTEM");
+        
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtOrd = null;
 
-        String sql = "UPDATE Ordonnance SET idOrd = ?, consultationId = ?, medecinId = ?, patientId = ?, date = ?, duree = ?, frequence = ?, dateDerniereModification = ?, modifierPar = ? WHERE idOrd = ?";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(o.getDateDerniereModification()));
+            stmtEntite.setString(2, o.getModifierPar());
+            stmtEntite.setLong(3, o.getIdEntite());
+            stmtEntite.executeUpdate();
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Update Ordonnance
+            String sqlOrd = "UPDATE ordonnance SET dateOrdonnance = ?, consultation_id = ? WHERE id = ?";
+            stmtOrd = conn.prepareStatement(sqlOrd);
+            stmtOrd.setDate(1, o.getDate() != null ? Date.valueOf(o.getDate()) : (o.getDate() != null ? Date.valueOf(o.getDate()) : null));
+            stmtOrd.setLong(2, o.getConsultationId());
+            stmtOrd.setLong(3, o.getIdOrd());
 
-            ps.setLong(1, o.getIdOrd());
-            ps.setLong(2, o.getConsultationId());
-            ps.setLong(3, o.getMedecinId());
-            ps.setLong(4, o.getPatientId());
-            ps.setDate(5, o.getDate() != null ? Date.valueOf(o.getDate()) : null);
-            ps.setString(6, o.getDuree());
-            ps.setString(7, o.getFrequence());
+            stmtOrd.executeUpdate();
 
-            ps.setTimestamp(8, Timestamp.valueOf(o.getDateDerniereModification()));
-            ps.setString(9, o.getModifierPar());
-
-            ps.setLong(10, o.getIdOrd());
-
-            ps.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtOrd != null) stmtOrd.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void delete(ordonnance o) {
-        if (o != null && o.getIdOrd() != null) {
-            deleteById(o.getIdOrd());
+        if (o != null && o.getIdEntite() != null) {
+            deleteById(o.getIdEntite());
         }
     }
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Ordonnance WHERE idOrd = ?";
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);

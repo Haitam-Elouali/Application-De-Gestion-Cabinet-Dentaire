@@ -13,42 +13,37 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     @Override
     public List<admin> findAll() throws SQLException {
-        // JOIN Admin, Utilisateur, and Entite to get all fields
-        String sql = "SELECT a.id, u.nom, u.prenom, u.email, u.tele, u.username, u.password, u.sexe, u.dateNaissance, e.dateCreation, e.dateDerniereModification, e.creePar " +
-                     "FROM admin a " +
-                     "JOIN utilisateur u ON a.id = u.id " +
-                     "JOIN entite e ON a.id = e.id";
-        System.out.println("Récupération de tous les admins");
         List<admin> results = new ArrayList<>();
+        String sql = "SELECT t.id as idEntite, t.id, t.permissionAdmin, t.cabinetId, " +
+                     "u.nom, u.prenom, u.email, u.tele as tel, u.username as login, u.password as motDePasse, u.sexe, u.dateNaissance, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM admin t " + 
+                     "JOIN utilisateur u ON t.id = u.id " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                // Manually map since RowMappers might expect different specific columns or flat structure
-                // Or better: update RowMappers to handle this ResultSet. 
-                // For now, let's look at RowMappers again. RowMappers.mapAdmin is barebones.
-                // Let's create an admin object here carefully or delegate to RowMapper if it checks column names safely.
                 results.add(RowMappers.mapAdmin(rs));
             }
-            System.out.println("✓ " + results.size() + " admins récupérés");
-            return results;
         } catch (SQLException e) {
-            System.err.println("✗ Erreur lors de findAll() pour Admin: " + e.getMessage());
             e.printStackTrace();
             throw e;
         }
+        return results;
     }
 
     @Override
     public admin findById(Long id) {
-        String sql = "SELECT a.id, u.nom, u.prenom, u.email, u.tele, u.username, u.password, u.sexe, u.dateNaissance, e.dateCreation, e.dateDerniereModification, e.creePar " +
-                     "FROM admin a " +
-                     "JOIN utilisateur u ON a.id = u.id " +
-                     "JOIN entite e ON a.id = e.id " +
-                     "WHERE a.id = ?";
-        System.out.println("Recherche de l'admin avec id: " + id);
+        String sql = "SELECT t.id as idEntite, t.id, t.permissionAdmin, t.cabinetId, " +
+                     "u.nom, u.prenom, u.email, u.tele as tel, u.username as login, u.password as motDePasse, u.sexe, u.dateNaissance, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM admin t " + 
+                     "JOIN utilisateur u ON t.id = u.id " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -56,15 +51,10 @@ public class AdminRepositoryImpl implements AdminRepository {
             stmt.setLong(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    admin result = RowMappers.mapAdmin(rs);
-                    System.out.println("✓ Admin trouvé avec id: " + id);
-                    return result;
+                    return RowMappers.mapAdmin(rs);
                 }
             }
-            System.out.println("⚠ Admin non trouvé avec id: " + id);
-            return null;
         } catch (SQLException e) {
-            System.err.println("✗ Erreur lors de findById(" + id + ") pour Admin: " + e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -72,8 +62,6 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     @Override
     public void create(admin entity) {
-        System.out.println("Création d'un nouveau admin: " + entity.getNom());
-        
         Connection conn = null;
         PreparedStatement stmtEntite = null;
         PreparedStatement stmtUser = null;
@@ -82,13 +70,13 @@ public class AdminRepositoryImpl implements AdminRepository {
 
         try {
             conn = SessionFactory.getInstance().getConnection();
-            conn.setAutoCommit(false); // Start transaction
+            conn.setAutoCommit(false);
 
             // 1. Insert into Entite
             String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
             stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
-            stmtEntite.setObject(1, entity.getDateCreation() != null ? entity.getDateCreation() : new java.util.Date());
-            stmtEntite.setString(2, entity.getCreePar());
+            stmtEntite.setObject(1, entity.getDateCreation() != null ? entity.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, entity.getCreePar() != null ? entity.getCreePar() : "SYSTEM");
             stmtEntite.setObject(3, entity.getDateDerniereModification());
             stmtEntite.executeUpdate();
 
@@ -99,45 +87,36 @@ public class AdminRepositoryImpl implements AdminRepository {
                 entity.setIdEntite(id);
                 entity.setIdUser(id);
             } else {
-                throw new SQLException("Creating Entite failed, no ID obtained.");
+                throw new SQLException("Creating Entite for Admin failed, no ID obtained.");
             }
 
             // 2. Insert into Utilisateur
-            // Columns: id, nom, email, tele, username, password, sexe, dateNaissance
             String sqlUser = "INSERT INTO utilisateur (id, nom, email, tele, username, password, sexe, dateNaissance) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             stmtUser = conn.prepareStatement(sqlUser);
             stmtUser.setLong(1, id);
             stmtUser.setString(2, entity.getNom());
-            // stmtUser.setString(3, entity.getPrenom()); // Removed
-            stmtUser.setString(3, entity.getEmail());     // Re-indexed 4->3
-            stmtUser.setString(4, entity.getTel());       // Re-indexed 5->4
-            stmtUser.setString(5, entity.getLogin());     // Re-indexed 6->5
-            stmtUser.setString(6, entity.getMotDePasse());// Re-indexed 7->6
-            stmtUser.setString(7, entity.getSexe() != null ? entity.getSexe().name() : null); // Re-indexed 8->7
-            stmtUser.setObject(8, entity.getDateNaissance()); // Re-indexed 9->8
-            // role_id ignored for now or set to default?
-            
+            stmtUser.setString(3, entity.getEmail());
+            stmtUser.setString(4, entity.getTel());
+            stmtUser.setString(5, entity.getLogin());
+            stmtUser.setString(6, entity.getMotDePasse());
+            stmtUser.setString(7, entity.getSexe() != null ? entity.getSexe().name() : null);
+            stmtUser.setObject(8, entity.getDateNaissance());
             stmtUser.executeUpdate();
 
-            // 3. Insert into Staff (Required by DB constraint: Admin -> Staff -> Utilisateur)
-            // Even though Java Admin extends Utilisateur, DB Admin extends Staff.
-            // We insert default values for Staff specific fields.
-            // Staff table columns: id, salaire, dateRecrutement, dateDepart
-            // soldeConge and prime are NOT in the table based on schema inspection.
-            String sqlStaff = "INSERT INTO staff (id, salaire) VALUES (?, 0)";
-            PreparedStatement stmtStaff = conn.prepareStatement(sqlStaff);
-            stmtStaff.setLong(1, id);
-            stmtStaff.executeUpdate();
-            stmtStaff.close();
-
-            // 4. Insert into Admin
-            // Admin table only has 'id'
-            String sqlAdmin = "INSERT INTO admin (id) VALUES (?)";
+            // 3. Insert into Admin
+            // Admin table: id, permissionAdmin, cabinetId
+            String sqlAdmin = "INSERT INTO admin (id, permissionAdmin, cabinetId) VALUES (?, ?, ?)";
             stmtAdmin = conn.prepareStatement(sqlAdmin);
             stmtAdmin.setLong(1, id);
+            stmtAdmin.setString(2, entity.getPermissionAdmin());
+            if (entity.getCabinetMedicale() != null && entity.getCabinetMedicale().getIdEntite() != null) {
+                stmtAdmin.setLong(3, entity.getCabinetMedicale().getIdEntite());
+            } else {
+                stmtAdmin.setObject(3, null);
+            }
             stmtAdmin.executeUpdate();
 
-            conn.commit(); // Commit transaction
+            conn.commit();
             System.out.println("✓ Admin créé avec id: " + id);
 
         } catch (SQLException e) {
@@ -168,46 +147,93 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     @Override
     public void update(admin entity) {
-        // Update Utilisateur table (Admin table has no fields to update)
-        System.out.println("Mise à jour de l'admin avec id: " + entity.getIdEntite());
-        String sql = "UPDATE utilisateur SET nom = ?, email = ?, tele = ? WHERE id = ?"; 
-        // Note: ignoring permission/domaine as they don't exist
-        
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+        entity.setDateDerniereModification(java.time.LocalDateTime.now());
+        if (entity.getModifierPar() == null)
+            entity.setModifierPar("SYSTEM");
+            
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtUser = null;
+        PreparedStatement stmtAdmin = null;
 
-            stmt.setString(1, entity.getNom());
-            stmt.setString(2, entity.getEmail());
-            stmt.setString(3, entity.getTel());
-            stmt.setLong(4, entity.getIdEntite());
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-            stmt.executeUpdate();
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(entity.getDateDerniereModification()));
+            stmtEntite.setString(2, entity.getModifierPar());
+            stmtEntite.setLong(3, entity.getIdEntite());
+            stmtEntite.executeUpdate();
+
+            // Update Utilisateur
+            String sqlUser = "UPDATE utilisateur SET nom = ?, email = ?, tele = ?, username = ?, password = ?, sexe = ?, dateNaissance = ? WHERE id = ?";
+            stmtUser = conn.prepareStatement(sqlUser);
+            stmtUser.setString(1, entity.getNom());
+            stmtUser.setString(2, entity.getEmail());
+            stmtUser.setString(3, entity.getTel());
+            stmtUser.setString(4, entity.getLogin());
+            stmtUser.setString(5, entity.getMotDePasse());
+            stmtUser.setString(6, entity.getSexe() != null ? entity.getSexe().name() : null);
+            stmtUser.setObject(7, entity.getDateNaissance());
+            stmtUser.setLong(8, entity.getIdEntite());
+            stmtUser.executeUpdate();
+
+            // Update Admin (permission, cabinetId)
+            String sqlAdmin = "UPDATE admin SET permissionAdmin = ?, cabinetId = ? WHERE id = ?";
+            stmtAdmin = conn.prepareStatement(sqlAdmin);
+            stmtAdmin.setString(1, entity.getPermissionAdmin());
+            if (entity.getCabinetMedicale() != null && entity.getCabinetMedicale().getIdEntite() != null) {
+                stmtAdmin.setLong(2, entity.getCabinetMedicale().getIdEntite());
+            } else {
+                stmtAdmin.setObject(2, null);
+            }
+            stmtAdmin.setLong(3, entity.getIdEntite());
+            stmtAdmin.executeUpdate();
+
+            conn.commit();
             System.out.println("✓ Admin mis à jour avec id: " + entity.getIdEntite());
         } catch (SQLException e) {
-            System.err.println("✗ Erreur lors de update() pour Admin: " + e.getMessage());
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtUser != null) stmtUser.close();
+                if (stmtAdmin != null) stmtAdmin.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void delete(admin entity) {
-        if (entity != null)
-            deleteById(entity.getIdUser());
+        if (entity != null && entity.getIdEntite() != null) {
+            deleteById(entity.getIdEntite());
+        }
     }
 
     @Override
     public void deleteById(Long id) {
-        System.out.println("Suppression de l'admin avec id: " + id);
-        // Deleting from Entite should cascade delete Utilisateur and Admin if FKs are set correct.
-        // If not, we should delete reversed order manually.
-        // Assuming cascade for now or delete from Entite is safest root deletion.
         String sql = "DELETE FROM entite WHERE id = ?";
-
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
-            System.out.println("✓ Admin (et Entite/Utilisateur) supprimé avec id: " + id);
+            System.out.println("✓ Admin (via Entite) supprimé avec id: " + id);
         } catch (SQLException e) {
             System.err.println("✗ Erreur lors de deleteById(" + id + ") pour Admin: " + e.getMessage());
             e.printStackTrace();
@@ -216,26 +242,8 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     @Override
     public List<admin> findByDomaine(String domaine) throws Exception {
-        System.out.println("Recherche des admins pour le domaine: " + domaine);
-        String sql = "SELECT * FROM Admin WHERE domaine = ?";
-        List<admin> results = new ArrayList<>();
-
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, domaine);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    results.add(RowMappers.mapAdmin(rs));
-                }
-            }
-            System.out.println("✓ " + results.size() + " admin(s) trouvé(s) pour le domaine: " + domaine);
-            return results;
-        } catch (SQLException e) {
-            System.err.println("✗ Erreur lors de findByDomaine(" + domaine + ") pour Admin: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
-        }
+        // Domaine field does not exist in Admin schema. Returning empty list.
+        return new ArrayList<>();
     }
 
 }

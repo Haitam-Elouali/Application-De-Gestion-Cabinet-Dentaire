@@ -28,14 +28,15 @@ public class StaffRepositoryTest {
     static void createProcessTest() throws SQLException {
         System.out.println("\n--- createProcessTest ---");
         staff s = new staff();
-        s.setIdUser(1L); // Placeholder
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        // s.setIdUser(1L); // Placeholder - not needed as we generate ID
         s.setNom("Staff Test");
-        s.setEmail("staff@test.com");
+        s.setEmail("staff" + timestamp + "@test.com");
         s.setAdresse("Adresse Staff");
-        s.setCin("ST123456");
+        s.setCin("ST" + timestamp.substring(8)); // Shorten to avoid too long string if CIN varies
         s.setTel("0600000002");
         s.setSexe(Sexe.Homme);
-        s.setLogin("staff");
+        s.setLogin("staff" + timestamp);
         s.setMotDePasse("pass");
         s.setDateCreation(LocalDate.now());
         s.setSalaire(4000.0);

@@ -16,7 +16,11 @@ public class SituationFinanciereRepositoryImpl implements SituationFinanciereRep
     @Override
     public List<situationFinanciere> findAll() throws SQLException {
         List<situationFinanciere> sfList = new ArrayList<>();
-        String sql = "SELECT * FROM SituationFinanciere";
+        // Join with entite
+        String sql = "SELECT t.id as idSF, t.id as idEntite, t.totalDesActes, t.totalPaye, t.credit, t.statut, t.enPromo, t.dossiermedicale_id as dossierId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM situationfinancier t " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -34,7 +38,11 @@ public class SituationFinanciereRepositoryImpl implements SituationFinanciereRep
 
     @Override
     public situationFinanciere findById(Long id) {
-        String sql = "SELECT * FROM SituationFinanciere WHERE idSF = ?";
+        String sql = "SELECT t.id as idSF, t.id as idEntite, t.totalDesActes, t.totalPaye, t.credit, t.statut, t.enPromo, t.dossiermedicale_id as dossierId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM situationfinancier t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -53,34 +61,72 @@ public class SituationFinanciereRepositoryImpl implements SituationFinanciereRep
 
     @Override
     public void create(situationFinanciere sf) {
-        sf.setDateCreation(LocalDate.now());
-        if (sf.getCreePar() == null)
-            sf.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtSf = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO SituationFinanciere (dateCreation, creePar, patientId, totaleDesActes, totalPaye, credit, reste, statut, enPromo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, sf.getDateCreation() != null ? sf.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, sf.getCreePar() != null ? sf.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, sf.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(sf.getDateCreation()));
-            ps.setString(2, sf.getCreePar());
-            ps.setLong(3, sf.getPatientId());
-            ps.setDouble(4, sf.getTotaleDesActes());
-            ps.setDouble(5, sf.getTotalPaye());
-            ps.setDouble(6, sf.getCredit());
-            ps.setDouble(7, sf.getReste());
-            ps.setString(8, sf.getStatut() != null ? sf.getStatut().name() : null);
-            ps.setString(9, sf.getEnPromo() != null ? sf.getEnPromo().name() : null);
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                sf.setIdEntite(id);
+                sf.setIdSF(id);
+            } else {
+                throw new SQLException("Creating Entite for SituationFinanciere failed, no ID obtained.");
+            }
 
-            ps.executeUpdate();
+            // 2. Insert into SituationFinancier
+            // Table: situationfinancier (id, totalDesActes, totalPaye, credit, statut, enPromo, dossiermedicale_id)
+            String sqlSf = "INSERT INTO situationfinancier (id, totalDesActes, totalPaye, credit, statut, enPromo, dossiermedicale_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            
+            stmtSf = conn.prepareStatement(sqlSf);
+            stmtSf.setLong(1, id);
+            stmtSf.setDouble(2, sf.getTotaleDesActes());
+            stmtSf.setDouble(3, sf.getTotalPaye());
+            stmtSf.setDouble(4, sf.getCredit());
+            stmtSf.setString(5, sf.getStatut() != null ? sf.getStatut().name() : null);
+            stmtSf.setString(6, sf.getEnPromo() != null ? sf.getEnPromo().name() : null);
+            stmtSf.setObject(7, sf.getDossierMedicaleId());
+            stmtSf.executeUpdate();
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    sf.setIdSF(generatedKeys.getLong(1));
+            conn.commit();
+            System.out.println("✓ SituationFinanciere créée avec id: " + id);
+
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour SituationFinanciere: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtSf != null) stmtSf.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -89,41 +135,70 @@ public class SituationFinanciereRepositoryImpl implements SituationFinanciereRep
         sf.setDateDerniereModification(LocalDateTime.now());
         if (sf.getModifierPar() == null)
             sf.setModifierPar("SYSTEM");
+        
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtSf = null;
 
-        String sql = "UPDATE SituationFinanciere SET patientId = ?, totaleDesActes = ?, totalPaye = ?, credit = ?, reste = ?, statut = ?, enPromo = ?, dateDerniereModification = ?, modifierPar = ? WHERE idSF = ?";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(sf.getDateDerniereModification()));
+            stmtEntite.setString(2, sf.getModifierPar());
+            stmtEntite.setLong(3, sf.getIdEntite());
+            stmtEntite.executeUpdate();
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Update SituationFinancier
+            String sqlSf = "UPDATE situationfinancier SET totalDesActes = ?, totalPaye = ?, credit = ?, statut = ?, enPromo = ?, dossiermedicale_id = ? WHERE id = ?";
+            stmtSf = conn.prepareStatement(sqlSf);
+            stmtSf.setDouble(1, sf.getTotaleDesActes());
+            stmtSf.setDouble(2, sf.getTotalPaye());
+            stmtSf.setDouble(3, sf.getCredit());
+            stmtSf.setString(4, sf.getStatut() != null ? sf.getStatut().name() : null);
+            stmtSf.setString(5, sf.getEnPromo() != null ? sf.getEnPromo().name() : null);
+            stmtSf.setObject(6, sf.getDossierMedicaleId());
+            stmtSf.setLong(7, sf.getIdSF());
 
-            ps.setLong(1, sf.getPatientId());
-            ps.setDouble(2, sf.getTotaleDesActes());
-            ps.setDouble(3, sf.getTotalPaye());
-            ps.setDouble(4, sf.getCredit());
-            ps.setDouble(5, sf.getReste());
-            ps.setString(6, sf.getStatut() != null ? sf.getStatut().name() : null);
-            ps.setString(7, sf.getEnPromo() != null ? sf.getEnPromo().name() : null);
+            stmtSf.executeUpdate();
 
-            ps.setTimestamp(8, Timestamp.valueOf(sf.getDateDerniereModification()));
-            ps.setString(9, sf.getModifierPar());
-
-            ps.setLong(10, sf.getIdSF());
-
-            ps.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtSf != null) stmtSf.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void delete(situationFinanciere sf) {
-        if (sf != null && sf.getIdSF() != null) {
-            deleteById(sf.getIdSF());
+        if (sf != null && sf.getIdEntite() != null) {
+            deleteById(sf.getIdEntite());
         }
     }
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM SituationFinanciere WHERE idSF = ?";
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);

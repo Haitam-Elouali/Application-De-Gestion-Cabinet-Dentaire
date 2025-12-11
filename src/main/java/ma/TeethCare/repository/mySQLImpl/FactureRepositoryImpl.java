@@ -21,7 +21,19 @@ public class FactureRepositoryImpl implements FactureRepository {
     @Override
     public List<facture> findAll() throws SQLException {
         List<facture> factureList = new ArrayList<>();
-        String sql = "SELECT * FROM Facture";
+        // Table: facture (lower case)
+        // Join with entite
+        // Aliases: id -> idEntite, id -> idFacture
+        // Reste -> reste (Map column Reste to Entity field reste usually handled by mapper if column name matches, 
+        // but if mapper uses 'reste', and DB has 'Reste', usually Case Insensitive in MySQL unless quoted. 
+        // I will select t.Reste as reste just in case mapper expects 'reste').
+        // consultationId not in schema, ignoring.
+        
+        String sql = "SELECT t.id as idEntite, t.id as idFacture, t.totaleFacture, t.totalePaye as totalPaye, t.Reste as reste, t.statut, t.dateFacture, " + 
+                     "t.patient_id as patientId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM facture t " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -39,7 +51,12 @@ public class FactureRepositoryImpl implements FactureRepository {
 
     @Override
     public facture findById(Long id) {
-        String sql = "SELECT * FROM Facture WHERE idFacture = ?";
+        String sql = "SELECT t.id as idEntite, t.id as idFacture, t.totaleFacture, t.totalePaye as totalPaye, t.Reste as reste, t.statut, t.dateFacture, " + 
+                     "t.patient_id as patientId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM facture t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -58,36 +75,75 @@ public class FactureRepositoryImpl implements FactureRepository {
 
     @Override
     public void create(facture f) {
-        f.setDateCreation(LocalDate.now());
-        if (f.getCreePar() == null)
-            f.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtFacture = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO Facture (dateCreation, creePar, idFacture, consultationId, patientId, totaleFacture, totalPaye, reste, statut, dateFacture) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, f.getDateCreation() != null ? f.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, f.getCreePar() != null ? f.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, f.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(f.getDateCreation()));
-            ps.setString(2, f.getCreePar());
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                f.setIdEntite(id);
+                f.setIdFacture(id);
+            } else {
+                throw new SQLException("Creating Entite for Facture failed, no ID obtained.");
+            }
 
-            ps.setLong(3, f.getIdFacture());
-            ps.setLong(4, f.getConsultationId());
-            ps.setLong(5, f.getPatientId());
-            ps.setDouble(6, f.getTotaleFacture());
-            ps.setDouble(7, f.getTotalPaye());
-            ps.setDouble(8, f.getReste());
-            ps.setString(9, f.getStatut() != null ? f.getStatut().name() : null);
-            ps.setTimestamp(10, f.getDateFacture() != null ? Timestamp.valueOf(f.getDateFacture()) : null);
+            // 2. Insert into Facture
+            // Schema: id, totaleFacture, totalePaye, Reste, statut, modePaiement, dateFacture, patient_id, secretaire_id
+            // Entity: totaleFacture, totalPaye, reste, statut, dateFacture, patientId, consultationId (ignored)
+            // Need to insert into 'Reste'.
+            String sqlFacture = "INSERT INTO facture (id, totaleFacture, totalePaye, Reste, statut, dateFacture, patient_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            
+            stmtFacture = conn.prepareStatement(sqlFacture);
+            stmtFacture.setLong(1, id);
+            stmtFacture.setDouble(2, f.getTotaleFacture());
+            stmtFacture.setDouble(3, f.getTotalPaye());
+            stmtFacture.setDouble(4, f.getReste());
+            stmtFacture.setString(5, f.getStatut() != null ? f.getStatut().name() : null);
+            stmtFacture.setTimestamp(6, f.getDateFacture() != null ? Timestamp.valueOf(f.getDateFacture()) : null);
+            stmtFacture.setLong(7, f.getPatientId());
 
-            ps.executeUpdate();
+            stmtFacture.executeUpdate();
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    f.setIdFacture(generatedKeys.getLong(1));
+            conn.commit();
+            System.out.println("✓ Facture créée avec id: " + id);
+
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour Facture: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtFacture != null) stmtFacture.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -96,42 +152,70 @@ public class FactureRepositoryImpl implements FactureRepository {
         f.setDateDerniereModification(LocalDateTime.now());
         if (f.getModifierPar() == null)
             f.setModifierPar("SYSTEM");
+        
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtFacture = null;
 
-        String sql = "UPDATE Facture SET idFacture = ?, consultationId = ?, patientId = ?, totaleFacture = ?, totalPaye = ?, reste = ?, statut = ?, dateFacture = ?, dateDerniereModification = ?, modifierPar = ? WHERE idFacture = ?";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(f.getDateDerniereModification()));
+            stmtEntite.setString(2, f.getModifierPar());
+            stmtEntite.setLong(3, f.getIdEntite());
+            stmtEntite.executeUpdate();
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Update Facture
+            String sqlFacture = "UPDATE facture SET totaleFacture = ?, totalePaye = ?, Reste = ?, statut = ?, dateFacture = ?, patient_id = ? WHERE id = ?";
+            stmtFacture = conn.prepareStatement(sqlFacture);
+            stmtFacture.setDouble(1, f.getTotaleFacture());
+            stmtFacture.setDouble(2, f.getTotalPaye());
+            stmtFacture.setDouble(3, f.getReste());
+            stmtFacture.setString(4, f.getStatut() != null ? f.getStatut().name() : null);
+            stmtFacture.setTimestamp(5, f.getDateFacture() != null ? Timestamp.valueOf(f.getDateFacture()) : null);
+            stmtFacture.setLong(6, f.getPatientId());
+            stmtFacture.setLong(7, f.getIdFacture());
 
-            ps.setLong(1, f.getIdFacture());
-            ps.setLong(2, f.getConsultationId());
-            ps.setLong(3, f.getPatientId());
-            ps.setDouble(4, f.getTotaleFacture());
-            ps.setDouble(5, f.getTotalPaye());
-            ps.setDouble(6, f.getReste());
-            ps.setString(7, f.getStatut() != null ? f.getStatut().name() : null);
-            ps.setTimestamp(8, f.getDateFacture() != null ? Timestamp.valueOf(f.getDateFacture()) : null);
-
-            ps.setTimestamp(9, Timestamp.valueOf(f.getDateDerniereModification()));
-            ps.setString(10, f.getModifierPar());
-
-            ps.setLong(11, f.getIdFacture());
-
-            ps.executeUpdate();
+            stmtFacture.executeUpdate();
+            
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtFacture != null) stmtFacture.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void delete(facture f) {
-        if (f != null && f.getIdFacture() != null) {
-            deleteById(f.getIdFacture());
+        if (f != null && f.getIdEntite() != null) {
+            deleteById(f.getIdEntite());
         }
     }
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Facture WHERE idFacture = ?";
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);

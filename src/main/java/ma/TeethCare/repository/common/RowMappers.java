@@ -382,6 +382,10 @@ public final class RowMappers {
             c.setStatut(Statut.valueOf(statutStr));
 
         c.setObservationMedecin(getStringOrNull(rs, "observationMedecin"));
+        c.setDiagnostique(getStringOrNull(rs, "diagnostique"));
+
+        c.setPatientId(getLongOrNull(rs, "patientId"));
+        c.setMedecinId(getLongOrNull(rs, "medecinId"));
         
         Long rdvId = getLongOrNull(rs, "rdvId");
         if (rdvId != null) {
@@ -437,9 +441,14 @@ public final class RowMappers {
         i.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
         i.setIdIM(getLongOrNull(rs, "idIM"));
-        i.setPrixDePatient(rs.getDouble("prixDePatient"));
-        i.setNumDent(rs.getInt("numDent"));
         
+        // Fields removed from schema:
+        // prixDePatient, numDent, medecinId, acteId
+        
+        // i.setPrixDePatient(rs.getDouble("prixDePatient"));
+        // i.setNumDent(rs.getInt("numDent"));
+        
+        /*
         Long medId = getLongOrNull(rs, "medecinId");
         if (medId != null) {
             medecin m = new medecin();
@@ -452,8 +461,10 @@ public final class RowMappers {
             a.setIdEntite(acteId);
             i.setActe(a);
         }
+        */
         Long consId = getLongOrNull(rs, "consultationId");
         if (consId != null) {
+            i.setConsultationId(consId); // Fix: Set the ID field directly
             consultation cons = new consultation();
             cons.setIdEntite(consId);
             i.setConsultation(cons);
@@ -500,12 +511,13 @@ public final class RowMappers {
         o.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
         o.setIdOrd(getLongOrNull(rs, "idOrd"));
-        Date dateSql = rs.getDate("date");
+        Date dateSql = rs.getDate("dateOrdonnance");
         if (dateSql != null)
             o.setDate(dateSql.toLocalDate());
             
         Long consultId = getLongOrNull(rs, "consultationId");
         if (consultId != null) {
+            o.setConsultationId(consultId);
             consultation c = new consultation();
             c.setIdEntite(consultId);
             o.setConsultation(c);
@@ -534,12 +546,14 @@ public final class RowMappers {
         
         Long ordId = getLongOrNull(rs, "ordonnanceId");
         if (ordId != null) {
+            p.setOrdonnanceId(ordId);
             ordonnance o = new ordonnance();
             o.setIdEntite(ordId);
             p.setOrdonnance(o);
         }
         Long medId = getLongOrNull(rs, "medicamentId");
         if (medId != null) {
+            p.setMedicamentId(medId);
             medicaments m = new medicaments();
             m.setIdEntite(medId);
             p.setMedicament(m);
@@ -677,22 +691,22 @@ public final class RowMappers {
         s.setLogin(getStringOrNull(rs, "login"));
         s.setMotDePasse(getStringOrNull(rs, "motDePasse"));
 
-        Date lastLoginSql = rs.getDate("lastLoginDate");
-        if (lastLoginSql != null)
-            s.setLastLoginDate(lastLoginSql.toLocalDate());
+        // Date lastLoginSql = rs.getDate("lastLoginDate");
+        // if (lastLoginSql != null)
+        //    s.setLastLoginDate(lastLoginSql.toLocalDate());
 
         Date dateNaissanceSql = rs.getDate("dateNaissance");
         if (dateNaissanceSql != null)
             s.setDateNaissance(dateNaissanceSql.toLocalDate());
 
         s.setSalaire(rs.getDouble("salaire"));
-        s.setPrime(rs.getDouble("prime"));
+        // s.setPrime(rs.getDouble("prime"));
 
         Date dateRecrutementSql = rs.getDate("dateRecrutement");
         if (dateRecrutementSql != null)
             s.setDateRecrutement(dateRecrutementSql.toLocalDate());
 
-        s.setSoldeConge(rs.getInt("soldeConge"));
+        // s.setSoldeConge(rs.getInt("soldeConge"));
         
         Long cabId = getLongOrNull(rs, "cabinetId");
         if (cabId != null) {
@@ -718,7 +732,7 @@ public final class RowMappers {
         sf.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
         sf.setIdSF(getLongOrNull(rs, "idSF"));
-        sf.setTotaleDesActes(rs.getDouble("totaleDesActes"));
+        sf.setTotaleDesActes(rs.getDouble("totalDesActes"));
         sf.setTotalPaye(rs.getDouble("totalPaye"));
         sf.setCredit(rs.getDouble("credit"));
 
@@ -767,23 +781,23 @@ public final class RowMappers {
         s.setLogin(getStringOrNull(rs, "login"));
         s.setMotDePasse(getStringOrNull(rs, "motDePasse"));
 
-        Date lastLoginSql = rs.getDate("lastLoginDate");
-        if (lastLoginSql != null)
-            s.setLastLoginDate(lastLoginSql.toLocalDate());
+        // Date lastLoginSql = rs.getDate("lastLoginDate");
+        // if (lastLoginSql != null)
+        //    s.setLastLoginDate(lastLoginSql.toLocalDate());
 
         Date dateNaissanceSql = rs.getDate("dateNaissance");
         if (dateNaissanceSql != null)
             s.setDateNaissance(dateNaissanceSql.toLocalDate());
 
         s.setSalaire(rs.getDouble("salaire"));
-        s.setPrime(rs.getDouble("prime"));
-
+        // s.setPrime(rs.getDouble("prime"));
+        
         Date dateRecrutementSql = rs.getDate("dateRecrutement");
         if (dateRecrutementSql != null)
             s.setDateRecrutement(dateRecrutementSql.toLocalDate());
 
-        s.setSoldeConge(rs.getInt("soldeConge"));
-        s.setNumCNSS(getStringOrNull(rs, "numCNSS"));
+        // s.setSoldeConge(rs.getInt("soldeConge"));
+        // s.setNumCNSS(getStringOrNull(rs, "numCNSS"));
         s.setCommission(rs.getDouble("commission"));
         return s;
     }
@@ -826,9 +840,9 @@ public final class RowMappers {
         if (pwd == null) pwd = getStringOrNull(rs, "motDePasse");
         u.setMotDePasse(pwd);
 
-        Date lastLoginSql = rs.getDate("lastLoginDate"); // Missing in DB? Check metadata if needed
-        if (lastLoginSql != null)
-            u.setLastLoginDate(lastLoginSql.toLocalDate());
+        // Date lastLoginSql = rs.getDate("lastLoginDate"); 
+        // if (lastLoginSql != null)
+        //    u.setLastLoginDate(lastLoginSql.toLocalDate());
 
         Date dateNaissanceSql = rs.getDate("dateNaissance");
         if (dateNaissanceSql != null)
@@ -850,22 +864,36 @@ public final class RowMappers {
         l.setCreePar(getStringOrNull(rs, "creePar"));
         l.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
+        // Schema has 'id' [PK], Entity expects idLog.
+        // Queries usually select id as idLog, let's stick to that if repository does alias.
+        // But mapLog typically reads what is in RS.
         l.setIdLog(getLongOrNull(rs, "idLog"));
-        l.setAction(getStringOrNull(rs, "action"));
-        l.setUtilisateur(getStringOrNull(rs, "utilisateur"));
+        if (l.getIdLog() == null) l.setIdLog(getLongOrNull(rs, "id"));
 
+        // Mapping Schema 'typeSupp' -> Entity 'action' (Best guess based on existing mismatch)
+        // Mapping Schema 'message' -> Entity 'description'
+        l.setAction(getStringOrNull(rs, "typeSupp")); 
+        l.setDescription(getStringOrNull(rs, "message"));
+        
+        // Entity 'utilisateur' (String) - Schema has 'utilisateur_id' (Long)
+        // If we want string name, we need join. If simple mapping:
+        // Maybe 'utilisateur' field in Entity is meant to be ID string? Or Name?
+        // Leaving it null as no column matches 'utilisateur' string directly.
+        
         Timestamp dateActionSql = rs.getTimestamp("dateAction");
         if (dateActionSql != null)
             l.setDateAction(dateActionSql.toLocalDateTime());
 
-        l.setDescription(getStringOrNull(rs, "description"));
-        l.setAdresseIP(getStringOrNull(rs, "adresseIP"));
+        // adresseIP not in schema
+        // l.setAdresseIP(getStringOrNull(rs, "adresseIP"));
         
-        Long userId = getLongOrNull(rs, "utilisateurId");
+        Long userId = getLongOrNull(rs, "utilisateur_id");
         if (userId != null) {
             utilisateur u = new utilisateur();
             u.setIdEntite(userId);
             l.setUtilisateurEntity(u);
+            // Optional: set string field to ID if useful for debugging
+            l.setUtilisateur(String.valueOf(userId)); 
         }
         return l;
     }
@@ -942,27 +970,29 @@ public final class RowMappers {
         m.setLogin(getStringOrNull(rs, "login"));
         m.setMotDePasse(getStringOrNull(rs, "motDePasse"));
 
-        Date lastLoginSql = rs.getDate("lastLoginDate");
-        if (lastLoginSql != null)
-            m.setLastLoginDate(lastLoginSql.toLocalDate());
+        // lastLoginDate not in schema
+        // Date lastLoginSql = rs.getDate("lastLoginDate");
+        // if (lastLoginSql != null)
+        //    m.setLastLoginDate(lastLoginSql.toLocalDate());
 
         Date dateNaissanceSql = rs.getDate("dateNaissance");
         if (dateNaissanceSql != null)
             m.setDateNaissance(dateNaissanceSql.toLocalDate());
 
         m.setSalaire(rs.getDouble("salaire"));
-        m.setPrime(rs.getDouble("prime"));
+        
+        // m.setPrime(rs.getDouble("prime")); // Not in schema
 
         Date dateRecrutementSql = rs.getDate("dateRecrutement");
         if (dateRecrutementSql != null)
             m.setDateRecrutement(dateRecrutementSql.toLocalDate());
 
-        m.setSoldeConge(rs.getInt("soldeConge"));
+        // m.setSoldeConge(rs.getInt("soldeConge")); // Not in schema
 
         m.setIdMedecin(getLongOrNull(rs, "idMedecin"));
         m.setSpecialite(getStringOrNull(rs, "specialite"));
-        m.setNumeroOrdre(getStringOrNull(rs, "numeroOrdre"));
-        m.setDiplome(getStringOrNull(rs, "diplome"));
+        // m.setNumeroOrdre(getStringOrNull(rs, "numeroOrdre")); // Not in schema
+        // m.setDiplome(getStringOrNull(rs, "diplome")); // Not in schema
 
         return m;
     }
@@ -985,12 +1015,18 @@ public final class RowMappers {
         n.setTitre(getStringOrNull(rs, "titre"));
         n.setMessage(getStringOrNull(rs, "message"));
 
-        Timestamp dateEnvoiSql = rs.getTimestamp("dateEnvoi");
-        if (dateEnvoiSql != null)
-            n.setDateEnvoi(dateEnvoiSql.toLocalDateTime());
+        Date dateSql = rs.getDate("date");
+        Time timeSql = rs.getTime("time");
+        if (dateSql != null && timeSql != null) {
+            n.setDateEnvoi(LocalDateTime.of(dateSql.toLocalDate(), timeSql.toLocalTime()));
+        } else if (dateSql != null) {
+             n.setDateEnvoi(dateSql.toLocalDate().atStartOfDay());
+        }
 
         n.setType(getStringOrNull(rs, "type"));
-        n.setLue(rs.getBoolean("lue"));
+        
+        String statut = getStringOrNull(rs, "statut");
+        n.setLue("LUE".equalsIgnoreCase(statut));
         
         Long userId = getLongOrNull(rs, "utilisateurId");
         if (userId != null) {

@@ -28,22 +28,23 @@ public class MedecinRepositoryTest {
     static void createProcessTest() throws SQLException {
         System.out.println("\n--- createProcessTest ---");
         medecin m = new medecin();
-        m.setIdUser(2L); // Assuming User(2) exists? Just for testing
+        m.setIdUser(2L); // ID is ignored in create
         m.setNom("Dr House");
-        m.setEmail("house@hospital.com");
-        m.setAdresse("Princeton");
-        m.setCin("TEST12345");
+        long timestamp = System.currentTimeMillis();
+        m.setEmail("house" + timestamp + "@hospital.com");
+        // m.setAdresse("Princeton"); // Not in schema
+        // m.setCin("TEST12345"); // Not in schema
         m.setTel("0600112233");
         m.setSexe(Sexe.Homme);
-        m.setLogin("house");
+        m.setLogin("house" + timestamp);
         m.setMotDePasse("vicodin");
         m.setDateCreation(LocalDate.now());
         m.setSpecialite("Diagnostic");
-        m.setNumeroOrdre("ORD123");
-        m.setDiplome("MD");
+        // m.setNumeroOrdre("ORD123"); // Not in schema
+        // m.setDiplome("MD"); // Not in schema
         m.setSalaire(10000.0);
-        m.setPrime(0.0);
-        m.setSoldeConge(30);
+        // m.setPrime(0.0); // Not in schema (Staff table only has salaire, recrutement)
+        // m.setSoldeConge(30); // Not in schema
         repository.create(m);
     }
 

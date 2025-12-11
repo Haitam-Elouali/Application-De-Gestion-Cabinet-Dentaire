@@ -21,7 +21,16 @@ public class SecretaireRepositoryImpl implements SecretaireRepository {
     @Override
     public List<secretaire> findAll() throws SQLException {
         List<secretaire> secretaireList = new ArrayList<>();
-        String sql = "SELECT * FROM Secretaire";
+        // generic select * might fail if tables are split.
+        // Joining secretaire -> staff -> utilisateur -> entite
+        String sql = "SELECT t.id as idEntite, t.id as idSecretaire, t.id as idUser, t.commission, " +
+                     "s.salaire, s.dateRecrutement, s.dateDepart, " +
+                     "u.nom, u.prenom, u.email, u.tele as tel, u.username as login, u.password as motDePasse, u.sexe, u.dateNaissance, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM secretaire t " +
+                     "JOIN staff s ON t.id = s.id " +
+                     "JOIN utilisateur u ON t.id = u.id " +
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -39,7 +48,15 @@ public class SecretaireRepositoryImpl implements SecretaireRepository {
 
     @Override
     public secretaire findById(Long id) {
-        String sql = "SELECT * FROM Secretaire WHERE idEntite = ?";
+        String sql = "SELECT t.id as idEntite, t.id as idSecretaire, t.id as idUser, t.commission, " +
+                     "s.salaire, s.dateRecrutement, s.dateDepart, " +
+                     "u.nom, u.prenom, u.email, u.tele as tel, u.username as login, u.password as motDePasse, u.sexe, u.dateNaissance, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM secretaire t " +
+                     "JOIN staff s ON t.id = s.id " +
+                     "JOIN utilisateur u ON t.id = u.id " +
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -58,47 +75,93 @@ public class SecretaireRepositoryImpl implements SecretaireRepository {
 
     @Override
     public void create(secretaire s) {
-        s.setDateCreation(LocalDate.now());
-        if (s.getCreePar() == null)
-            s.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtUser = null;
+        PreparedStatement stmtStaff = null;
+        PreparedStatement stmtSec = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO Secretaire (dateCreation, creePar, idUser, nom, email, adresse, cin, tel, sexe, login, motDePasse, lastLoginDate, dateNaissance, salaire, prime, dateRecrutement, soldeConge, numCNSS, commission) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, s.getDateCreation() != null ? s.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, s.getCreePar() != null ? s.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, s.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(s.getDateCreation()));
-            ps.setString(2, s.getCreePar());
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                s.setIdEntite(id);
+                s.setIdUser(id);
+            } else {
+                throw new SQLException("Creating Entite for Secretaire failed, no ID obtained.");
+            }
 
-            ps.setLong(3, s.getIdUser());
-            ps.setString(4, s.getNom());
-            ps.setString(5, s.getEmail());
-            ps.setString(6, s.getAdresse());
-            ps.setString(7, s.getCin());
-            ps.setString(8, s.getTel());
-            ps.setString(9, s.getSexe() != null ? s.getSexe().name() : null);
-            ps.setString(10, s.getLogin());
-            ps.setString(11, s.getMotDePasse());
-            ps.setDate(12, s.getLastLoginDate() != null ? Date.valueOf(s.getLastLoginDate()) : null);
-            ps.setDate(13, s.getDateNaissance() != null ? Date.valueOf(s.getDateNaissance()) : null);
+            // 2. Insert into Utilisateur
+            String sqlUser = "INSERT INTO utilisateur (id, nom, email, tele, username, password, sexe, dateNaissance) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            stmtUser = conn.prepareStatement(sqlUser);
+            stmtUser.setLong(1, id);
+            stmtUser.setString(2, s.getNom());
+            stmtUser.setString(3, s.getEmail());
+            stmtUser.setString(4, s.getTel());
+            stmtUser.setString(5, s.getLogin());
+            stmtUser.setString(6, s.getMotDePasse());
+            stmtUser.setString(7, s.getSexe() != null ? s.getSexe().name() : null);
+            stmtUser.setObject(8, s.getDateNaissance());
+            stmtUser.executeUpdate();
 
-            ps.setDouble(14, s.getSalaire());
-            ps.setDouble(15, s.getPrime());
-            ps.setDate(16, s.getDateRecrutement() != null ? Date.valueOf(s.getDateRecrutement()) : null);
-            ps.setInt(17, s.getSoldeConge());
+            // 3. Insert into Staff
+            String sqlStaff = "INSERT INTO staff (id, salaire, dateRecrutement) VALUES (?, ?, ?)";
+            stmtStaff = conn.prepareStatement(sqlStaff);
+            stmtStaff.setLong(1, id);
+            stmtStaff.setDouble(2, s.getSalaire() != null ? s.getSalaire() : 0.0);
+            stmtStaff.setObject(3, s.getDateRecrutement());
+            stmtStaff.executeUpdate();
 
-            ps.setString(18, s.getNumCNSS());
-            ps.setDouble(19, s.getCommission());
+            // 4. Insert into Secretaire
+            // Secretaire table: id, commission. 
+            // (numCNSS not in schema? let's check text.txt line 195. 'secretaire' -> id, commission. NO numCNSS).
+            // Ignoring numCNSS.
+            String sqlSec = "INSERT INTO secretaire (id, commission) VALUES (?, ?)";
+            stmtSec = conn.prepareStatement(sqlSec);
+            stmtSec.setLong(1, id);
+            stmtSec.setDouble(2, s.getCommission());
+            stmtSec.executeUpdate();
 
-            ps.executeUpdate();
+            conn.commit();
+            System.out.println("✓ Secretaire créée avec id: " + id);
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    s.setIdEntite(generatedKeys.getLong(1));
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour Secretaire: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtUser != null) stmtUser.close();
+                if (stmtStaff != null) stmtStaff.close();
+                if (stmtSec != null) stmtSec.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -108,39 +171,75 @@ public class SecretaireRepositoryImpl implements SecretaireRepository {
         if (s.getModifierPar() == null)
             s.setModifierPar("SYSTEM");
 
-        String sql = "UPDATE Secretaire SET idUser = ?, nom = ?, email = ?, adresse = ?, cin = ?, tel = ?, sexe = ?, login = ?, motDePasse = ?, lastLoginDate = ?, dateNaissance = ?, salaire = ?, prime = ?, dateRecrutement = ?, soldeConge = ?, numCNSS = ?, commission = ?, dateDerniereModification = ?, modifierPar = ? WHERE idEntite = ?";
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtUser = null;
+        PreparedStatement stmtStaff = null;
+        PreparedStatement stmtSec = null;
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-            ps.setLong(1, s.getIdUser());
-            ps.setString(2, s.getNom());
-            ps.setString(3, s.getEmail());
-            ps.setString(4, s.getAdresse());
-            ps.setString(5, s.getCin());
-            ps.setString(6, s.getTel());
-            ps.setString(7, s.getSexe() != null ? s.getSexe().name() : null);
-            ps.setString(8, s.getLogin());
-            ps.setString(9, s.getMotDePasse());
-            ps.setDate(10, s.getLastLoginDate() != null ? Date.valueOf(s.getLastLoginDate()) : null);
-            ps.setDate(11, s.getDateNaissance() != null ? Date.valueOf(s.getDateNaissance()) : null);
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(s.getDateDerniereModification()));
+            stmtEntite.setString(2, s.getModifierPar());
+            stmtEntite.setLong(3, s.getIdEntite());
+            stmtEntite.executeUpdate();
 
-            ps.setDouble(12, s.getSalaire());
-            ps.setDouble(13, s.getPrime());
-            ps.setDate(14, s.getDateRecrutement() != null ? Date.valueOf(s.getDateRecrutement()) : null);
-            ps.setInt(15, s.getSoldeConge());
+            // Update Utilisateur
+            String sqlUser = "UPDATE utilisateur SET nom = ?, email = ?, tele = ?, username = ?, password = ?, sexe = ?, dateNaissance = ? WHERE id = ?";
+            stmtUser = conn.prepareStatement(sqlUser);
+            stmtUser.setString(1, s.getNom());
+            stmtUser.setString(2, s.getEmail());
+            stmtUser.setString(3, s.getTel());
+            stmtUser.setString(4, s.getLogin());
+            stmtUser.setString(5, s.getMotDePasse());
+            stmtUser.setString(6, s.getSexe() != null ? s.getSexe().name() : null);
+            stmtUser.setObject(7, s.getDateNaissance());
+            stmtUser.setLong(8, s.getIdEntite());
+            stmtUser.executeUpdate();
 
-            ps.setString(16, s.getNumCNSS());
-            ps.setDouble(17, s.getCommission());
+            // Update Staff
+            String sqlStaff = "UPDATE staff SET salaire = ?, dateRecrutement = ? WHERE id = ?";
+            stmtStaff = conn.prepareStatement(sqlStaff);
+            stmtStaff.setDouble(1, s.getSalaire() != null ? s.getSalaire() : 0.0);
+            stmtStaff.setObject(2, s.getDateRecrutement());
+            stmtStaff.setLong(3, s.getIdEntite());
+            stmtStaff.executeUpdate();
 
-            ps.setTimestamp(18, Timestamp.valueOf(s.getDateDerniereModification()));
-            ps.setString(19, s.getModifierPar());
+            // Update Secretaire (commission)
+            String sqlSec = "UPDATE secretaire SET commission = ? WHERE id = ?";
+            stmtSec = conn.prepareStatement(sqlSec);
+            stmtSec.setDouble(1, s.getCommission());
+            stmtSec.setLong(2, s.getIdEntite());
+            stmtSec.executeUpdate();
 
-            ps.setLong(20, s.getIdEntite());
-
-            ps.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtUser != null) stmtUser.close();
+                if (stmtStaff != null) stmtStaff.close();
+                if (stmtSec != null) stmtSec.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -153,7 +252,7 @@ public class SecretaireRepositoryImpl implements SecretaireRepository {
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Secretaire WHERE idEntite = ?";
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -165,39 +264,13 @@ public class SecretaireRepositoryImpl implements SecretaireRepository {
 
     @Override
     public Optional<secretaire> findByNumCNSS(String numCNSS) {
-        String sql = "SELECT * FROM Secretaire WHERE numCNSS = ?";
-
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, numCNSS);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(RowMappers.mapSecretaire(rs));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // numCNSS not in schema. Returning empty.
         return Optional.empty();
     }
 
     @Override
     public Optional<secretaire> findByCin(String cin) {
-        String sql = "SELECT * FROM Secretaire WHERE cin = ?";
-
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, cin);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(RowMappers.mapSecretaire(rs));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // CIN not in schema.
         return Optional.empty();
     }
 }

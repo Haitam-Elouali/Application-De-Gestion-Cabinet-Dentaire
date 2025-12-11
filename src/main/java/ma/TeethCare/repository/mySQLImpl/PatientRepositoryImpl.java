@@ -15,7 +15,13 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public List<Patient> findAll() throws SQLException {
-        String sql = "SELECT * FROM Patient";
+        // Table: patient
+        // Columns: id, nom, prenom, dateNaissance, sexe, telephone, assurance
+        // Joined with entite
+        String sql = "SELECT t.id as idEntite, t.id, t.nom, t.prenom, t.dateNaissance, t.sexe, t.telephone, t.assurance, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM patient t " + 
+                     "JOIN entite e ON t.id = e.id";
         List<Patient> patients = new ArrayList<>();
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
@@ -34,7 +40,11 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public Patient findById(Long id) {
-        String sql = "SELECT * FROM Patient WHERE id = ?";
+        String sql = "SELECT t.id as idEntite, t.id, t.nom, t.prenom, t.dateNaissance, t.sexe, t.telephone, t.assurance, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM patient t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -75,35 +85,19 @@ public class PatientRepositoryImpl implements PatientRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 p.setIdEntite(id);
+                // p.setId(id); // If Patient has setId, but usually it uses idEntite as ID or idPatient. 
+                // Assuming inherited ID logic or similar.
+                // Looking at Patient.java might clarify if it has setId. But typically we set idEntite.
             } else {
                 throw new SQLException("Creating Entite for Patient failed, no ID obtained.");
             }
 
             // 2. Insert into Patient
             // Table: patient (id, nom, prenom, dateNaissance, sexe, telephone, assurance)
-            // No 'email' in schema for patient.
-            String sqlPatient = "INSERT INTO patient (id, nom, prenom, adresse, telephone, dateNaissance, sexe, assurance) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            // Note: 'adresse' is NOT in the text.txt schema for patient?? 
-            // text.txt: id, nom, prenom, dateNaissance, sexe, telephone, assurance.
-            // Let me check text.txt again for 'adresse' in patient.
-            // Result of viewed_file text.txt above:
-            // TABLE: patient
-            //   - id ...
-            //   - nom ...
-            //   - prenom ...
-            //   - dateNaissance ...
-            //   - sexe ...
-            //   - telephone ...
-            //   - assurance ...
-            // IT DOES NOT HAVE ADRESSE either.
+            // SQL ignores adresse/email as they are not in schema
+            String sqlPatient = "INSERT INTO patient (id, nom, prenom, telephone, dateNaissance, sexe, assurance) VALUES (?, ?, ?, ?, ?, ?, ?)";
             
-            // Re-evaluating SQL. 
-            // I will remove 'adresse' and 'email' from the INSERT to be safe with schema.
-            // If the Java Entity has them, they won't be persisted to DB or need distinct table? 
-            // For now, I stick to the schema to avoid SQL errors.
-            String sqlPatientFinal = "INSERT INTO patient (id, nom, prenom, telephone, dateNaissance, sexe, assurance) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            
-            stmtPatient = conn.prepareStatement(sqlPatientFinal);
+            stmtPatient = conn.prepareStatement(sqlPatient);
             stmtPatient.setLong(1, id);
             stmtPatient.setString(2, p.getNom());
             stmtPatient.setString(3, p.getPrenom());
@@ -144,25 +138,60 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public void update(Patient p) {
-        String sql = "UPDATE Patient SET nom = ?, prenom = ?, adresse = ?, telephone = ?, email = ?, dateNaissance = ?, sexe = ?, assurance = ? WHERE id = ?";
+        p.setDateDerniereModification(LocalDateTime.now());
+        if (p.getModifierPar() == null)
+            p.setModifierPar("SYSTEM");
+        
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtPatient = null;
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(p.getDateDerniereModification()));
+            stmtEntite.setString(2, p.getModifierPar());
+            stmtEntite.setLong(3, p.getIdEntite());
+            stmtEntite.executeUpdate();
 
-            stmt.setString(1, p.getNom());
-            stmt.setString(2, p.getPrenom());
-            stmt.setString(3, p.getAdresse());
-            stmt.setString(4, p.getTelephone());
-            stmt.setString(5, p.getEmail());
-            stmt.setDate(6, p.getDateNaissance() != null ? Date.valueOf(p.getDateNaissance()) : null);
-            stmt.setString(7, p.getSexe() != null ? p.getSexe().name() : null);
-            stmt.setString(8, p.getAssurance() != null ? p.getAssurance().name() : null);
+            // Update Patient
+            String sqlPatient = "UPDATE patient SET nom = ?, prenom = ?, telephone = ?, dateNaissance = ?, sexe = ?, assurance = ? WHERE id = ?";
+            stmtPatient = conn.prepareStatement(sqlPatient);
+            stmtPatient.setString(1, p.getNom());
+            stmtPatient.setString(2, p.getPrenom());
+            stmtPatient.setString(3, p.getTelephone());
+            stmtPatient.setDate(4, p.getDateNaissance() != null ? Date.valueOf(p.getDateNaissance()) : null);
+            stmtPatient.setString(5, p.getSexe() != null ? p.getSexe().name() : null);
+            stmtPatient.setString(6, p.getAssurance() != null ? p.getAssurance().name() : null);
+            stmtPatient.setLong(7, p.getIdEntite());
 
-            stmt.setLong(9, p.getIdEntite());
+            stmtPatient.executeUpdate();
 
-            stmt.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtPatient != null) stmtPatient.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -175,7 +204,7 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Patient WHERE id = ?";
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);

@@ -18,6 +18,7 @@ import java.util.List;
 public class situationFinanciere extends baseEntity {
     private Long idSF;
     private Long patientId;
+    private Long dossierMedicaleId;
     private Double totaleDesActes;
     private Double totalPaye;
     private Double credit;

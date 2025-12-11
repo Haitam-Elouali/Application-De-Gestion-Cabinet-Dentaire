@@ -11,6 +11,7 @@ import java.util.List;
 public class RdvRepositoryTest {
 
     private static RdvRepositoryImpl repository = new RdvRepositoryImpl();
+    private static ma.TeethCare.repository.mySQLImpl.PatientRepositoryImpl patientRepo = new ma.TeethCare.repository.mySQLImpl.PatientRepositoryImpl();
 
     public static void main(String[] args) {
         try {
@@ -27,15 +28,29 @@ public class RdvRepositoryTest {
 
     static void createProcessTest() throws SQLException {
         System.out.println("\n--- createProcessTest ---");
+
+        // 1. Create Patient
+        ma.TeethCare.entities.patient.Patient p = new ma.TeethCare.entities.patient.Patient();
+        p.setNom("PatientRdv");
+        p.setPrenom("Jean");
+        p.setTelephone("0655555555");
+        p.setSexe(ma.TeethCare.common.enums.Sexe.Homme);
+        p.setAssurance(ma.TeethCare.common.enums.Assurance.CNOPS);
+        patientRepo.create(p);
+        if (p.getIdEntite() == null) throw new SQLException("Failed to create Patient for Rdv");
+
         rdv r = new rdv();
-        r.setPatientId(1L); // FK
-        r.setMedecinId(1L); // FK
+        r.setPatientId(p.getIdEntite()); // Valid FK
+        // r.setMedecinId(1L); // FK not in schema for RDV table in text.txt, but maybe in Entity? 
+        // Logic in Repo create() doesn't insert medecinId into RDV table, so it shouldn't cause SQL error unless table structure is different from text.txt
         r.setDate(LocalDate.now().plusDays(1));
         r.setHeure(LocalTime.of(10, 0));
         r.setMotif("Consultation standard");
         r.setStatut(Statut.En_attente);
         r.setNoteMedecin("Premier RDV");
         repository.create(r);
+        
+        System.out.println("RDV created with ID: " + r.getIdRDV());
     }
 
     static void readProcessTest() throws SQLException {

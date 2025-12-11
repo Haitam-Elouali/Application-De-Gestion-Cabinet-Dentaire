@@ -21,7 +21,11 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
     @Override
     public List<utilisateur> findAll() throws SQLException {
         List<utilisateur> utilisateurList = new ArrayList<>();
-        String sql = "SELECT * FROM Utilisateur";
+        String sql = "SELECT t.id as idUser, t.id as idEntite, " +
+                     "t.nom, t.prenom, t.email, t.tele as tel, t.username as login, t.password as motDePasse, t.sexe, t.dateNaissance, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM utilisateur t " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -39,7 +43,12 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
 
     @Override
     public utilisateur findById(Long id) {
-        String sql = "SELECT * FROM Utilisateur WHERE idUser = ?";
+        String sql = "SELECT t.id as idUser, t.id as idEntite, " +
+                     "t.nom, t.prenom, t.email, t.tele as tel, t.username as login, t.password as motDePasse, t.sexe, t.dateNaissance, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM utilisateur t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -58,39 +67,76 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
 
     @Override
     public void create(utilisateur u) {
-        u.setDateCreation(LocalDate.now());
-        if (u.getCreePar() == null)
-            u.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtUser = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO Utilisateur (dateCreation, creePar, idUser, nom, email, adresse, cin, tel, sexe, login, motDePasse, lastLoginDate, dateNaissance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, u.getDateCreation() != null ? u.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, u.getCreePar() != null ? u.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, u.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(u.getDateCreation()));
-            ps.setString(2, u.getCreePar());
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                u.setIdEntite(id);
+                u.setIdUser(id);
+            } else {
+                throw new SQLException("Creating Entite for Utilisateur failed, no ID obtained.");
+            }
 
-            ps.setLong(3, u.getIdUser());
-            ps.setString(4, u.getNom());
-            ps.setString(5, u.getEmail());
-            ps.setString(6, u.getAdresse());
-            ps.setString(7, u.getCin());
-            ps.setString(8, u.getTel());
-            ps.setString(9, u.getSexe() != null ? u.getSexe().name() : null);
-            ps.setString(10, u.getLogin());
-            ps.setString(11, u.getMotDePasse());
-            ps.setDate(12, u.getLastLoginDate() != null ? Date.valueOf(u.getLastLoginDate()) : null);
-            ps.setDate(13, u.getDateNaissance() != null ? Date.valueOf(u.getDateNaissance()) : null);
+            // 2. Insert into Utilisateur
+            // Table: utilisateur (id, nom, prenom, email, tele, username, password, sexe, dateNaissance, role_id)
+            // Note: login -> username, motDePasse -> password, tel -> tele. cin, adresse not in schema?
+            // Assuming simplified schema based on previous interactions (role_id nullable or not handled?)
+            String sqlUser = "INSERT INTO utilisateur (id, nom, email, tele, username, password, sexe, dateNaissance) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            stmtUser = conn.prepareStatement(sqlUser);
+            stmtUser.setLong(1, id);
+            stmtUser.setString(2, u.getNom());
+            stmtUser.setString(3, u.getEmail());
+            stmtUser.setString(4, u.getTel());
+            stmtUser.setString(5, u.getLogin());
+            stmtUser.setString(6, u.getMotDePasse());
+            stmtUser.setString(7, u.getSexe() != null ? u.getSexe().name() : null);
+            stmtUser.setObject(8, u.getDateNaissance());
 
-            ps.executeUpdate();
+            stmtUser.executeUpdate();
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    u.setIdUser(generatedKeys.getLong(1));
+            conn.commit();
+            System.out.println("✓ Utilisateur créé avec id: " + id);
+
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour Utilisateur: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtUser != null) stmtUser.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -99,45 +145,71 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
         u.setDateDerniereModification(LocalDateTime.now());
         if (u.getModifierPar() == null)
             u.setModifierPar("SYSTEM");
+        
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtUser = null;
 
-        String sql = "UPDATE Utilisateur SET idUser = ?, nom = ?, email = ?, adresse = ?, cin = ?, tel = ?, sexe = ?, login = ?, motDePasse = ?, lastLoginDate = ?, dateNaissance = ?, dateDerniereModification = ?, modifierPar = ? WHERE idUser = ?";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(u.getDateDerniereModification()));
+            stmtEntite.setString(2, u.getModifierPar());
+            stmtEntite.setLong(3, u.getIdEntite());
+            stmtEntite.executeUpdate();
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Update Utilisateur
+            String sqlUser = "UPDATE utilisateur SET nom = ?, email = ?, tele = ?, username = ?, password = ?, sexe = ?, dateNaissance = ? WHERE id = ?";
+            stmtUser = conn.prepareStatement(sqlUser);
+            stmtUser.setString(1, u.getNom());
+            stmtUser.setString(2, u.getEmail());
+            stmtUser.setString(3, u.getTel());
+            stmtUser.setString(4, u.getLogin());
+            stmtUser.setString(5, u.getMotDePasse());
+            stmtUser.setString(6, u.getSexe() != null ? u.getSexe().name() : null);
+            stmtUser.setObject(7, u.getDateNaissance());
+            stmtUser.setLong(8, u.getIdEntite());
 
-            ps.setLong(1, u.getIdUser());
-            ps.setString(2, u.getNom());
-            ps.setString(3, u.getEmail());
-            ps.setString(4, u.getAdresse());
-            ps.setString(5, u.getCin());
-            ps.setString(6, u.getTel());
-            ps.setString(7, u.getSexe() != null ? u.getSexe().name() : null);
-            ps.setString(8, u.getLogin());
-            ps.setString(9, u.getMotDePasse());
-            ps.setDate(10, u.getLastLoginDate() != null ? Date.valueOf(u.getLastLoginDate()) : null);
-            ps.setDate(11, u.getDateNaissance() != null ? Date.valueOf(u.getDateNaissance()) : null);
+            stmtUser.executeUpdate();
 
-            ps.setTimestamp(12, Timestamp.valueOf(u.getDateDerniereModification()));
-            ps.setString(13, u.getModifierPar());
-
-            ps.setLong(14, u.getIdUser());
-
-            ps.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtUser != null) stmtUser.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public void delete(utilisateur u) {
-        if (u != null && u.getIdUser() != null) {
-            deleteById(u.getIdUser());
+        if (u != null && u.getIdEntite() != null) {
+            deleteById(u.getIdEntite());
         }
     }
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Utilisateur WHERE idUser = ?";
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -149,7 +221,12 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
 
     @Override
     public Optional<utilisateur> findByEmail(String email) {
-        String sql = "SELECT * FROM Utilisateur WHERE email = ?";
+        String sql = "SELECT t.id as idUser, t.id as idEntite, " +
+                     "t.nom, t.prenom, t.email, t.tele as tel, t.username as login, t.password as motDePasse, t.sexe, t.dateNaissance, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM utilisateur t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.email = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -168,7 +245,12 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
 
     @Override
     public Optional<utilisateur> findByLogin(String login) {
-        String sql = "SELECT * FROM Utilisateur WHERE login = ?";
+        String sql = "SELECT t.id as idUser, t.id as idEntite, " +
+                     "t.nom, t.prenom, t.email, t.tele as tel, t.username as login, t.password as motDePasse, t.sexe, t.dateNaissance, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM utilisateur t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.username = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

@@ -30,12 +30,13 @@ public class SecretaireRepositoryTest {
         secretaire s = new secretaire();
         s.setIdUser(1L); // Placeholder
         s.setNom("Secretaire Test");
-        s.setEmail("sec@test.com");
+        long timestamp = System.currentTimeMillis();
+        s.setEmail("sec" + timestamp + "@test.com");
         s.setAdresse("Adresse Sec");
         s.setCin("S123456");
         s.setTel("0600000001");
         s.setSexe(Sexe.Femme);
-        s.setLogin("sec");
+        s.setLogin("sec" + timestamp);
         s.setMotDePasse("pass");
         s.setDateCreation(LocalDate.now());
         s.setSalaire(5000.0);
