@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class medecin extends staff {
     private Long idMedecin;
     private String specialite;

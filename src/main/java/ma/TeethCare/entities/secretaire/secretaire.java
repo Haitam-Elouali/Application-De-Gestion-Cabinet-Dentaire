@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class secretaire extends staff {
     private String numCNSS;
     private Double commission;

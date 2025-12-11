@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class ordonnance extends baseEntity {
     private Long idOrd;
     private Long consultationId;

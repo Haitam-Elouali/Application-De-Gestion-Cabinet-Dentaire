@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class staff extends utilisateur {
     private Double salaire;
     private Double prime;

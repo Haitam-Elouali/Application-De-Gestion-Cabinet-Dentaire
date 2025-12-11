@@ -5,7 +5,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import ma.TeethCare.mvc.dto.PatientDTO;
+import ma.TeethCare.mvc.dto.patient.PatientDTO;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 
@@ -43,9 +43,8 @@ public class PatientView extends JFrame {
 
         for (PatientDTO dto : patients) {
             model.addRow(new Object[]{
-                    dto.getNomComplet(),
-                    dto.getAge(),
-                    dto.getDateCreationFormatee()
+                    dto.getNom(),
+                    dto.getDateCreation()
             });
         }
 

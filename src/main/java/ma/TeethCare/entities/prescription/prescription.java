@@ -11,7 +11,7 @@ import ma.TeethCare.entities.medicaments.medicaments;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class prescription extends baseEntity {
     private Long idPr;
     private Long ordonnanceId;

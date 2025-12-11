@@ -25,8 +25,25 @@ public class AntecedentRepositoryTest {
 
     static void createProcessTest() throws SQLException {
         System.out.println("\n--- createProcessTest ---");
+        
+        // 1. Create Patient
+        ma.TeethCare.repository.mySQLImpl.PatientRepositoryImpl patientRepo = new ma.TeethCare.repository.mySQLImpl.PatientRepositoryImpl();
+        ma.TeethCare.entities.patient.Patient p = new ma.TeethCare.entities.patient.Patient();
+        p.setNom("Doe");
+        p.setPrenom("John");
+        p.setTelephone("0612345678");
+        patientRepo.create(p);
+        System.out.println("Created test Patient with ID: " + p.getIdEntite());
+        
+        // 2. Create DossierMedicale
+        ma.TeethCare.repository.mySQLImpl.DossierMedicaleRepositoryImpl dossierRepo = new ma.TeethCare.repository.mySQLImpl.DossierMedicaleRepositoryImpl();
+        ma.TeethCare.entities.dossierMedicale.dossierMedicale dm = new ma.TeethCare.entities.dossierMedicale.dossierMedicale();
+        dm.setPatientId(p.getIdEntite());
+        dossierRepo.create(dm);
+        System.out.println("Created test DossierMedicale with ID: " + dm.getIdEntite());
+
         antecedent a = new antecedent();
-        a.setDossierMedicaleId(1L); // Placeholder FK
+        a.setDossierMedicaleId(dm.getIdEntite()); 
         a.setNom("Diabète");
         a.setCategorie("Chronique");
         a.setNiveauRisque(niveauDeRisque.Eleve);

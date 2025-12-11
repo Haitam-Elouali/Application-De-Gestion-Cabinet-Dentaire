@@ -18,7 +18,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class dossierMedicale extends baseEntity {
     private Long idDM;
     private Long patientId;

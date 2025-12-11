@@ -28,10 +28,23 @@ public class AgendaRepositoryTest {
 
     static void createProcessTest() throws SQLException {
         System.out.println("\n--- createProcessTest ---");
+        
+        // Create a valid Doctor first to satisfy FK
+        ma.TeethCare.repository.mySQLImpl.MedecinRepositoryImpl medecinRepo = new ma.TeethCare.repository.mySQLImpl.MedecinRepositoryImpl();
+        ma.TeethCare.entities.medecin.medecin m = new ma.TeethCare.entities.medecin.medecin();
+        long uniqueId = System.currentTimeMillis();
+        m.setNom("Dr House " + uniqueId);
+        m.setEmail("house" + uniqueId + "@test.com");
+        m.setLogin("house" + uniqueId);
+        m.setMotDePasse("vicodin");
+        m.setSpecialite("Diagnostic");
+        // Required fields per schema not null constraints? defaulting some just in case
+        m.setTel("0600000000");
+        medecinRepo.create(m);
+        System.out.println("Created test Medecin with ID: " + m.getIdMedecin());
+
         agenda a = new agenda();
-        // Assuming medecinId exists or is nullable/foreign key. 
-        // Using 1L as placeholder, might fail if constraint exists and empty DB.
-        a.setMedecinId(1L); 
+        a.setMedecinId(m.getIdMedecin()); 
         a.setMois(Mois.Janvier);
         List<Jour> jours = new ArrayList<>();
         jours.add(Jour.Lundi);

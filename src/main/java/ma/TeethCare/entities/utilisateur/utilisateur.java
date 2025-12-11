@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class utilisateur extends baseEntity {
     private Long idUser;
     private String nom;

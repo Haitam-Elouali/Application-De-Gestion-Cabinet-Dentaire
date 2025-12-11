@@ -23,7 +23,7 @@ public class AgendaRepositoryImpl implements AgendaRepository {
     @Override
     public List<agenda> findAll() {
         List<agenda> agendaList = new ArrayList<>();
-        String sql = "SELECT * FROM Agenda";
+        String sql = "SELECT * FROM agendamensuel";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -40,7 +40,7 @@ public class AgendaRepositoryImpl implements AgendaRepository {
 
     @Override
     public agenda findById(Long id) {
-        String sql = "SELECT * FROM Agenda WHERE idAgenda = ?";
+        String sql = "SELECT * FROM agendamensuel WHERE id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -59,21 +59,17 @@ public class AgendaRepositoryImpl implements AgendaRepository {
 
     @Override
     public void create(agenda a) {
-        a.setDateCreation(LocalDate.now());
-        if (a.getCreePar() == null)
-            a.setCreePar("SYSTEM");
-
-        String sql = "INSERT INTO Agenda (dateCreation, creePar, medecinId, mois, joursDisponible, dateDebut, dateFin) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // Schema: id, mois, annee, joursNonDisponibles, medecin_id
+        String sql = "INSERT INTO agendamensuel (mois, annee, joursNonDisponibles, medecin_id) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setDate(1, Date.valueOf(a.getDateCreation()));
-            ps.setString(2, a.getCreePar());
-
-
-            ps.setLong(3, a.getMedecinId());
-            ps.setString(4, a.getMois() != null ? a.getMois().name() : null);
+            ps.setString(1, a.getMois() != null ? a.getMois().name() : null);
+            if (a.getDateCreation() == null) {
+                a.setDateCreation(LocalDate.now());
+            }
+            ps.setInt(2, a.getDateCreation().getYear());
 
             String joursStr = null;
             if (a.getJoursDisponible() != null && !a.getJoursDisponible().isEmpty()) {
@@ -81,10 +77,8 @@ public class AgendaRepositoryImpl implements AgendaRepository {
                         .map(Enum::name)
                         .collect(Collectors.joining(","));
             }
-            ps.setString(5, joursStr);
-
-            ps.setDate(6, a.getDateDebut() != null ? Date.valueOf(a.getDateDebut()) : null);
-            ps.setDate(7, a.getDateFin() != null ? Date.valueOf(a.getDateFin()) : null);
+            ps.setString(3, joursStr);
+            ps.setLong(4, a.getMedecinId());
 
             ps.executeUpdate();
 
@@ -100,18 +94,16 @@ public class AgendaRepositoryImpl implements AgendaRepository {
 
     @Override
     public void update(agenda a) {
-        a.setDateDerniereModification(LocalDateTime.now());
-        if (a.getModifierPar() == null)
-            a.setModifierPar("SYSTEM");
-
-        String sql = "UPDATE Agenda SET medecinId = ?, mois = ?, joursDisponible = ?, dateDebut = ?, dateFin = ?, dateDerniereModification = ?, modifierPar = ? WHERE idAgenda = ?";
+        String sql = "UPDATE agendamensuel SET mois = ?, annee = ?, joursNonDisponibles = ?, medecin_id = ? WHERE id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
-
-            ps.setLong(1, a.getMedecinId());
-            ps.setString(2, a.getMois() != null ? a.getMois().name() : null);
+            ps.setString(1, a.getMois() != null ? a.getMois().name() : null);
+            if (a.getDateCreation() == null) {
+                a.setDateCreation(LocalDate.now());
+            }
+            ps.setInt(2, a.getDateCreation().getYear());
 
             String joursStr = null;
             if (a.getJoursDisponible() != null && !a.getJoursDisponible().isEmpty()) {
@@ -120,14 +112,9 @@ public class AgendaRepositoryImpl implements AgendaRepository {
                         .collect(Collectors.joining(","));
             }
             ps.setString(3, joursStr);
+            ps.setLong(4, a.getMedecinId());
 
-            ps.setDate(4, a.getDateDebut() != null ? Date.valueOf(a.getDateDebut()) : null);
-            ps.setDate(5, a.getDateFin() != null ? Date.valueOf(a.getDateFin()) : null);
-
-            ps.setTimestamp(6, Timestamp.valueOf(a.getDateDerniereModification()));
-            ps.setString(7, a.getModifierPar());
-
-            ps.setLong(8, a.getIdAgenda());
+            ps.setLong(5, a.getIdAgenda());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -144,7 +131,7 @@ public class AgendaRepositoryImpl implements AgendaRepository {
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Agenda WHERE idAgenda = ?";
+        String sql = "DELETE FROM agendamensuel WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -156,7 +143,7 @@ public class AgendaRepositoryImpl implements AgendaRepository {
 
     @Override
     public Optional<agenda> findByMois(Mois mois) {
-        String sql = "SELECT * FROM Agenda WHERE mois = ?";
+        String sql = "SELECT * FROM agendamensuel WHERE mois = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

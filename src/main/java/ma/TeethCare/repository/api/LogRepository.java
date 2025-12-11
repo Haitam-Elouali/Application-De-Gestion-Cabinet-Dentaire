@@ -1,7 +1,6 @@
 package ma.TeethCare.repository.api;
 
 import ma.TeethCare.entities.log.log;
-import ma.TeethCare.repository.common.BaseRepository;
 import ma.TeethCare.repository.common.CrudRepository;
 
 import java.sql.SQLException;

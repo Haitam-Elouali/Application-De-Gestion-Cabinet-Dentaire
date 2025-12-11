@@ -11,7 +11,7 @@ import ma.TeethCare.entities.patient.Patient;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class antecedent extends baseEntity {
     private Long idAntecedent;
     private Long dossierMedicaleId;

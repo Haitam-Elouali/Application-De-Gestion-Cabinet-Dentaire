@@ -1,50 +1,60 @@
 package ma.TeethCare.service.modules.impl;
+
 import ma.TeethCare.entities.rdv.rdv;
+import ma.TeethCare.repository.api.RdvRepository;
 import ma.TeethCare.service.modules.api.rdvService;
+
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author Hamza ALAOUI
+ * @date 2025-12-10
+ */
+
 public class rdvServiceImpl implements rdvService {
+
+    private final RdvRepository repository;
+
+    public rdvServiceImpl(RdvRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public rdv create(rdv entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        repository.create(entity);
+        return entity;
     }
 
     @Override
     public Optional<rdv> findById(Long id) throws Exception {
-        // TODO: Implement method
-        return Optional.empty();
+        return Optional.ofNullable(repository.findById(id));
     }
 
     @Override
     public List<rdv> findAll() throws Exception {
-        // TODO: Implement method
-        return null;
+        return repository.findAll();
     }
 
     @Override
     public rdv update(rdv entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        repository.update(entity);
+        return entity;
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        repository.deleteById(id);
+        return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        return repository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        // TODO: Implement method
-        return 0;
+        return repository.findAll().size();
     }
 }

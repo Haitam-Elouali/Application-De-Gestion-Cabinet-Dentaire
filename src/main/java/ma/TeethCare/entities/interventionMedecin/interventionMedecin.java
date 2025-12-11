@@ -12,7 +12,7 @@ import ma.TeethCare.entities.consultation.consultation;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class interventionMedecin extends baseEntity {
     private Long idIM;
     private Long medecinId;

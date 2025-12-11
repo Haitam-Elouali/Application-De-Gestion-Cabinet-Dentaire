@@ -19,7 +19,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class consultation extends baseEntity {
     private Long idConsultation;
     private Long rdvId;

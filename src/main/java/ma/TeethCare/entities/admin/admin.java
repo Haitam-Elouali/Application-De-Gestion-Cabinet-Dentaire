@@ -10,7 +10,7 @@ import ma.TeethCare.entities.cabinetMedicale.cabinetMedicale;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class admin extends utilisateur {
     private String permissionAdmin;
     private String domaine;

@@ -3,9 +3,9 @@ package ma.TeethCare.conf;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import ma.TeethCare.mvc.controllers.modules.patient.api.PatientController;
+// import ma.TeethCare.mvc.controllers.modules.patient.api.PatientController;
 import ma.TeethCare.repository.api.PatientRepository;
-import ma.TeethCare.service.modules.patient.api.PatientService;
+import ma.TeethCare.service.modules.api.PatientService;
 
 public class ApplicationContext {
 
@@ -21,7 +21,7 @@ public class ApplicationContext {
                 properties.load(configFile);
                 String daoClassName = properties.getProperty("patientRepo");
                 String servClassName = properties.getProperty("patientService");
-                String ctrlClassName = properties.getProperty("patientController");
+                // String ctrlClassName = properties.getProperty("patientController");
 
                 Class<?> cRepository = Class.forName(daoClassName);
                 PatientRepository repository = (PatientRepository) cRepository.getDeclaredConstructor().newInstance();
@@ -29,18 +29,20 @@ public class ApplicationContext {
                 Class<?> cService = Class.forName(servClassName);
                 PatientService service = (PatientService) cService.getDeclaredConstructor(PatientRepository.class).newInstance(repository);
 
+                /*
                 Class<?> cController = Class.forName(ctrlClassName);
                 PatientController controller = (PatientController) cController.getDeclaredConstructor(PatientService.class).newInstance(service);
+                */
 
                 // Stockage des beans dans le contexte
                 context.put(PatientRepository.class, repository);
                 context.put(PatientService.class, service);
-                context.put(PatientController.class, controller);
+                // context.put(PatientController.class, controller);
 
                 // Enregistrement des beans aussi avec des noms explicites
                 contextByName.put("patientDao", repository);
                 contextByName.put("patientService", service);
-                contextByName.put("patientController", controller);
+                // contextByName.put("patientController", controller);
 
             } catch (Exception e) {
                 e.printStackTrace();

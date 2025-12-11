@@ -20,7 +20,10 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
     @Override
     public List<antecedent> findAll() throws SQLException {
         List<antecedent> antecedentList = new ArrayList<>();
-        String sql = "SELECT * FROM Antecedent";
+        // JOIN to get inherited fields from Entite
+        String sql = "SELECT t.*, e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM Antecedants t " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -38,7 +41,11 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
 
     @Override
     public antecedent findById(Long id) {
-        String sql = "SELECT * FROM Antecedent WHERE idAntecedent = ?";
+        // JOIN to get inherited fields from Entite
+        String sql = "SELECT t.*, e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM Antecedants t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -57,33 +64,70 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
 
     @Override
     public void create(antecedent a) {
-        a.setDateCreation(LocalDate.now());
-        if (a.getCreePar() == null)
-            a.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtAntecedent = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO Antecedent (dateCreation, creePar, idAntecedent, dossierMedicaleId, nom, categorie, niveauRisque) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, a.getDateCreation() != null ? a.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, a.getCreePar() != null ? a.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, a.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(a.getDateCreation()));
-            ps.setString(2, a.getCreePar());
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                a.setIdEntite(id);
+                a.setIdAntecedent(id);
+            } else {
+                throw new SQLException("Creating Entite for Antecedants failed, no ID obtained.");
+            }
 
-            ps.setLong(3, a.getIdAntecedent());
-            ps.setLong(4, a.getDossierMedicaleId());
-            ps.setString(5, a.getNom());
-            ps.setString(6, a.getCategorie());
-            ps.setString(7, a.getNiveauRisque().name());
+            // 2. Insert into antecedants
+            // Table: antecedants (id, nom, categorie, niveauDeRisque, dossiermedicale_id)
+            String sqlAnt = "INSERT INTO antecedants (id, nom, categorie, niveauDeRisque, dossiermedicale_id) VALUES (?, ?, ?, ?, ?)";
+            stmtAntecedent = conn.prepareStatement(sqlAnt);
+            stmtAntecedent.setLong(1, id);
+            stmtAntecedent.setString(2, a.getNom());
+            stmtAntecedent.setString(3, a.getCategorie());
+            stmtAntecedent.setString(4, a.getNiveauRisque() != null ? a.getNiveauRisque().name() : null);
+            stmtAntecedent.setObject(5, a.getDossierMedicaleId());
+            
+            stmtAntecedent.executeUpdate();
 
-            ps.executeUpdate();
+            conn.commit();
+            System.out.println("✓ Antecedants créé avec id: " + id);
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    a.setIdAntecedent(generatedKeys.getLong(1));
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour Antecedants: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtAntecedent != null) stmtAntecedent.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -92,26 +136,54 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
         a.setDateDerniereModification(LocalDateTime.now());
         if (a.getModifierPar() == null)
             a.setModifierPar("SYSTEM");
+        
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtAnt = null;
 
-        String sql = "UPDATE Antecedent SET idAntecedent = ?, dossierMedicaleId = ?, nom = ?, categorie = ?, niveauRisque = ?, dateDerniereModification = ?, modifierPar = ? WHERE idAntecedent = ?";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(a.getDateDerniereModification()));
+            stmtEntite.setString(2, a.getModifierPar());
+            stmtEntite.setLong(3, a.getIdAntecedent());
+            stmtEntite.executeUpdate();
 
-            ps.setLong(1, a.getIdAntecedent());
-            ps.setLong(2, a.getDossierMedicaleId());
-            ps.setString(3, a.getNom());
-            ps.setString(4, a.getCategorie());
-            ps.setString(5, a.getNiveauRisque().name());
+            // Update Antecedants
+            String sqlAnt = "UPDATE Antecedants SET dossiermedicale_id = ?, nom = ?, categorie = ?, niveauDeRisque = ? WHERE id = ?";
+            stmtAnt = conn.prepareStatement(sqlAnt);
+            stmtAnt.setLong(1, a.getDossierMedicaleId());
+            stmtAnt.setString(2, a.getNom());
+            stmtAnt.setString(3, a.getCategorie());
+            stmtAnt.setString(4, a.getNiveauRisque().name());
+            stmtAnt.setLong(5, a.getIdAntecedent());
+            stmtAnt.executeUpdate();
 
-            ps.setTimestamp(6, Timestamp.valueOf(a.getDateDerniereModification()));
-            ps.setString(7, a.getModifierPar());
-
-            ps.setLong(8, a.getIdAntecedent());
-
-            ps.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+             try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtAnt != null) stmtAnt.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -124,7 +196,11 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Antecedent WHERE idAntecedent = ?";
+        // Deleting from Entite should cascade to Antecedants if FK is configured with ON DELETE CASCADE.
+        // If not, we should delete from Antecedants then Entite. 
+        // Assuming Entite is parent. But 'Antecedants.id' maps to 'Entite.id'.
+        // Let's delete from Entite. If constraint fails, we'll know.
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -137,7 +213,11 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
     @Override
     public List<antecedent> findByCategorie(String categorie) {
         List<antecedent> antecedentList = new ArrayList<>();
-        String sql = "SELECT * FROM Antecedent WHERE categorie = ?";
+        // JOIN to get inherited fields from Entite
+        String sql = "SELECT t.*, e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM Antecedants t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.categorie = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

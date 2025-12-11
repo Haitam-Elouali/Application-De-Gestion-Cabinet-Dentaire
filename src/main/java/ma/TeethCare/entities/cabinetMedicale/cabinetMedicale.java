@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class cabinetMedicale extends baseEntity {
     private Long idCabinet;
     private String nom;

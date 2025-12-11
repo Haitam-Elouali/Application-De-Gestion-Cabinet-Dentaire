@@ -20,7 +20,14 @@ public class CertificatRepositoryImpl implements CertificatRepository {
     @Override
     public List<certificat> findAll() throws SQLException {
         List<certificat> certificatList = new ArrayList<>();
-        String sql = "SELECT * FROM Certificat";
+        // Alias database columns to match properties expected by RowMapper
+        // id -> idCertif
+        // duree -> dureer
+        // note -> noteMedecin
+        String sql = "SELECT t.id as idCertif, t.type, t.dateDebut, t.dateFin, t.duree as dureer, t.note as noteMedecin, t.consultation_id as consultationId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM Certificat t " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -38,7 +45,11 @@ public class CertificatRepositoryImpl implements CertificatRepository {
 
     @Override
     public certificat findById(Long id) {
-        String sql = "SELECT * FROM Certificat WHERE idCertif = ?";
+        String sql = "SELECT t.id as idCertif, t.type, t.dateDebut, t.dateFin, t.duree as dureer, t.note as noteMedecin, t.consultation_id as consultationId, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM Certificat t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -57,33 +68,71 @@ public class CertificatRepositoryImpl implements CertificatRepository {
 
     @Override
     public void create(certificat c) {
-        c.setDateCreation(LocalDate.now());
-        if (c.getCreePar() == null)
-            c.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtCertif = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO Certificat (dateCreation, creePar, idCertif, dateDebut, dateFin, dureer, noteMedecin) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, c.getDateCreation() != null ? c.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, c.getCreePar() != null ? c.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, c.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(c.getDateCreation()));
-            ps.setString(2, c.getCreePar());
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                c.setIdEntite(id);
+                c.setIdCertif(id);
+            } else {
+                throw new SQLException("Creating Entite for Certificat failed, no ID obtained.");
+            }
 
-            ps.setLong(3, c.getIdCertif());
-            ps.setDate(4, c.getDateDebut() != null ? Date.valueOf(c.getDateDebut()) : null);
-            ps.setDate(5, c.getDateFin() != null ? Date.valueOf(c.getDateFin()) : null);
-            ps.setInt(6, c.getDuree());
-            ps.setString(7, c.getNoteMedecin());
+            // 2. Insert into Certificat
+            // Removed 'type' from SQL as it is not in the Entity
+            String sqlCertif = "INSERT INTO certificat (id, dateDebut, dateFin, duree, note) VALUES (?, ?, ?, ?, ?)";
+            
+            stmtCertif = conn.prepareStatement(sqlCertif);
+            stmtCertif.setLong(1, id);
+            stmtCertif.setDate(2, c.getDateDebut() != null ? Date.valueOf(c.getDateDebut()) : null);
+            stmtCertif.setDate(3, c.getDateFin() != null ? Date.valueOf(c.getDateFin()) : null);
+            stmtCertif.setInt(4, c.getDuree());
+            stmtCertif.setString(5, c.getNoteMedecin());
 
-            ps.executeUpdate();
+            stmtCertif.executeUpdate();
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    c.setIdCertif(generatedKeys.getLong(1));
+            conn.commit();
+            System.out.println("✓ Certificat créé avec id: " + id);
+
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour Certificat: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtCertif != null) stmtCertif.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -92,26 +141,56 @@ public class CertificatRepositoryImpl implements CertificatRepository {
         c.setDateDerniereModification(LocalDateTime.now());
         if (c.getModifierPar() == null)
             c.setModifierPar("SYSTEM");
+        
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtCertif = null;
 
-        String sql = "UPDATE Certificat SET idCertif = ?, dateDebut = ?, dateFin = ?, dureer = ?, noteMedecin = ?, dateDerniereModification = ?, modifierPar = ? WHERE idCertif = ?";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(c.getDateDerniereModification()));
+            stmtEntite.setString(2, c.getModifierPar());
+            stmtEntite.setLong(3, c.getIdCertif()); 
+            stmtEntite.executeUpdate();
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Update Certificat
+            // Removed 'type' from SQL
+            String sqlCertif = "UPDATE Certificat SET dateDebut = ?, dateFin = ?, duree = ?, note = ? WHERE id = ?";
+            stmtCertif = conn.prepareStatement(sqlCertif);
+            stmtCertif.setDate(1, c.getDateDebut() != null ? Date.valueOf(c.getDateDebut()) : null);
+            stmtCertif.setDate(2, c.getDateFin() != null ? Date.valueOf(c.getDateFin()) : null);
+            stmtCertif.setInt(3, c.getDuree());
+            stmtCertif.setString(4, c.getNoteMedecin());
+            stmtCertif.setLong(5, c.getIdCertif());
 
-            ps.setLong(1, c.getIdCertif());
-            ps.setDate(2, c.getDateDebut() != null ? Date.valueOf(c.getDateDebut()) : null);
-            ps.setDate(3, c.getDateFin() != null ? Date.valueOf(c.getDateFin()) : null);
-            ps.setInt(4, c.getDuree());
-            ps.setString(5, c.getNoteMedecin());
-
-            ps.setTimestamp(6, Timestamp.valueOf(c.getDateDerniereModification()));
-            ps.setString(7, c.getModifierPar());
-
-            ps.setLong(8, c.getIdCertif());
-
-            ps.executeUpdate();
+            stmtCertif.executeUpdate();
+            
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+             if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtCertif != null) stmtCertif.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -124,7 +203,7 @@ public class CertificatRepositoryImpl implements CertificatRepository {
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM Certificat WHERE idCertif = ?";
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);

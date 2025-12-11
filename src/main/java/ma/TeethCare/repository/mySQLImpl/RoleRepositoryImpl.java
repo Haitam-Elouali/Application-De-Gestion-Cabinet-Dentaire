@@ -62,7 +62,7 @@ public class RoleRepositoryImpl implements RoleRepository {
         if (r.getCreePar() == null)
             r.setCreePar("SYSTEM");
 
-        String sql = "INSERT INTO Role (dateCreation, creePar, idRole, libeller, description) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Role (dateCreation, creePar, idRole, libelle, description) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -92,7 +92,7 @@ public class RoleRepositoryImpl implements RoleRepository {
         if (r.getModifierPar() == null)
             r.setModifierPar("SYSTEM");
 
-        String sql = "UPDATE Role SET idRole = ?, libeller = ?, description = ?, dateDerniereModification = ?, modifierPar = ? WHERE idRole = ?";
+        String sql = "UPDATE Role SET idRole = ?, libelle = ?, description = ?, dateDerniereModification = ?, modifierPar = ? WHERE idRole = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -133,7 +133,7 @@ public class RoleRepositoryImpl implements RoleRepository {
 
     @Override
     public Optional<role> findByLibeller(Libeller libeller) {
-        String sql = "SELECT * FROM Role WHERE libeller = ?";
+        String sql = "SELECT * FROM Role WHERE libelle = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

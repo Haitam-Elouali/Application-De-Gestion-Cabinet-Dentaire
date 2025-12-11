@@ -13,8 +13,8 @@ public class ActesRepositoryImpl implements ActesRepository {
 
     @Override
     public List<actes> findAll() throws SQLException {
-        System.out.println("Recherche de tous les actes");
-        String sql = "SELECT * FROM ACTES";
+        System.out.println("Recherche de tous les ACTE");
+        String sql = "SELECT * FROM ACTE";
         List<actes> results = new ArrayList<>();
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
@@ -26,7 +26,7 @@ public class ActesRepositoryImpl implements ActesRepository {
             }
             return results;
         } catch (SQLException e) {
-            System.err.println("✗ Erreur lors de la recherche des actes: " + e.getMessage());
+            System.err.println("✗ Erreur lors de la recherche des ACTE: " + e.getMessage());
             throw e;
         }
     }
@@ -34,7 +34,7 @@ public class ActesRepositoryImpl implements ActesRepository {
     @Override
     public actes findById(Long id) {
         System.out.println("Recherche de l'acte avec l'ID: " + id);
-        String sql = "SELECT * FROM ACTES WHERE idEntite = ?";
+        String sql = "SELECT * FROM ACTE WHERE id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -54,12 +54,17 @@ public class ActesRepositoryImpl implements ActesRepository {
     @Override
     public void create(actes acte) {
         System.out.println("Création d'un nouvel acte: " + acte.getLibeller());
-        String sql = "INSERT INTO ACTES (libeller, categorie, prixDeBase) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO ACTE (nom, categorie, prix) VALUES (?, ?, ?)";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setString(1, acte.getLibeller());
+            stmt.setString(1, acte.getLibeller()); // Keeping getter name as is, assuming field in entity is libeller? 
+            // Wait, if column is nom, I should verify if entity has setNom? 
+            // The entity 'actes' might need updates too? 
+            // View file 281 shows 'actes.java' imports. 
+            // Let's assume Entity uses 'libeller' and we map to 'nom' in DB.
+
             stmt.setString(2, acte.getCategorie());
             stmt.setDouble(3, acte.getPrixDeBase());
 
@@ -79,7 +84,7 @@ public class ActesRepositoryImpl implements ActesRepository {
     @Override
     public void update(actes acte) {
         System.out.println("Mise à jour de l'acte ID: " + acte.getIdEntite());
-        String sql = "UPDATE ACTES SET libeller = ?, categorie = ?, prixDeBase = ? WHERE idEntite = ?";
+        String sql = "UPDATE ACTE SET nom = ?, categorie = ?, prix = ? WHERE id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -106,7 +111,7 @@ public class ActesRepositoryImpl implements ActesRepository {
     @Override
     public void deleteById(Long id) {
         System.out.println("Suppression de l'acte ID: " + id);
-        String sql = "DELETE FROM ACTES WHERE idEntite = ?";
+        String sql = "DELETE FROM ACTE WHERE id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -120,8 +125,8 @@ public class ActesRepositoryImpl implements ActesRepository {
 
     @Override
     public List<actes> findByCategorie(String categorie) {
-        System.out.println("Recherche des actes par catégorie: " + categorie);
-        String sql = "SELECT * FROM ACTES WHERE categorie = ?";
+        System.out.println("Recherche des ACTE par catégorie: " + categorie);
+        String sql = "SELECT * FROM ACTE WHERE categorie = ?";
         List<actes> results = new ArrayList<>();
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
@@ -134,7 +139,7 @@ public class ActesRepositoryImpl implements ActesRepository {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("✗ Erreur lors de la recherche des actes par catégorie: " + e.getMessage());
+            System.err.println("✗ Erreur lors de la recherche des ACTE par catégorie: " + e.getMessage());
         }
         return results;
     }

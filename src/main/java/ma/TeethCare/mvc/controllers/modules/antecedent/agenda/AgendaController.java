@@ -1,4 +1,4 @@
-package ma.TeethCare.mvc.controllers.agenda;
+package ma.TeethCare.mvc.controllers.modules.antecedent.agenda;
 
 import ma.TeethCare.mvc.dto.agenda.AgendaDTO;
 import java.time.LocalDate;

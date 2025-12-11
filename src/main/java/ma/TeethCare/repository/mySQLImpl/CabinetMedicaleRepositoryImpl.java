@@ -20,7 +20,14 @@ public class CabinetMedicaleRepositoryImpl implements CabinetMedicaleRepository 
     @Override
     public List<cabinetMedicale> findAll() throws SQLException {
         List<cabinetMedicale> cabinetList = new ArrayList<>();
-        String sql = "SELECT * FROM CabinetMedicale";
+        // Alias database columns to match propertiess expected by RowMapper
+        // id -> idEntite
+        // nomCabinet -> nom
+        // tele -> tel1
+        String sql = "SELECT t.id as idEntite, t.nomCabinet as nom, t.adresse, t.tele as tel1, t.email, t.logo, t.instagram, t.siteWeb, t.description, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM CabinetMedicale t " + 
+                     "JOIN entite e ON t.id = e.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -38,7 +45,11 @@ public class CabinetMedicaleRepositoryImpl implements CabinetMedicaleRepository 
 
     @Override
     public cabinetMedicale findById(Long id) {
-        String sql = "SELECT * FROM CabinetMedicale WHERE idEntite = ?";
+        String sql = "SELECT t.id as idEntite, t.nomCabinet as nom, t.adresse, t.tele as tel1, t.email, t.logo, t.instagram, t.siteWeb, t.description, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM CabinetMedicale t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -57,38 +68,73 @@ public class CabinetMedicaleRepositoryImpl implements CabinetMedicaleRepository 
 
     @Override
     public void create(cabinetMedicale c) {
-        c.setDateCreation(LocalDate.now());
-        if (c.getCreePar() == null)
-            c.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtCab = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO CabinetMedicale (dateCreation, creePar, nom, email, logo, cin, tel1, tel2, siteWeb, instagram, facebook, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, c.getDateCreation() != null ? c.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, c.getCreePar() != null ? c.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, c.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(c.getDateCreation()));
-            ps.setString(2, c.getCreePar());
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                c.setIdEntite(id);
+            } else {
+                throw new SQLException("Creating Entite for CabinetMedicale failed, no ID obtained.");
+            }
 
-            ps.setString(3, c.getNom());
-            ps.setString(4, c.getEmail());
-            ps.setString(5, c.getLogo());
-            ps.setString(6, c.getCin());
-            ps.setString(7, c.getTel1());
-            ps.setString(8, c.getTel2());
-            ps.setString(9, c.getSiteWeb());
-            ps.setString(10, c.getInstagram());
-            ps.setString(11, c.getFacebook());
-            ps.setString(12, c.getDescription());
+            // 2. Insert into CabinetMedicale
+            String sqlCab = "INSERT INTO cabinetmedicale (id, nomCabinet, adresse, tele, email, logo, instagram, siteWeb, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            stmtCab = conn.prepareStatement(sqlCab);
+            stmtCab.setLong(1, id);
+            stmtCab.setString(2, c.getNom()); 
+            stmtCab.setString(3, null); // adresse logic pending, null for now implies DB default or nullable
+            stmtCab.setString(4, c.getTel1()); 
+            stmtCab.setString(5, c.getEmail());
+            stmtCab.setString(6, c.getLogo());
+            stmtCab.setString(7, c.getInstagram());
+            stmtCab.setString(8, c.getSiteWeb());
+            stmtCab.setString(9, c.getDescription());
 
-            ps.executeUpdate();
+            stmtCab.executeUpdate();
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    c.setIdEntite(generatedKeys.getLong(1));
+            conn.commit();
+            System.out.println("✓ CabinetMedicale créé avec id: " + id);
+
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour CabinetMedicale: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtCab != null) stmtCab.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -98,30 +144,57 @@ public class CabinetMedicaleRepositoryImpl implements CabinetMedicaleRepository 
         if (c.getModifierPar() == null)
             c.setModifierPar("SYSTEM");
 
-        String sql = "UPDATE CabinetMedicale SET nom = ?, email = ?, logo = ?, cin = ?, tel1 = ?, tel2 = ?, siteWeb = ?, instagram = ?, facebook = ?, description = ?, dateDerniereModification = ?, modifierPar = ? WHERE idEntite = ?";
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtCab = null;
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
+            
+            // Update Entite
+            String sqlEntite = "UPDATE entite SET dateDerniereModification = ?, modifiePar = ? WHERE id = ?";
+            stmtEntite = conn.prepareStatement(sqlEntite);
+            stmtEntite.setTimestamp(1, Timestamp.valueOf(c.getDateDerniereModification()));
+            stmtEntite.setString(2, c.getModifierPar());
+            stmtEntite.setLong(3, c.getIdEntite());
+            stmtEntite.executeUpdate();
 
-            ps.setString(1, c.getNom());
-            ps.setString(2, c.getEmail());
-            ps.setString(3, c.getLogo());
-            ps.setString(4, c.getCin());
-            ps.setString(5, c.getTel1());
-            ps.setString(6, c.getTel2());
-            ps.setString(7, c.getSiteWeb());
-            ps.setString(8, c.getInstagram());
-            ps.setString(9, c.getFacebook());
-            ps.setString(10, c.getDescription());
+             // Update CabinetMedicale
+            String sqlCab = "UPDATE CabinetMedicale SET nomCabinet = ?, email = ?, logo = ?, tele = ?, siteWeb = ?, instagram = ?, description = ? WHERE id = ?";
+            stmtCab = conn.prepareStatement(sqlCab);
+            stmtCab.setString(1, c.getNom());
+            stmtCab.setString(2, c.getEmail());
+            stmtCab.setString(3, c.getLogo());
+            stmtCab.setString(4, c.getTel1());
+            stmtCab.setString(5, c.getSiteWeb());
+            stmtCab.setString(6, c.getInstagram());
+            stmtCab.setString(7, c.getDescription());
+            stmtCab.setLong(8, c.getIdEntite());
+            
+            stmtCab.executeUpdate();
 
-            ps.setTimestamp(11, Timestamp.valueOf(c.getDateDerniereModification()));
-            ps.setString(12, c.getModifierPar());
-
-            ps.setLong(13, c.getIdEntite());
-
-            ps.executeUpdate();
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+             try {
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtCab != null) stmtCab.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -134,7 +207,8 @@ public class CabinetMedicaleRepositoryImpl implements CabinetMedicaleRepository 
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM CabinetMedicale WHERE idEntite = ?";
+        // Delete from Entite, relying on cascade or manual deletion order if needed
+        String sql = "DELETE FROM entite WHERE id = ?";
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -146,7 +220,11 @@ public class CabinetMedicaleRepositoryImpl implements CabinetMedicaleRepository 
 
     @Override
     public Optional<cabinetMedicale> findByEmail(String email) {
-        String sql = "SELECT * FROM CabinetMedicale WHERE email = ?";
+        String sql = "SELECT t.id as idEntite, t.nomCabinet as nom, t.adresse, t.tele as tel1, t.email, t.logo, t.instagram, t.siteWeb, t.description, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM CabinetMedicale t " + 
+                     "JOIN entite e ON t.id = e.id " + 
+                     "WHERE t.email = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

@@ -30,7 +30,7 @@ public class AdminRepositoryTest {
         a.setPermissionAdmin("FULL");
         a.setDomaine("IT");
         a.setNom("AdminTest");
-        a.setEmail("admin.test@example.com");
+        a.setEmail("admin.test2@example.com");
         a.setTel("0600000000");
         a.setDateCreation(LocalDate.now());
         repository.create(a);

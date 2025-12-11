@@ -18,7 +18,7 @@ import java.time.LocalTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 public class rdv extends baseEntity {
     private Long idRDV;
     private Long patientId;

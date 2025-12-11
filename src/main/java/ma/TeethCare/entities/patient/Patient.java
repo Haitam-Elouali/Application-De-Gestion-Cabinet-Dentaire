@@ -13,10 +13,8 @@ import ma.TeethCare.entities.antecedent.antecedent;
 import ma.TeethCare.entities.baseEntity.baseEntity;
 import java.util.List;
 
-@Data @AllArgsConstructor @NoArgsConstructor @Builder
+@Data @AllArgsConstructor @NoArgsConstructor @lombok.experimental.SuperBuilder
 public class Patient extends baseEntity {
-
-
     private String nom;
     private String prenom;
     private String adresse;

@@ -1,13 +1,11 @@
-package ma.TeethCare;
-
-
 import ma.TeethCare.conf.ApplicationContext;
-import ma.TeethCare.mvc.controllers.modules.patient.api.PatientController;
+// import ma.TeethCare.mvc.controllers.modules.patient.PatientController;
 
 public class MainApp
 {
     public static void main( String[] args )
     {
-        ApplicationContext.getBean(PatientController.class).showRecentPatients();
+        System.out.println("Application starting...");
+        // ApplicationContext.getBean(PatientController.class).showRecentPatients();
     }
 }

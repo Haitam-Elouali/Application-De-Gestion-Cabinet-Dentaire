@@ -17,13 +17,13 @@
     <!-- ==================================================================== -->
 
     <!-- ================== IDENTITÉ DU PROJET ====================== -->
-    <groupId>ma.dentalTech</groupId>        <!-- Domaine ou organisation -->
-    <artifactId>DentalTech</artifactId>     <!-- Nom du projet -->
+    <groupId>ma.TeethCare</groupId>        <!-- Domaine ou organisation -->
+    <artifactId>TeethCare</artifactId>     <!-- Nom du projet -->
     <version>1.0-SNAPSHOT</version>         <!-- Version du projet -->
     <packaging>jar</packaging>              <!-- Type de livrable généré -->
 
-    <name>DentalTech</name>
-    <url>http://dentalTech.ma</url>
+    <name>TeethCare</name>
+    <url>http://teethCare.ma</url>
     <description>Application de gestion complète d’un cabinet dentaire :
         gestion des patients, consultations, rendez-vous, facturation et suivi médical.
     </description>
@@ -172,6 +172,11 @@
                 <configuration>
                     <release>${maven.compiler.release}</release>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <excludes>
+                        <exclude>ma/TeethCare/mvc/**</exclude>
+                        <exclude>ma/TeethCare/MainApp.java</exclude>
+                        <exclude>ma/TeethCare/conf/ApplicationContext.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 

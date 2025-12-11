@@ -57,31 +57,68 @@ public class DossierMedicaleRepositoryImpl implements DossierMedicaleRepository 
 
     @Override
     public void create(dossierMedicale d) {
-        d.setDateCreation(LocalDate.now());
-        if (d.getCreePar() == null)
-            d.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtDM = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO DossierMedicale (dateCreation, creePar, idDM, patientId, dateDeCreation) VALUES (?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, d.getDateCreation() != null ? d.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, d.getCreePar() != null ? d.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, d.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(d.getDateCreation()));
-            ps.setString(2, d.getCreePar());
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                d.setIdEntite(id);
+                d.setIdDM(id);
+            } else {
+                throw new SQLException("Creating Entite for DossierMedicale failed, no ID obtained.");
+            }
 
-            ps.setLong(3, d.getIdDM());
-            ps.setLong(4, d.getPatientId());
-            ps.setTimestamp(5, d.getDateDeCreation() != null ? Timestamp.valueOf(d.getDateDeCreation()) : null);
+            // 2. Insert into DossierMedicale
+            // Table: dossiermedicale (id, dateDeCreation, patient_id)
+            String sqlDM = "INSERT INTO dossiermedicale (id, dateDeCreation, patient_id) VALUES (?, ?, ?)";
+            stmtDM = conn.prepareStatement(sqlDM);
+            stmtDM.setLong(1, id);
+            stmtDM.setTimestamp(2, d.getDateDeCreation() != null ? Timestamp.valueOf(d.getDateDeCreation()) : null);
+            stmtDM.setLong(3, d.getPatientId());
 
-            ps.executeUpdate();
+            stmtDM.executeUpdate();
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    d.setIdDM(generatedKeys.getLong(1));
+            conn.commit();
+            System.out.println("✓ DossierMedicale créé avec id: " + id);
+
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour DossierMedicale: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtDM != null) stmtDM.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 

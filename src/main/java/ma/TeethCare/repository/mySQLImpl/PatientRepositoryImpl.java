@@ -53,32 +53,92 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public void create(Patient p) {
-        p.setDateCreation(LocalDate.now());
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtPatient = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO Patient (dateCreation, nom, prenom, adresse, telephone, email, dateNaissance, sexe, assurance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, p.getDateCreation() != null ? p.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, p.getCreePar() != null ? p.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, p.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            stmt.setDate(1, Date.valueOf(p.getDateCreation()));
-            stmt.setString(2, p.getNom());
-            stmt.setString(3, p.getPrenom());
-            stmt.setString(4, p.getAdresse());
-            stmt.setString(5, p.getTelephone());
-            stmt.setString(6, p.getEmail());
-            stmt.setDate(7, p.getDateNaissance() != null ? Date.valueOf(p.getDateNaissance()) : null);
-            stmt.setString(8, p.getSexe() != null ? p.getSexe().name() : null);
-            stmt.setString(9, p.getAssurance() != null ? p.getAssurance().name() : null);
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                p.setIdEntite(id);
+            } else {
+                throw new SQLException("Creating Entite for Patient failed, no ID obtained.");
+            }
 
-            stmt.executeUpdate();
+            // 2. Insert into Patient
+            // Table: patient (id, nom, prenom, dateNaissance, sexe, telephone, assurance)
+            // No 'email' in schema for patient.
+            String sqlPatient = "INSERT INTO patient (id, nom, prenom, adresse, telephone, dateNaissance, sexe, assurance) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            // Note: 'adresse' is NOT in the text.txt schema for patient?? 
+            // text.txt: id, nom, prenom, dateNaissance, sexe, telephone, assurance.
+            // Let me check text.txt again for 'adresse' in patient.
+            // Result of viewed_file text.txt above:
+            // TABLE: patient
+            //   - id ...
+            //   - nom ...
+            //   - prenom ...
+            //   - dateNaissance ...
+            //   - sexe ...
+            //   - telephone ...
+            //   - assurance ...
+            // IT DOES NOT HAVE ADRESSE either.
+            
+            // Re-evaluating SQL. 
+            // I will remove 'adresse' and 'email' from the INSERT to be safe with schema.
+            // If the Java Entity has them, they won't be persisted to DB or need distinct table? 
+            // For now, I stick to the schema to avoid SQL errors.
+            String sqlPatientFinal = "INSERT INTO patient (id, nom, prenom, telephone, dateNaissance, sexe, assurance) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            
+            stmtPatient = conn.prepareStatement(sqlPatientFinal);
+            stmtPatient.setLong(1, id);
+            stmtPatient.setString(2, p.getNom());
+            stmtPatient.setString(3, p.getPrenom());
+            stmtPatient.setString(4, p.getTelephone());
+            stmtPatient.setDate(5, p.getDateNaissance() != null ? Date.valueOf(p.getDateNaissance()) : null);
+            stmtPatient.setString(6, p.getSexe() != null ? p.getSexe().name() : null);
+            stmtPatient.setString(7, p.getAssurance() != null ? p.getAssurance().name() : null);
 
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    p.setIdEntite(generatedKeys.getLong(1));
+            stmtPatient.executeUpdate();
+
+            conn.commit();
+            System.out.println("✓ Patient créé avec id: " + id);
+
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour Patient: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtPatient != null) stmtPatient.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 

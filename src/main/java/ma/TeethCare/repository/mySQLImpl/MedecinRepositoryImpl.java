@@ -58,51 +58,95 @@ public class MedecinRepositoryImpl implements MedecinRepository {
 
     @Override
     public void create(medecin m) {
-        m.setDateCreation(LocalDate.now());
-        if (m.getCreePar() == null)
-            m.setCreePar("SYSTEM");
+        Connection conn = null;
+        PreparedStatement stmtEntite = null;
+        PreparedStatement stmtUser = null;
+        PreparedStatement stmtStaff = null;
+        PreparedStatement stmtMed = null;
+        ResultSet generatedKeys = null;
 
-        String sql = "INSERT INTO Medecin (dateCreation, creePar, idUser, nom, email, adresse, cin, tel, sexe, login, motDePasse, lastLoginDate, dateNaissance, salaire, prime, dateRecrutement, soldeConge, idMedecin, specialite, numeroOrdre, diplome) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            // 1. Insert into Entite
+            String sqlEntite = "INSERT INTO entite (dateCreation, creePar, dateDerniereModification) VALUES (?, ?, ?)";
+            stmtEntite = conn.prepareStatement(sqlEntite, Statement.RETURN_GENERATED_KEYS);
+            stmtEntite.setObject(1, m.getDateCreation() != null ? m.getDateCreation() : java.time.LocalDate.now());
+            stmtEntite.setString(2, m.getCreePar() != null ? m.getCreePar() : "SYSTEM");
+            stmtEntite.setObject(3, m.getDateDerniereModification());
+            stmtEntite.executeUpdate();
 
-            ps.setDate(1, Date.valueOf(m.getDateCreation()));
-            ps.setString(2, m.getCreePar());
+            Long id = null;
+            generatedKeys = stmtEntite.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                id = generatedKeys.getLong(1);
+                m.setIdMedecin(id);
+                m.setIdUser(id);
+                m.setIdEntite(id);
+            } else {
+                throw new SQLException("Creating Entite for Medecin failed, no ID obtained.");
+            }
 
-            ps.setLong(3, m.getIdUser());
-            ps.setString(4, m.getNom());
-            ps.setString(5, m.getEmail());
-            ps.setString(6, m.getAdresse());
-            ps.setString(7, m.getCin());
-            ps.setString(8, m.getTel());
-            ps.setString(9, m.getSexe() != null ? m.getSexe().name() : null);
-            ps.setString(10, m.getLogin());
-            ps.setString(11, m.getMotDePasse());
-            ps.setDate(12, m.getLastLoginDate() != null ? Date.valueOf(m.getLastLoginDate()) : null);
-            ps.setDate(13, m.getDateNaissance() != null ? Date.valueOf(m.getDateNaissance()) : null);
+            // 2. Insert into Utilisateur
+            String sqlUser = "INSERT INTO utilisateur (id, nom, email, tele, username, password, sexe, dateNaissance) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            stmtUser = conn.prepareStatement(sqlUser);
+            stmtUser.setLong(1, id);
+            stmtUser.setString(2, m.getNom());
+            stmtUser.setString(3, m.getEmail());
+            // Mapping 'tele' -> 'tele' or 'tel'. Schema says 'tele', Entity says 'tel'. 
+            // Previous analysis showed 'tele' in DB.
+            stmtUser.setString(4, m.getTel());
+            stmtUser.setString(5, m.getLogin());
+            stmtUser.setString(6, m.getMotDePasse());
+            stmtUser.setString(7, m.getSexe() != null ? m.getSexe().name() : null);
+            stmtUser.setObject(8, m.getDateNaissance());
+            stmtUser.executeUpdate();
 
-            // Staff
-            ps.setDouble(14, m.getSalaire());
-            ps.setDouble(15, m.getPrime());
-            ps.setDate(16, m.getDateRecrutement() != null ? Date.valueOf(m.getDateRecrutement()) : null);
-            ps.setInt(17, m.getSoldeConge());
+            // 3. Insert into Staff
+            // Staff table: id, salaire, dateRecrutement, dateDepart (no soldeConge/prime in DB based on previous fix)
+            String sqlStaff = "INSERT INTO staff (id, salaire, dateRecrutement) VALUES (?, ?, ?)";
+            stmtStaff = conn.prepareStatement(sqlStaff);
+            stmtStaff.setLong(1, id);
+            stmtStaff.setDouble(2, m.getSalaire() != null ? m.getSalaire() : 0.0);
+            stmtStaff.setObject(3, m.getDateRecrutement());
+            stmtStaff.executeUpdate();
 
-            // Medecin
-            ps.setLong(18, m.getIdMedecin());
-            ps.setString(19, m.getSpecialite());
-            ps.setString(20, m.getNumeroOrdre());
-            ps.setString(21, m.getDiplome());
+            // 4. Insert into Medecin
+            // Medecin table: id, specialite (no numeroOrdre/diplome in DB based on text.txt)
+            String sqlMed = "INSERT INTO medecin (id, specialite) VALUES (?, ?)";
+            stmtMed = conn.prepareStatement(sqlMed);
+            stmtMed.setLong(1, id);
+            stmtMed.setString(2, m.getSpecialite());
+            stmtMed.executeUpdate();
 
-            ps.executeUpdate();
+            conn.commit();
+            System.out.println("✓ Medecin créé avec id: " + id);
 
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    m.setIdMedecin(generatedKeys.getLong(1));
+        } catch (SQLException e) {
+            System.err.println("✗ Erreur lors de create() pour Medecin: " + e.getMessage());
+            e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (stmtEntite != null) stmtEntite.close();
+                if (stmtUser != null) stmtUser.close();
+                if (stmtStaff != null) stmtStaff.close();
+                if (stmtMed != null) stmtMed.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
