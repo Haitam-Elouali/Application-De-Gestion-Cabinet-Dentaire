@@ -31,4 +31,10 @@ public class dossierMedicale extends baseEntity {
     private List<consultation> consultations;
     private List<ordonnance> ordonnances;
     private List<certificat> certificats;
+    public static dossierMedicale createTestInstance(ma.TeethCare.entities.patient.Patient patient) {
+        return dossierMedicale.builder()
+                .dateDeCreation(LocalDateTime.now())
+                .patient(patient)
+                .build();
+    }
 }

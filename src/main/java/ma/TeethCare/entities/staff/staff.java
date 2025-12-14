@@ -20,4 +20,11 @@ public class staff extends utilisateur {
     private int soldeConge;
     
     private cabinetMedicale cabinetMedicale;
+    public static staff createTestInstance() {
+        return staff.builder()
+                .nom("StaffGeneric")
+                .email("staff@test.com")
+                .cin("STF001")
+                .build();
+    }
 }

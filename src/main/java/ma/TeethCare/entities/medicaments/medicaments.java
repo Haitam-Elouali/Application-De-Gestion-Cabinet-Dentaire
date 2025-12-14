@@ -23,4 +23,10 @@ public class medicaments extends baseEntity {
     private String description;
     
     private List<prescription> prescriptions;
+    public static ma.TeethCare.entities.medicaments.medicaments createTestInstance() {
+        return ma.TeethCare.entities.medicaments.medicaments.builder()
+                .nom("Doliprane")
+                .type("Comprime") // Example
+                .build();
+    }
 }

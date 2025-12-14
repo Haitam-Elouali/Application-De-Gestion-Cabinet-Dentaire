@@ -25,4 +25,11 @@ public class agenda extends baseEntity {
     private LocalDate dateFin;
     
     private medecin medecin;
+    public static agenda createTestInstance(ma.TeethCare.entities.medecin.medecin medecin) {
+        return agenda.builder()
+                .medecin(medecin)
+                .dateDebut(LocalDate.now())
+                .dateFin(LocalDate.now().plusYears(1))
+                .build();
+    }
 }

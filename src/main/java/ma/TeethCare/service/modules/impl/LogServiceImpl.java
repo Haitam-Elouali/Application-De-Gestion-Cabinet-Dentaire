@@ -1,57 +1,71 @@
 package ma.TeethCare.service.modules.impl;
-
 import ma.TeethCare.entities.log.log;
-import ma.TeethCare.repository.api.LogRepository;
 import ma.TeethCare.service.modules.api.logService;
-
-import java.time.LocalDateTime;
+import ma.TeethCare.repository.api.LogRepository;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
+
+/**
+ * @author CHOUKHAIRI Noureddine
+ * @date 2025-12-14
+ */
 
 public class LogServiceImpl implements logService {
 
-    private final LogRepository logRepository;
+    private final LogRepository repository;
 
-    // Constructor injection pour ton repository
-    public LogServiceImpl(LogRepository logRepository) {
-        this.logRepository = logRepository;
+    public LogServiceImpl(LogRepository repository) {
+        this.repository = repository;
     }
 
     @Override
     public log create(log entity) throws Exception {
-        logRepository.create(entity);
+        repository.create(entity);
         return entity;
     }
 
     @Override
     public Optional<log> findById(Long id) throws Exception {
-        return Optional.ofNullable(logRepository.findById(id));
+        return Optional.ofNullable(repository.findById(id));
     }
 
     @Override
     public List<log> findAll() throws Exception {
-        return logRepository.findAll();
+        return repository.findAll();
     }
 
     @Override
     public log update(log entity) throws Exception {
-        logRepository.update(entity);
+        repository.update(entity);
         return entity;
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        logRepository.deleteById(id);
+        repository.deleteById(id);
         return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        return logRepository.findById(id) != null;
+        return repository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        return findAll().size();
+        return repository.findAll().size();
+    }
+    
+    public List<log> findByUtilisateur(String utilisateur) throws Exception {
+        return repository.findByUtilisateur(utilisateur);
+    }
+    
+    public List<log> findByAction(String action) throws Exception {
+        return repository.findByAction(action);
+    }
+    
+    public List<log> findByDateRange(LocalDateTime debut, LocalDateTime fin) throws Exception {
+        return repository.findByDateRange(debut, fin);
     }
 }

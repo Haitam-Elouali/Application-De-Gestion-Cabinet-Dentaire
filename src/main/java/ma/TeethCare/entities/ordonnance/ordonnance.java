@@ -25,4 +25,10 @@ public class ordonnance extends baseEntity {
     
     private consultation consultation;
     private List<prescription> prescriptions;
+    public static ordonnance createTestInstance(ma.TeethCare.entities.consultation.consultation consultation) {
+        return ordonnance.builder()
+                .date(LocalDate.now())
+                .consultation(consultation)
+                .build();
+    }
 }

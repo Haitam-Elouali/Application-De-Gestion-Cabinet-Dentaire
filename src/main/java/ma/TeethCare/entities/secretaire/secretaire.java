@@ -20,4 +20,11 @@ public class secretaire extends staff {
     // Relations
     private List<rdv> rdvs;
     private List<facture> factures;
+    public static secretaire createTestInstance() {
+        return secretaire.builder()
+                .nom("Moneypenny")
+                .email("sec@office.com")
+                .cin("SEC001")
+                .build();
+    }
 }

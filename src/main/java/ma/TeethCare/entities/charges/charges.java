@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
 import ma.TeethCare.entities.cabinetMedicale.cabinetMedicale;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -22,4 +23,11 @@ public class charges extends baseEntity {
     private LocalDateTime date;
     
     private cabinetMedicale cabinetMedicale;
+    public static charges createTestInstance() {
+        return charges.builder()
+                .montant(500.0)
+                .description("Electricity")
+                .date(LocalDate.now().atStartOfDay())
+                .build();
+    }
 }

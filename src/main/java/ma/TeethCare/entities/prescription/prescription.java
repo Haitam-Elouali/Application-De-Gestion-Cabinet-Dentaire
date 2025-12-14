@@ -22,4 +22,11 @@ public class prescription extends baseEntity {
     
     private ordonnance ordonnance;
     private medicaments medicament;
+    public static prescription createTestInstance(ma.TeethCare.entities.ordonnance.ordonnance ordonnance, ma.TeethCare.entities.medicaments.medicaments medicament) {
+        return prescription.builder()
+                .ordonnance(ordonnance)
+                .medicament(medicament)
+                .dureeEnjours(5)
+                .build();
+    }
 }

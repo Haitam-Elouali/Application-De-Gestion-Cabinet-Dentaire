@@ -36,7 +36,7 @@
 
 ## 👨‍💻 Développeur 3 : GESTION FINANCIÈRE ET ADMINISTRATIVE
 
-**Modules:** Facture, Caisse, Charges, Revenues, CabinetMedicale, SituationFinanciere
+**Modules:** Facture, Charges, Revenues, CabinetMedicale, SituationFinanciere
 **Charge:** ~17% (interfaces créées, implémentations à faire)
 
 ### Points d'intégration

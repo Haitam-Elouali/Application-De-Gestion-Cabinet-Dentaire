@@ -38,4 +38,12 @@ public class consultation extends baseEntity {
     private List<interventionMedecin> interventions;
     private List<certificat> certificats;
     private List<facture> factures;
+    public static consultation createTestInstance(ma.TeethCare.entities.patient.Patient patient, ma.TeethCare.entities.medecin.medecin medecin) {
+        return consultation.builder()
+                .date(LocalDate.now())
+                .medecin(medecin)
+                .patientId(patient.getIdEntite())
+                .statut(Statut.En_attente)
+                .build();
+    }
 }

@@ -33,4 +33,13 @@ public class utilisateur extends baseEntity {
     private List<role> roles;
     private List<notification> notifications;
     private List<log> logs;
+    public static utilisateur createTestInstance() {
+        return utilisateur.builder()
+                .nom("Utilisateur Test")
+                .email("test@user.com")
+                .login("testuser")
+                .motDePasse("password")
+                .dateNaissance(LocalDate.of(1990, 1, 1))
+                .build();
+    }
 }

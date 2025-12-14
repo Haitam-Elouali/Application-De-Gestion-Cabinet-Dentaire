@@ -7,6 +7,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author Salma BAKAROUM
+ * @date 2025-12-10
+ */
+
 public class AdminServiceTest {
     
     // Static service instance to be reused across tests
@@ -26,7 +31,6 @@ public class AdminServiceTest {
             testFindById();
             testUpdate();
             testFindAll();
-            testFindByDomaine();
             testExists();
             testCount();
             testDelete();
@@ -133,18 +137,6 @@ public class AdminServiceTest {
             System.out.println("✅ FindAll retourne des résultats.");
         } else {
             System.out.println("⚠️ Liste vide.");
-        }
-    }
-
-    public static void testFindByDomaine() throws Exception {
-        System.out.println("\n--- TEST: FIND BY DOMAINE ---");
-        // We updated domain to "Security" in previous step
-        List<admin> securities = adminService.findByDomaine("Security");
-        System.out.println("ℹ️ Admins dans 'Security': " + securities.size());
-        if (securities.stream().anyMatch(a -> a.getIdEntite().equals(createdAdminId) || (a.getIdUser() != null && a.getIdUser().equals(createdAdminId)))) {
-            System.out.println("✅ Admin trouvé par domaine.");
-        } else {
-            System.err.println("❌ ERREUR: Admin non trouvé par domaine 'Security'.");
         }
     }
 

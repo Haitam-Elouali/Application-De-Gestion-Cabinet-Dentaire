@@ -33,4 +33,11 @@ public class cabinetMedicale extends baseEntity {
     private List<medicaments> stock;
     private List<revenues> revenues;
     private List<charges> charges;
+    public static cabinetMedicale createTestInstance() {
+        return cabinetMedicale.builder()
+                .nom("Cabinet Test")
+                .adresse("123 Rue Test")
+                .email("contact@cabinet.com")
+                .build();
+    }
 }

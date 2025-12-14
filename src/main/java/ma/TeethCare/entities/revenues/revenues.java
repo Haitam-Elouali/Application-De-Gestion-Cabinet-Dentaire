@@ -22,4 +22,11 @@ public class revenues extends baseEntity {
     private LocalDateTime date;
     
     private facture facture;
+    public static revenues createTestInstance() {
+        return revenues.builder()
+                .montant(150.0)
+                .date(LocalDateTime.now())
+                .description("Consultation fee")
+                .build();
+    }
 }

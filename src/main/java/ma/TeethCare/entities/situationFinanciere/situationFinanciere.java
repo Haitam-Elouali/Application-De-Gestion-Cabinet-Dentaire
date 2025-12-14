@@ -28,4 +28,11 @@ public class situationFinanciere extends baseEntity {
     
     private dossierMedicale dossierMedicale;
     private List<facture> factures;
+    public static situationFinanciere createTestInstance(ma.TeethCare.entities.dossierMedicale.dossierMedicale dossierMedicale) {
+        return situationFinanciere.builder()
+                .dossierMedicale(dossierMedicale)
+                .totaleDesActes(150.0)
+                .reste(150.0)
+                .build();
+    }
 }

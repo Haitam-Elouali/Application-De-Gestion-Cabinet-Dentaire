@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
 import ma.TeethCare.entities.interventionMedecin.interventionMedecin;
 import java.util.List;
+import ma.TeethCare.entities.actes.actes;
   
 @Data
 @AllArgsConstructor
@@ -20,4 +21,10 @@ public class actes extends baseEntity {
     private String codeSECU;
     
     private List<interventionMedecin> interventions;
+    public static actes createTestInstance() {
+        return actes.builder()
+                .libeller("Detartrage")
+                .prixDeBase(300.0)
+                .build();
+    }
 }

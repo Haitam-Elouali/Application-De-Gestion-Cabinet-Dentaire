@@ -22,4 +22,12 @@ public class caisse extends baseEntity {
     private String reference;
     
     private facture facture;
+    public static caisse createTestInstance(ma.TeethCare.entities.facture.facture facture) {
+        return caisse.builder()
+                .montant(100.0)
+                .dateEncaissement(LocalDate.now())
+                .modeEncaissement("Espece")
+                .facture(facture)
+                .build();
+    }
 }

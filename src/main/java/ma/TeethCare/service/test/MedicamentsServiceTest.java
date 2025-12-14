@@ -1,42 +1,145 @@
 package ma.TeethCare.service.test;
 
+import ma.TeethCare.entities.medicaments.medicaments;
+import ma.TeethCare.repository.api.MedicamentRepository;
+import ma.TeethCare.service.modules.api.medicamentsService;
+import ma.TeethCare.service.modules.impl.medicamentsServiceImpl;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.sql.SQLException;
+
+/**
+ * @author CHOUKHAIRI Noureddine
+ * @date 2025-12-14
+ */
+
 public class MedicamentsServiceTest {
 
+    static class MedicamentRepositoryStub implements MedicamentRepository {
+        private Map<Long, medicaments> data = new HashMap<>();
+        private long idCounter = 1;
+
+        @Override
+        public List<medicaments> findAll() throws SQLException {
+            return new ArrayList<>(data.values());
+        }
+
+        @Override
+        public medicaments findById(Long id) {
+            return data.get(id);
+        }
+
+        @Override
+        public void create(medicaments entity) {
+            if (entity.getIdMed() == null) {
+                entity.setIdMed(idCounter++);
+            }
+            data.put(entity.getIdMed(), entity);
+        }
+
+        @Override
+        public void update(medicaments entity) {
+            data.put(entity.getIdMed(), entity);
+        }
+
+        @Override
+        public void delete(medicaments entity) {
+            data.remove(entity.getIdMed());
+        }
+
+        @Override
+        public void deleteById(Long id) {
+            data.remove(id);
+        }
+
+        @Override
+        public Optional<medicaments> findByNom(String nom) {
+            return data.values().stream().filter(m -> m.getNom().equals(nom)).findFirst();
+        }
+    }
+
     public static void main(String[] args) {
-        testCreate();
-        testFindById();
-        testFindAll();
-        testUpdate();
-        testDelete();
-        testExists();
-        testCount();
+        try {
+            MedicamentRepositoryStub repo = new MedicamentRepositoryStub();
+            medicamentsService service = new medicamentsServiceImpl(repo);
+
+            testCreate(service);
+            testFindById(service);
+            testFindAll(service);
+            testUpdate(service);
+            testDelete(service);
+            testExists(service);
+            testCount(service);
+            
+            System.out.println("All MedicamentsService tests passed!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public static void testCreate() {
-        // TODO: Structure declaration - implementation not required
+    public static void testCreate(medicamentsService service) throws Exception {
+        System.out.println("Testing Create...");
+        medicaments m = medicaments.builder()
+            .nom("Doliprane")
+            .type("Analgesique")
+            .build();
+        medicaments created = service.create(m);
+        if (created.getIdMed() == null) throw new RuntimeException("Create failed: ID is null");
+        System.out.println("Create passed.");
     }
 
-    public static void testFindById() {
-        // TODO: Structure declaration - implementation not required
+    public static void testFindById(medicamentsService service) throws Exception {
+        System.out.println("Testing FindById...");
+        medicaments m = medicaments.builder().nom("Advil").build();
+        m = service.create(m);
+        Optional<medicaments> found = service.findById(m.getIdMed());
+        if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
+        System.out.println("FindById passed.");
     }
 
-    public static void testFindAll() {
-        // TODO: Structure declaration - implementation not required
+    public static void testFindAll(medicamentsService service) throws Exception {
+        System.out.println("Testing FindAll...");
+        int initialCount = service.findAll().size();
+        service.create(medicaments.builder().nom("Smecta").build());
+        if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
+        System.out.println("FindAll passed.");
     }
 
-    public static void testUpdate() {
-        // TODO: Structure declaration - implementation not required
+    public static void testUpdate(medicamentsService service) throws Exception {
+        System.out.println("Testing Update...");
+        medicaments m = medicaments.builder().nom("Old Name").build();
+        m = service.create(m);
+        m.setNom("New Name");
+        medicaments updated = service.update(m);
+        if (!updated.getNom().equals("New Name")) throw new RuntimeException("Update failed: value mismatch");
+        System.out.println("Update passed.");
     }
 
-    public static void testDelete() {
-        // TODO: Structure declaration - implementation not required
+    public static void testDelete(medicamentsService service) throws Exception {
+        System.out.println("Testing Delete...");
+        medicaments m = medicaments.builder().nom("Delete Me").build();
+        m = service.create(m);
+        Long id = m.getIdMed();
+        service.delete(id);
+        if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
+        System.out.println("Delete passed.");
     }
 
-    public static void testExists() {
-        // TODO: Structure declaration - implementation not required
+    public static void testExists(medicamentsService service) throws Exception {
+        System.out.println("Testing Exists...");
+        medicaments m = medicaments.builder().nom("Exists").build();
+        m = service.create(m);
+        if (!service.exists(m.getIdMed())) throw new RuntimeException("Exists failed: returned false");
+        System.out.println("Exists passed.");
     }
 
-    public static void testCount() {
-        // TODO: Structure declaration - implementation not required
+    public static void testCount(medicamentsService service) throws Exception {
+        System.out.println("Testing Count...");
+        long count = service.count();
+        if (count < 0) throw new RuntimeException("Count failed: negative");
+        System.out.println("Count passed.");
     }
 }

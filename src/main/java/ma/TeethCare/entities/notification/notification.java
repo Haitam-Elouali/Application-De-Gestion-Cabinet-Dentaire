@@ -1,10 +1,10 @@
 package ma.TeethCare.entities.notification;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ma.TeethCare.entities.baseEntity.baseEntity;
+import ma.TeethCare.entities.patient.Patient;
 import ma.TeethCare.entities.utilisateur.utilisateur;
 
 import java.time.LocalDateTime;
@@ -22,4 +22,11 @@ public class notification extends baseEntity {
     private boolean lue;
     
     private utilisateur utilisateur;
+    public static ma.TeethCare.entities.notification.notification createTestInstance(utilisateur utilisateur) {
+        return ma.TeethCare.entities.notification.notification.builder()
+                .message("Rdv confirmed")
+                .dateEnvoi(LocalDateTime.now())
+                .utilisateur(utilisateur)
+                .build();
+    }
 }

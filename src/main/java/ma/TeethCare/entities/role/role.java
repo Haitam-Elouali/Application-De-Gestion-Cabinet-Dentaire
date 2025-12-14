@@ -20,4 +20,9 @@ public class role extends baseEntity {
     private String description;
     
     private List<utilisateur> utilisateurs;
+    public static ma.TeethCare.entities.role.role createTestInstance() {
+        return ma.TeethCare.entities.role.role.builder()
+                .libeller(ma.TeethCare.common.enums.Libeller.Admin)
+                .build();
+    }
 }

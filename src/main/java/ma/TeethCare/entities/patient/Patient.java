@@ -28,5 +28,15 @@ public class Patient extends baseEntity {
     // Relations
     private dossierMedicale dossierMedicale;
     private List<antecedent> antecedents;
+    public static Patient createTestInstance() {
+        return Patient.builder()
+                .nom("Dupont")
+                .prenom("Jean")
+                .email("jean.dupont@example.com")
+                .telephone("0600000000")
+                .sexe(Sexe.Homme)
+                .dateNaissance(LocalDate.of(1990, 1, 1))
+                .build();
+    }
 }
 

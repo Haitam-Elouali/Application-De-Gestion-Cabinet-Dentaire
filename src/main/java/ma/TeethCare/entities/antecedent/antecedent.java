@@ -20,4 +20,11 @@ public class antecedent extends baseEntity {
     private niveauDeRisque niveauRisque;
     
     private Patient patient;
+    public static antecedent createTestInstance(ma.TeethCare.entities.patient.Patient patient) {
+        return antecedent.builder()
+                .nom("Allergy to Penicillin")
+                .categorie("Allergie")
+                .patient(patient)
+                .build();
+    }
 }

@@ -28,4 +28,13 @@ public class certificat extends baseEntity {
     private consultation consultation;
     private medecin medecin;
     private Patient patient;
+    public static certificat createTestInstance(ma.TeethCare.entities.patient.Patient patient, ma.TeethCare.entities.medecin.medecin medecin) {
+        return certificat.builder()
+                .dateDebut(LocalDate.now())
+                .duree(3)
+                .noteMedecin("Maladie")
+                .patient(patient)
+                .medecin(medecin)
+                .build();
+    }
 }

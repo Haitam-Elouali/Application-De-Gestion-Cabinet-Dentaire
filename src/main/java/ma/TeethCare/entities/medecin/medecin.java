@@ -21,4 +21,12 @@ public class medecin extends staff {
     
     private agenda agendaMensuel;
     private List<consultation> consultations;
+    public static medecin createTestInstance() {
+        return medecin.builder()
+                .nom("House")
+                .email("house@hospital.com")
+                .cin("MED001")
+                .specialite("Diagnostician")
+                .build();
+    }
 }

@@ -33,4 +33,12 @@ public class rdv extends baseEntity {
     private medecin medecin;
     private consultation consultation;
     private dossierMedicale dossierMedicale;
+    public static rdv createTestInstance(ma.TeethCare.entities.patient.Patient patient, ma.TeethCare.entities.medecin.medecin medecin) {
+        return rdv.builder()
+                .date(LocalDate.now().plusDays(1))
+                .patient(patient)
+                .medecin(medecin)
+                .statut(Statut.Planifiee)
+                .build();
+    }
 }

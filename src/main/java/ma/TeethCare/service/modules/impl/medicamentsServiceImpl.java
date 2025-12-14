@@ -1,50 +1,58 @@
 package ma.TeethCare.service.modules.impl;
 import ma.TeethCare.entities.medicaments.medicaments;
 import ma.TeethCare.service.modules.api.medicamentsService;
+import ma.TeethCare.repository.api.MedicamentRepository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author CHOUKHAIRI Noureddine
+ * @date 2025-12-14
+ */
+
 public class medicamentsServiceImpl implements medicamentsService {
+
+    private final MedicamentRepository repository;
+
+    public medicamentsServiceImpl(MedicamentRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public medicaments create(medicaments entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        repository.create(entity);
+        return entity;
     }
 
     @Override
     public Optional<medicaments> findById(Long id) throws Exception {
-        // TODO: Implement method
-        return Optional.empty();
+        return Optional.ofNullable(repository.findById(id));
     }
 
     @Override
     public List<medicaments> findAll() throws Exception {
-        // TODO: Implement method
-        return null;
+        return repository.findAll();
     }
 
     @Override
     public medicaments update(medicaments entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        repository.update(entity);
+        return entity;
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        repository.deleteById(id);
+        return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        return repository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        // TODO: Implement method
-        return 0;
+        return repository.findAll().size();
     }
 }

@@ -24,4 +24,9 @@ public class interventionMedecin extends baseEntity {
     private medecin medecin;
     private actes acte;
     private consultation consultation;
+    public static interventionMedecin createTestInstance(ma.TeethCare.entities.medecin.medecin medecin, ma.TeethCare.entities.consultation.consultation consultation) {
+        return interventionMedecin.builder()
+                .consultation(consultation)
+                .build();
+    }
 }

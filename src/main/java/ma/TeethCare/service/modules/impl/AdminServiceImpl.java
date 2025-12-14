@@ -8,6 +8,11 @@ import ma.TeethCare.service.modules.api.adminService;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author Salma BAKAROUM
+ * @date 2025-12-10
+ */
+
 public class AdminServiceImpl implements adminService {
 
     private final AdminRepository adminRepository;
