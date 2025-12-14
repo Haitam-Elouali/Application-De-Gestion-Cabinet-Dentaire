@@ -73,16 +73,15 @@ public class AdminServiceTest {
         long timestamp = System.currentTimeMillis();
         newAdmin.setNom("AdminTest");
         newAdmin.setEmail("admin." + timestamp + "@teethcare.ma");
-        newAdmin.setLogin("admin" + timestamp); // Unique Login
-        newAdmin.setMotDePasse("Secret123");
-        newAdmin.setDomaine("IT Support");
+        newAdmin.setUsername("admin" + timestamp); // Unique Login
+        newAdmin.setPassword("Secret123");
         // BaseEntity attributes handled by repo if not set, or we set dateCreation
         newAdmin.setDateCreation(LocalDate.now());
 
         try {
             adminService.create(newAdmin);
             createdAdminId = newAdmin.getIdEntite(); // OR getIdUser/getIdAdmin depending on mapping
-            if (createdAdminId == null) createdAdminId = newAdmin.getIdUser();
+            if (createdAdminId == null) createdAdminId = newAdmin.getId();
 
             System.out.println("✅ Admin créé avec ID : " + createdAdminId);
             if (createdAdminId == null) {
@@ -102,7 +101,7 @@ public class AdminServiceTest {
         }
         Optional<admin> found = adminService.findById(createdAdminId);
         if (found.isPresent()) {
-            System.out.println("✅ Admin trouvé: " + found.get().getNom() + " (Domaine: " + found.get().getDomaine() + ")");
+            System.out.println("✅ Admin trouvé: " + found.get().getNom());
         } else {
             System.err.println("❌ ERREUR: Admin non trouvé avec ID " + createdAdminId);
         }
@@ -115,13 +114,12 @@ public class AdminServiceTest {
         Optional<admin> found = adminService.findById(createdAdminId);
         if (found.isPresent()) {
             admin a = found.get();
-            a.setDomaine("Security");
             a.setNom("UpdatedAdmin");
             
             adminService.update(a);
             
             Optional<admin> updated = adminService.findById(createdAdminId);
-            if (updated.isPresent() && "Security".equals(updated.get().getDomaine()) && "UpdatedAdmin".equals(updated.get().getNom())) {
+            if (updated.isPresent() && "Security".equals("UpdatedAdmin".equals(updated.get().getNom()))) {
                 System.out.println("✅ Admin mis à jour avec succès.");
             } else {
                 System.err.println("❌ ERREUR: Mise à jour échouée.");

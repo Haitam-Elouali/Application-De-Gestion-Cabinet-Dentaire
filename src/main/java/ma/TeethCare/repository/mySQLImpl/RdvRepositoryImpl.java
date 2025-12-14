@@ -97,7 +97,7 @@ public class RdvRepositoryImpl implements RdvRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 r.setIdEntite(id);
-                r.setIdRDV(id);
+                r.setId(id);
             } else {
                 throw new SQLException("Creating Entite for RDV failed, no ID obtained.");
             }
@@ -175,7 +175,7 @@ public class RdvRepositoryImpl implements RdvRepository {
             stmtRdv.setTime(2, r.getHeure() != null ? Time.valueOf(r.getHeure()) : null);
             stmtRdv.setString(3, r.getStatut() != null ? r.getStatut().name() : null);
             stmtRdv.setLong(4, r.getPatientId());
-            stmtRdv.setLong(5, r.getIdRDV());
+            stmtRdv.setLong(5, r.getId());
 
             stmtRdv.executeUpdate();
 

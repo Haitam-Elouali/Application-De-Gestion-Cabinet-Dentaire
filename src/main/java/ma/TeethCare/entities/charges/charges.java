@@ -15,19 +15,22 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class charges extends baseEntity {
-    private Long idCharge;
+    private Long id; // Was idCharge
     private String titre;
     private String description;
-    private String categorie;
     private Double montant;
-    private LocalDateTime date;
+    private String categorie; // New/Was there but reordered? Schema: titre, description, montant, categorie, date, cabinet_id
+    private LocalDateTime date; // Schema says DATETIME
+    private Long cabinetId; // New
     
     private cabinetMedicale cabinetMedicale;
     public static charges createTestInstance() {
         return charges.builder()
+                .titre("Facture Electrique")
                 .montant(500.0)
                 .description("Electricity")
-                .date(LocalDate.now().atStartOfDay())
+                .categorie("Energie")
+                .date(LocalDateTime.now())
                 .build();
     }
 }

@@ -87,7 +87,7 @@ public class DossierMedicaleRepositoryImpl implements DossierMedicaleRepository 
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 d.setIdEntite(id);
-                d.setIdDM(id);
+                d.setId(id);
             } else {
                 throw new SQLException("Creating Entite for DossierMedicale failed, no ID obtained.");
             }
@@ -157,7 +157,7 @@ public class DossierMedicaleRepositoryImpl implements DossierMedicaleRepository 
             stmtDM = conn.prepareStatement(sqlDM);
             stmtDM.setTimestamp(1, d.getDateDeCreation() != null ? Timestamp.valueOf(d.getDateDeCreation()) : null);
             stmtDM.setLong(2, d.getPatientId());
-            stmtDM.setLong(3, d.getIdDM());
+            stmtDM.setLong(3, d.getId());
 
             stmtDM.executeUpdate();
 

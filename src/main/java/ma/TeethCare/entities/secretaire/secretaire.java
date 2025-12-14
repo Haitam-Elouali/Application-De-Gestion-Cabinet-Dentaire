@@ -14,8 +14,11 @@ import java.util.List;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class secretaire extends staff {
-    private String numCNSS;
-    private Double commission;
+    private Long id; // Entity ID if table per class? Staff inheritance? 
+    // If table per class, it has ID. If joined, it shares ID. 
+    // Schema says `secretaire` table has `id`.
+    private int commission; // Schema has absence
+    // Removed numCNSS,
     
     // Relations
     private List<rdv> rdvs;
@@ -25,6 +28,8 @@ public class secretaire extends staff {
                 .nom("Moneypenny")
                 .email("sec@office.com")
                 .cin("SEC001")
+                .salaire(4000.0)
+                .commission(10)
                 .build();
     }
 }

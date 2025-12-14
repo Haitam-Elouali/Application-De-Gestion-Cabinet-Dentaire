@@ -85,35 +85,30 @@ public class AdminRepositoryImpl implements AdminRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 entity.setIdEntite(id);
-                entity.setIdUser(id);
+                entity.setId(id);
             } else {
                 throw new SQLException("Creating Entite for Admin failed, no ID obtained.");
             }
 
             // 2. Insert into Utilisateur
-            String sqlUser = "INSERT INTO utilisateur (id, nom, email, tele, username, password, sexe, dateNaissance) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            String sqlUser = "INSERT INTO utilisateur (id, nom, prenom, email, tele, username, password, sexe, dateNaissance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             stmtUser = conn.prepareStatement(sqlUser);
             stmtUser.setLong(1, id);
             stmtUser.setString(2, entity.getNom());
-            stmtUser.setString(3, entity.getEmail());
-            stmtUser.setString(4, entity.getTel());
-            stmtUser.setString(5, entity.getLogin());
-            stmtUser.setString(6, entity.getMotDePasse());
-            stmtUser.setString(7, entity.getSexe() != null ? entity.getSexe().name() : null);
-            stmtUser.setObject(8, entity.getDateNaissance());
+            stmtUser.setString(3, entity.getPrenom());
+            stmtUser.setString(4, entity.getEmail());
+            stmtUser.setString(5, entity.getTelephone());
+            stmtUser.setString(6, entity.getUsername());
+            stmtUser.setString(7, entity.getPassword());
+            stmtUser.setString(8, entity.getSexe() != null ? entity.getSexe().name() : null);
+            stmtUser.setObject(9, entity.getDateNaissance());
             stmtUser.executeUpdate();
 
             // 3. Insert into Admin
-            // Admin table: id, permissionAdmin, cabinetId
-            String sqlAdmin = "INSERT INTO admin (id, permissionAdmin, cabinetId) VALUES (?, ?, ?)";
+            // Admin table: id (Only id since permissionAdmin/cabinetId removed from entity)
+            String sqlAdmin = "INSERT INTO admin (id) VALUES (?)";
             stmtAdmin = conn.prepareStatement(sqlAdmin);
             stmtAdmin.setLong(1, id);
-            stmtAdmin.setString(2, entity.getPermissionAdmin());
-            if (entity.getCabinetMedicale() != null && entity.getCabinetMedicale().getIdEntite() != null) {
-                stmtAdmin.setLong(3, entity.getCabinetMedicale().getIdEntite());
-            } else {
-                stmtAdmin.setObject(3, null);
-            }
             stmtAdmin.executeUpdate();
 
             conn.commit();
@@ -154,7 +149,6 @@ public class AdminRepositoryImpl implements AdminRepository {
         Connection conn = null;
         PreparedStatement stmtEntite = null;
         PreparedStatement stmtUser = null;
-        PreparedStatement stmtAdmin = null;
 
         try {
             conn = SessionFactory.getInstance().getConnection();
@@ -169,29 +163,20 @@ public class AdminRepositoryImpl implements AdminRepository {
             stmtEntite.executeUpdate();
 
             // Update Utilisateur
-            String sqlUser = "UPDATE utilisateur SET nom = ?, email = ?, tele = ?, username = ?, password = ?, sexe = ?, dateNaissance = ? WHERE id = ?";
+            String sqlUser = "UPDATE utilisateur SET nom = ?, prenom = ?, email = ?, tele = ?, username = ?, password = ?, sexe = ?, dateNaissance = ? WHERE id = ?";
             stmtUser = conn.prepareStatement(sqlUser);
             stmtUser.setString(1, entity.getNom());
-            stmtUser.setString(2, entity.getEmail());
-            stmtUser.setString(3, entity.getTel());
-            stmtUser.setString(4, entity.getLogin());
-            stmtUser.setString(5, entity.getMotDePasse());
-            stmtUser.setString(6, entity.getSexe() != null ? entity.getSexe().name() : null);
-            stmtUser.setObject(7, entity.getDateNaissance());
-            stmtUser.setLong(8, entity.getIdEntite());
+            stmtUser.setString(2, entity.getPrenom());
+            stmtUser.setString(3, entity.getEmail());
+            stmtUser.setString(4, entity.getTelephone());
+            stmtUser.setString(5, entity.getUsername());
+            stmtUser.setString(6, entity.getPassword());
+            stmtUser.setString(7, entity.getSexe() != null ? entity.getSexe().name() : null);
+            stmtUser.setObject(8, entity.getDateNaissance());
+            stmtUser.setLong(9, entity.getIdEntite());
             stmtUser.executeUpdate();
 
-            // Update Admin (permission, cabinetId)
-            String sqlAdmin = "UPDATE admin SET permissionAdmin = ?, cabinetId = ? WHERE id = ?";
-            stmtAdmin = conn.prepareStatement(sqlAdmin);
-            stmtAdmin.setString(1, entity.getPermissionAdmin());
-            if (entity.getCabinetMedicale() != null && entity.getCabinetMedicale().getIdEntite() != null) {
-                stmtAdmin.setLong(2, entity.getCabinetMedicale().getIdEntite());
-            } else {
-                stmtAdmin.setObject(2, null);
-            }
-            stmtAdmin.setLong(3, entity.getIdEntite());
-            stmtAdmin.executeUpdate();
+            // Admin table update skipped as no fields to update
 
             conn.commit();
             System.out.println("✓ Admin mis à jour avec id: " + entity.getIdEntite());
@@ -208,7 +193,6 @@ public class AdminRepositoryImpl implements AdminRepository {
             try {
                 if (stmtEntite != null) stmtEntite.close();
                 if (stmtUser != null) stmtUser.close();
-                if (stmtAdmin != null) stmtAdmin.close();
                 if (conn != null) {
                     conn.setAutoCommit(true);
                     conn.close();

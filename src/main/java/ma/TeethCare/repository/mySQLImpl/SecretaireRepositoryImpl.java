@@ -99,7 +99,7 @@ public class SecretaireRepositoryImpl implements SecretaireRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 s.setIdEntite(id);
-                s.setIdUser(id);
+                s.setId(id); // Was setIdUser/setIdSecretaire
             } else {
                 throw new SQLException("Creating Entite for Secretaire failed, no ID obtained.");
             }
@@ -110,9 +110,9 @@ public class SecretaireRepositoryImpl implements SecretaireRepository {
             stmtUser.setLong(1, id);
             stmtUser.setString(2, s.getNom());
             stmtUser.setString(3, s.getEmail());
-            stmtUser.setString(4, s.getTel());
-            stmtUser.setString(5, s.getLogin());
-            stmtUser.setString(6, s.getMotDePasse());
+            stmtUser.setString(4, s.getTelephone());
+            stmtUser.setString(5, s.getUsername());
+            stmtUser.setString(6, s.getPassword());
             stmtUser.setString(7, s.getSexe() != null ? s.getSexe().name() : null);
             stmtUser.setObject(8, s.getDateNaissance());
             stmtUser.executeUpdate();
@@ -122,7 +122,7 @@ public class SecretaireRepositoryImpl implements SecretaireRepository {
             stmtStaff = conn.prepareStatement(sqlStaff);
             stmtStaff.setLong(1, id);
             stmtStaff.setDouble(2, s.getSalaire() != null ? s.getSalaire() : 0.0);
-            stmtStaff.setObject(3, s.getDateRecrutement());
+            stmtStaff.setObject(3, s.getDateEmbauche());
             stmtStaff.executeUpdate();
 
             // 4. Insert into Secretaire
@@ -194,9 +194,9 @@ public class SecretaireRepositoryImpl implements SecretaireRepository {
             stmtUser = conn.prepareStatement(sqlUser);
             stmtUser.setString(1, s.getNom());
             stmtUser.setString(2, s.getEmail());
-            stmtUser.setString(3, s.getTel());
-            stmtUser.setString(4, s.getLogin());
-            stmtUser.setString(5, s.getMotDePasse());
+            stmtUser.setString(3, s.getTelephone());
+            stmtUser.setString(4, s.getUsername());
+            stmtUser.setString(5, s.getPassword());
             stmtUser.setString(6, s.getSexe() != null ? s.getSexe().name() : null);
             stmtUser.setObject(7, s.getDateNaissance());
             stmtUser.setLong(8, s.getIdEntite());
@@ -206,7 +206,7 @@ public class SecretaireRepositoryImpl implements SecretaireRepository {
             String sqlStaff = "UPDATE staff SET salaire = ?, dateRecrutement = ? WHERE id = ?";
             stmtStaff = conn.prepareStatement(sqlStaff);
             stmtStaff.setDouble(1, s.getSalaire() != null ? s.getSalaire() : 0.0);
-            stmtStaff.setObject(2, s.getDateRecrutement());
+            stmtStaff.setObject(2, s.getDateEmbauche());
             stmtStaff.setLong(3, s.getIdEntite());
             stmtStaff.executeUpdate();
 

@@ -13,12 +13,13 @@ import ma.TeethCare.entities.medicaments.medicaments;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class prescription extends baseEntity {
-    private Long idPr;
+    private Long id; // Was idPr
     private Long ordonnanceId;
     private Long medicamentId;
     private int quantite;
-    private String frequence;
-    private int dureeEnjours;
+    private String posologie; // New
+    private int dureeEnJours; // Was dureeEnjours (capital J? Schema says J)
+    // Removed frequence
     
     private ordonnance ordonnance;
     private medicaments medicament;
@@ -26,7 +27,9 @@ public class prescription extends baseEntity {
         return prescription.builder()
                 .ordonnance(ordonnance)
                 .medicament(medicament)
-                .dureeEnjours(5)
+                .dureeEnJours(5)
+                .quantite(2)
+                .posologie("2 per day")
                 .build();
     }
 }

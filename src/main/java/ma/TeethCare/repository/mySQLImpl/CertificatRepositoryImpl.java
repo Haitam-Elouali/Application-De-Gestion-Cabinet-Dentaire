@@ -90,7 +90,7 @@ public class CertificatRepositoryImpl implements CertificatRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 c.setIdEntite(id);
-                c.setIdCertif(id);
+                c.setId(id);
             } else {
                 throw new SQLException("Creating Entite for Certificat failed, no ID obtained.");
             }
@@ -104,7 +104,7 @@ public class CertificatRepositoryImpl implements CertificatRepository {
             stmtCertif.setDate(2, c.getDateDebut() != null ? Date.valueOf(c.getDateDebut()) : null);
             stmtCertif.setDate(3, c.getDateFin() != null ? Date.valueOf(c.getDateFin()) : null);
             stmtCertif.setInt(4, c.getDuree());
-            stmtCertif.setString(5, c.getNoteMedecin());
+            stmtCertif.setString(5, c.getNote());
 
             stmtCertif.executeUpdate();
 
@@ -155,7 +155,7 @@ public class CertificatRepositoryImpl implements CertificatRepository {
             stmtEntite = conn.prepareStatement(sqlEntite);
             stmtEntite.setTimestamp(1, Timestamp.valueOf(c.getDateDerniereModification()));
             stmtEntite.setString(2, c.getModifierPar());
-            stmtEntite.setLong(3, c.getIdCertif()); 
+            stmtEntite.setLong(3, c.getId());
             stmtEntite.executeUpdate();
 
             // Update Certificat
@@ -165,8 +165,8 @@ public class CertificatRepositoryImpl implements CertificatRepository {
             stmtCertif.setDate(1, c.getDateDebut() != null ? Date.valueOf(c.getDateDebut()) : null);
             stmtCertif.setDate(2, c.getDateFin() != null ? Date.valueOf(c.getDateFin()) : null);
             stmtCertif.setInt(3, c.getDuree());
-            stmtCertif.setString(4, c.getNoteMedecin());
-            stmtCertif.setLong(5, c.getIdCertif());
+            stmtCertif.setString(4, c.getNote());
+            stmtCertif.setLong(5, c.getId());
 
             stmtCertif.executeUpdate();
             
@@ -196,8 +196,8 @@ public class CertificatRepositoryImpl implements CertificatRepository {
 
     @Override
     public void delete(certificat c) {
-        if (c != null && c.getIdCertif() != null) {
-            deleteById(c.getIdCertif());
+        if (c != null && c.getId() != null) {
+            deleteById(c.getId());
         }
     }
 

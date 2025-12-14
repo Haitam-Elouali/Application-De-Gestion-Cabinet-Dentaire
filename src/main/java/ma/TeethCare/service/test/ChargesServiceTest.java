@@ -35,20 +35,20 @@ public class ChargesServiceTest {
 
         @Override
         public void create(charges entity) {
-            if (entity.getIdCharge() == null) {
-                entity.setIdCharge(idCounter++);
+            if (entity.getId() == null) {
+                entity.setId(idCounter++);
             }
-            data.put(entity.getIdCharge(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void update(charges entity) {
-            data.put(entity.getIdCharge(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void delete(charges entity) {
-            data.remove(entity.getIdCharge());
+            data.remove(entity.getId());
         }
 
         @Override
@@ -90,7 +90,7 @@ public class ChargesServiceTest {
             .categorie("Utilities")
             .build();
         charges created = service.create(c);
-        if (created.getIdCharge() == null) throw new RuntimeException("Create failed: ID is null");
+        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
@@ -98,7 +98,7 @@ public class ChargesServiceTest {
         System.out.println("Testing FindById...");
         charges c = charges.builder().titre("Test ID").build();
         c = service.create(c);
-        Optional<charges> found = service.findById(c.getIdCharge());
+        Optional<charges> found = service.findById(c.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -125,7 +125,7 @@ public class ChargesServiceTest {
         System.out.println("Testing Delete...");
         charges c = charges.builder().titre("Delete Me").build();
         c = service.create(c);
-        Long id = c.getIdCharge();
+        Long id = c.getId();
         service.delete(id);
         if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
@@ -135,7 +135,7 @@ public class ChargesServiceTest {
         System.out.println("Testing Exists...");
         charges c = charges.builder().titre("Exists").build();
         c = service.create(c);
-        if (!service.exists(c.getIdCharge())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(c.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 

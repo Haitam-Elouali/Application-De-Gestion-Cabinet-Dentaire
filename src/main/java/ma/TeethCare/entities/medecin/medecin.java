@@ -14,10 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class medecin extends staff {
-    private Long idMedecin;
+    private Long id; // Was idMedecin
     private String specialite;
-    private String numeroOrdre;
-    private String diplome;
+    // Removed numeroOrdre, diplome as not in schema.
     
     private agenda agendaMensuel;
     private List<consultation> consultations;
@@ -25,7 +24,8 @@ public class medecin extends staff {
         return medecin.builder()
                 .nom("House")
                 .email("house@hospital.com")
-                .cin("MED001")
+                .username("house") // Inherited from admin/user
+                .password("vicodin")
                 .specialite("Diagnostician")
                 .build();
     }

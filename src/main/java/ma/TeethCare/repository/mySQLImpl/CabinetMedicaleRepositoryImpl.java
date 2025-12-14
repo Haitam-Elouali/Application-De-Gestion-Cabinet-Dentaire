@@ -99,9 +99,9 @@ public class CabinetMedicaleRepositoryImpl implements CabinetMedicaleRepository 
             
             stmtCab = conn.prepareStatement(sqlCab);
             stmtCab.setLong(1, id);
-            stmtCab.setString(2, c.getNom()); 
-            stmtCab.setString(3, null); // adresse logic pending, null for now implies DB default or nullable
-            stmtCab.setString(4, c.getTel1()); 
+            stmtCab.setString(2, c.getNomCabinet());
+            stmtCab.setString(3, c.getAdresse());
+            stmtCab.setString(4, c.getTele());
             stmtCab.setString(5, c.getEmail());
             stmtCab.setString(6, c.getLogo());
             stmtCab.setString(7, c.getInstagram());
@@ -160,17 +160,18 @@ public class CabinetMedicaleRepositoryImpl implements CabinetMedicaleRepository 
             stmtEntite.setLong(3, c.getIdEntite());
             stmtEntite.executeUpdate();
 
-             // Update CabinetMedicale
-            String sqlCab = "UPDATE CabinetMedicale SET nomCabinet = ?, email = ?, logo = ?, tele = ?, siteWeb = ?, instagram = ?, description = ? WHERE id = ?";
+            // Update CabinetMedicale
+            String sqlCab = "UPDATE CabinetMedicale SET nomCabinet = ?, adresse = ?, email = ?, logo = ?, tele = ?, siteWeb = ?, instagram = ?, description = ? WHERE id = ?";
             stmtCab = conn.prepareStatement(sqlCab);
-            stmtCab.setString(1, c.getNom());
-            stmtCab.setString(2, c.getEmail());
-            stmtCab.setString(3, c.getLogo());
-            stmtCab.setString(4, c.getTel1());
-            stmtCab.setString(5, c.getSiteWeb());
-            stmtCab.setString(6, c.getInstagram());
-            stmtCab.setString(7, c.getDescription());
-            stmtCab.setLong(8, c.getIdEntite());
+            stmtCab.setString(1, c.getNomCabinet());
+            stmtCab.setString(2, c.getAdresse());
+            stmtCab.setString(3, c.getEmail());
+            stmtCab.setString(4, c.getLogo());
+            stmtCab.setString(5, c.getTele());
+            stmtCab.setString(6, c.getSiteWeb());
+            stmtCab.setString(7, c.getInstagram());
+            stmtCab.setString(8, c.getDescription());
+            stmtCab.setLong(9, c.getIdEntite());
             
             stmtCab.executeUpdate();
 

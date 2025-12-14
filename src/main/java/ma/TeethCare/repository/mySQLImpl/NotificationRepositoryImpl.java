@@ -82,7 +82,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 n.setIdEntite(id);
-                n.setIdNotif(id);
+                n.setId(id);
             } else {
                 throw new SQLException("Creating Entite for Notification failed, no ID obtained.");
             }
@@ -94,16 +94,16 @@ public class NotificationRepositoryImpl implements NotificationRepository {
             stmtNotif.setString(2, n.getTitre());
             stmtNotif.setString(3, n.getMessage());
             
-            if (n.getDateEnvoi() != null) {
-                stmtNotif.setDate(4, Date.valueOf(n.getDateEnvoi().toLocalDate()));
-                stmtNotif.setTime(5, Time.valueOf(n.getDateEnvoi().toLocalTime()));
+            if (n.getDate() != null) {
+                stmtNotif.setDate(4, Date.valueOf(n.getDate()));
+                stmtNotif.setTime(5, Time.valueOf(n.getTime()));
             } else {
                 stmtNotif.setDate(4, null);
                 stmtNotif.setTime(5, null);
             }
             
             stmtNotif.setString(6, n.getType());
-            stmtNotif.setString(7, n.isLue() ? "LUE" : "NON_LUE");
+            stmtNotif.setString(7, n.getStatut());
 
             stmtNotif.executeUpdate();
 
@@ -163,17 +163,17 @@ public class NotificationRepositoryImpl implements NotificationRepository {
             stmtNotif.setString(1, n.getTitre());
             stmtNotif.setString(2, n.getMessage());
             
-            if (n.getDateEnvoi() != null) {
-                stmtNotif.setDate(3, Date.valueOf(n.getDateEnvoi().toLocalDate()));
-                stmtNotif.setTime(4, Time.valueOf(n.getDateEnvoi().toLocalTime()));
+            if (n.getDate() != null) {
+                stmtNotif.setDate(3, Date.valueOf(n.getDate()));
+                stmtNotif.setTime(4, Time.valueOf(n.getTime()));
             } else {
                 stmtNotif.setDate(3, null);
                 stmtNotif.setTime(4, null);
             }
             
             stmtNotif.setString(5, n.getType());
-            stmtNotif.setString(6, n.isLue() ? "LUE" : "NON_LUE");
-            stmtNotif.setLong(7, n.getIdNotif());
+            stmtNotif.setString(6, n.getStatut());
+            stmtNotif.setLong(7, n.getId());
 
             stmtNotif.executeUpdate();
 
@@ -203,8 +203,8 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public void delete(notification n) {
-        if (n != null && n.getIdNotif() != null) {
-            deleteById(n.getIdNotif());
+        if (n != null && n.getId() != null) {
+            deleteById(n.getId());
         }
     }
 

@@ -89,7 +89,7 @@ public class OrdonnanceRepositoryImpl implements OrdonnanceRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 o.setIdEntite(id);
-                o.setIdOrd(id);
+                o.setId(id);
             } else {
                 throw new SQLException("Creating Entite for Ordonnance failed, no ID obtained.");
             }
@@ -100,7 +100,7 @@ public class OrdonnanceRepositoryImpl implements OrdonnanceRepository {
             
             stmtOrd = conn.prepareStatement(sqlOrd);
             stmtOrd.setLong(1, id);
-            stmtOrd.setDate(2, o.getDate() != null ? Date.valueOf(o.getDate()) : (o.getDate() != null ? Date.valueOf(o.getDate()) : null));
+            stmtOrd.setDate(2, o.getDateOrdonnance() != null ? Date.valueOf(o.getDateOrdonnance()) : null);
             // Note: entity has 'date' AND 'dateOrdonnance'? method create used 'getDate()' but findById selected 'dateOrdonnance'. 
             // I'll prefer dateOrdonnance, fallback to date.
             stmtOrd.setLong(3, o.getConsultationId() != null ? o.getConsultationId() : 0);
@@ -160,9 +160,9 @@ public class OrdonnanceRepositoryImpl implements OrdonnanceRepository {
             // Update Ordonnance
             String sqlOrd = "UPDATE ordonnance SET dateOrdonnance = ?, consultation_id = ? WHERE id = ?";
             stmtOrd = conn.prepareStatement(sqlOrd);
-            stmtOrd.setDate(1, o.getDate() != null ? Date.valueOf(o.getDate()) : (o.getDate() != null ? Date.valueOf(o.getDate()) : null));
+            stmtOrd.setDate(1, o.getDateOrdonnance() != null ? Date.valueOf(o.getDateOrdonnance()) : null);
             stmtOrd.setLong(2, o.getConsultationId());
-            stmtOrd.setLong(3, o.getIdOrd());
+            stmtOrd.setLong(3, o.getId());
 
             stmtOrd.executeUpdate();
 

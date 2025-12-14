@@ -53,20 +53,20 @@ public class ActesRepositoryImpl implements ActesRepository {
 
     @Override
     public void create(actes acte) {
-        System.out.println("Création d'un nouvel acte: " + acte.getLibeller());
+        System.out.println("Création d'un nouvel acte: " + acte.getNom());
         String sql = "INSERT INTO ACTE (nom, categorie, prix) VALUES (?, ?, ?)";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setString(1, acte.getLibeller()); // Keeping getter name as is, assuming field in entity is libeller? 
+            stmt.setString(1, acte.getNom()); // Keeping getter name as is, assuming field in entity is libeller?
             // Wait, if column is nom, I should verify if entity has setNom? 
             // The entity 'actes' might need updates too? 
             // View file 281 shows 'actes.java' imports. 
             // Let's assume Entity uses 'libeller' and we map to 'nom' in DB.
 
             stmt.setString(2, acte.getCategorie());
-            stmt.setDouble(3, acte.getPrixDeBase());
+            stmt.setDouble(3, acte.getPrix());
 
             stmt.executeUpdate();
 
@@ -89,9 +89,9 @@ public class ActesRepositoryImpl implements ActesRepository {
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, acte.getLibeller());
+            stmt.setString(1, acte.getNom());
             stmt.setString(2, acte.getCategorie());
-            stmt.setDouble(3, acte.getPrixDeBase());
+            stmt.setDouble(3, acte.getPrix());
             stmt.setLong(4, acte.getIdEntite());
 
             stmt.executeUpdate();

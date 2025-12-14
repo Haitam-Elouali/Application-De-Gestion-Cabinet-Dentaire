@@ -16,18 +16,17 @@ import java.util.List;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class cabinetMedicale extends baseEntity {
-    private Long idCabinet;
-    private String nom;
+    private Long id; // Was idCabinet
+    private String nomCabinet; // Was nom
+    private String adresse;
+    private String tele; // Was tel1
     private String email;
     private String logo;
-    private String adresse;
-    private String cin;
-    private String tel1;
-    private String tel2;
-    private String siteWeb;
     private String instagram;
-    private String facebook;
+    private String siteWeb;
     private String description;
+    // Removed cin, tel2, facebook
+
     
     private List<utilisateur> staff;
     private List<medicaments> stock;
@@ -35,9 +34,10 @@ public class cabinetMedicale extends baseEntity {
     private List<charges> charges;
     public static cabinetMedicale createTestInstance() {
         return cabinetMedicale.builder()
-                .nom("Cabinet Test")
+                .nomCabinet("Cabinet Test")
                 .adresse("123 Rue Test")
                 .email("contact@cabinet.com")
+                .tele("0522000000")
                 .build();
     }
 }

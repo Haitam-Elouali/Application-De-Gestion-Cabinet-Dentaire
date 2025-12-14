@@ -28,21 +28,21 @@ public class RdvServiceTest {
 
         @Override
         public void create(rdv entity) {
-            if (entity.getIdRDV() == null) {
-                entity.setIdRDV(idCounter++);
+            if (entity.getId() == null) {
+                entity.setId(idCounter++);
             }
-            data.put(entity.getIdRDV(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void update(rdv entity) {
-            data.put(entity.getIdRDV(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void delete(rdv entity) {
-            if (entity != null && entity.getIdRDV() != null) {
-                data.remove(entity.getIdRDV());
+            if (entity != null && entity.getId() != null) {
+                data.remove(entity.getId());
             }
         }
 
@@ -90,7 +90,7 @@ public class RdvServiceTest {
                 .motif("Consultation")
                 .build();
         rdv created = service.create(r);
-        if (created.getIdRDV() == null) throw new RuntimeException("Create failed: ID is null");
+        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
@@ -98,7 +98,7 @@ public class RdvServiceTest {
         System.out.println("Testing FindById...");
         rdv r = rdv.builder().date(LocalDate.now()).motif("Checkup").build();
         r = service.create(r);
-        Optional<rdv> found = service.findById(r.getIdRDV());
+        Optional<rdv> found = service.findById(r.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -125,7 +125,7 @@ public class RdvServiceTest {
         System.out.println("Testing Delete...");
         rdv r = rdv.builder().date(LocalDate.now()).motif("To Delete").build();
         r = service.create(r);
-        Long id = r.getIdRDV();
+        Long id = r.getId();
         service.delete(id);
         if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
@@ -135,7 +135,7 @@ public class RdvServiceTest {
         System.out.println("Testing Exists...");
         rdv r = rdv.builder().date(LocalDate.now()).motif("Exists").build();
         r = service.create(r);
-        if (!service.exists(r.getIdRDV())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(r.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 

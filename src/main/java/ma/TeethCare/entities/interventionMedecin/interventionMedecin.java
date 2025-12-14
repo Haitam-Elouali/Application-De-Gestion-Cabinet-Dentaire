@@ -14,19 +14,22 @@ import ma.TeethCare.entities.consultation.consultation;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class interventionMedecin extends baseEntity {
-    private Long idIM;
-    private Long medecinId;
-    private Long acteId;
+    private Long id; // Was idIM
     private Long consultationId;
-    private Double prixDePatient;
-    private Integer numDent;
+    private int duree; // New
+    private String note; // New
+    private String resultatImagerie; // New
+    // Removed medecinId, acteId, prixDePatient, numDent as not in Schema
     
-    private medecin medecin;
-    private actes acte;
     private consultation consultation;
-    public static interventionMedecin createTestInstance(ma.TeethCare.entities.medecin.medecin medecin, ma.TeethCare.entities.consultation.consultation consultation) {
+    // Removed medecin, acte references as fields removed
+
+    public static interventionMedecin createTestInstance(ma.TeethCare.entities.consultation.consultation consultation) {
         return interventionMedecin.builder()
                 .consultation(consultation)
+                .duree(30)
+                .note("Intervention successful")
+                .resultatImagerie("img_123.jpg")
                 .build();
     }
 }

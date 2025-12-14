@@ -89,7 +89,7 @@ public class PrescriptionRepositoryImpl implements PrescriptionRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 p.setIdEntite(id);
-                p.setIdPr(id);
+                p.setId(id);
             } else {
                 throw new SQLException("Creating Entite for Prescription failed, no ID obtained.");
             }
@@ -102,8 +102,8 @@ public class PrescriptionRepositoryImpl implements PrescriptionRepository {
             stmtPresc = conn.prepareStatement(sqlPresc);
             stmtPresc.setLong(1, id);
             stmtPresc.setInt(2, p.getQuantite());
-            stmtPresc.setString(3, p.getFrequence());
-            stmtPresc.setInt(4, p.getDureeEnjours());
+            stmtPresc.setString(3, p.getPosologie());
+            stmtPresc.setInt(4, p.getDureeEnJours());
             stmtPresc.setLong(5, p.getOrdonnanceId());
             stmtPresc.setLong(6, p.getMedicamentId());
 
@@ -163,11 +163,11 @@ public class PrescriptionRepositoryImpl implements PrescriptionRepository {
             String sqlPresc = "UPDATE prescription SET quantite = ?, posologie = ?, dureeEnJours = ?, ordonnance_id = ?, medicament_id = ? WHERE id = ?";
             stmtPresc = conn.prepareStatement(sqlPresc);
             stmtPresc.setInt(1, p.getQuantite());
-            stmtPresc.setString(2, p.getFrequence());
-            stmtPresc.setInt(3, p.getDureeEnjours());
+            stmtPresc.setString(2, p.getPosologie());
+            stmtPresc.setInt(3, p.getDureeEnJours());
             stmtPresc.setLong(4, p.getOrdonnanceId());
             stmtPresc.setLong(5, p.getMedicamentId());
-            stmtPresc.setLong(6, p.getIdPr());
+            stmtPresc.setLong(6, p.getId());
 
             stmtPresc.executeUpdate();
 

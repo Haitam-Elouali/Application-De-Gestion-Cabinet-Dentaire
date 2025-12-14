@@ -34,20 +34,20 @@ public class FactureServiceTest {
 
         @Override
         public void create(facture entity) {
-            if (entity.getIdFacture() == null) {
-                entity.setIdFacture(idCounter++);
+            if (entity.getId() == null) {
+                entity.setId(idCounter++);
             }
-            data.put(entity.getIdFacture(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void update(facture entity) {
-            data.put(entity.getIdFacture(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void delete(facture entity) {
-            data.remove(entity.getIdFacture());
+            data.remove(entity.getId());
         }
 
         @Override
@@ -81,7 +81,7 @@ public class FactureServiceTest {
             .totaleFacture(100.0)
             .build();
         facture created = service.create(f);
-        if (created.getIdFacture() == null) throw new RuntimeException("Create failed: ID is null");
+        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
@@ -89,7 +89,7 @@ public class FactureServiceTest {
         System.out.println("Testing FindById...");
         facture f = facture.builder().totaleFacture(200.0).build();
         f = service.create(f);
-        Optional<facture> found = service.findById(f.getIdFacture());
+        Optional<facture> found = service.findById(f.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -116,7 +116,7 @@ public class FactureServiceTest {
         System.out.println("Testing Delete...");
         facture f = facture.builder().totaleFacture(600.0).build();
         f = service.create(f);
-        Long id = f.getIdFacture();
+        Long id = f.getId();
         service.delete(id);
         if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
@@ -126,7 +126,7 @@ public class FactureServiceTest {
         System.out.println("Testing Exists...");
         facture f = facture.builder().totaleFacture(700.0).build();
         f = service.create(f);
-        if (!service.exists(f.getIdFacture())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(f.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 

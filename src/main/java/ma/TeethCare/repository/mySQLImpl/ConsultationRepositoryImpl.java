@@ -98,7 +98,7 @@ public class ConsultationRepositoryImpl implements ConsultationRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 c.setIdEntite(id);
-                c.setIdConsultation(id);
+                c.setId(id);
             } else {
                 throw new SQLException("Creating Entite for Consultation failed, no ID obtained.");
             }
@@ -116,8 +116,8 @@ public class ConsultationRepositoryImpl implements ConsultationRepository {
             stmtCons = conn.prepareStatement(sqlCons);
             stmtCons.setLong(1, id);
             stmtCons.setDate(2, c.getDate() != null ? Date.valueOf(c.getDate()) : null);
-            stmtCons.setString(3, c.getObservationMedecin());
-            stmtCons.setString(4, c.getDiagnostique());
+            stmtCons.setString(3, c.getObservation());
+            stmtCons.setString(4, c.getDiagnostic());
             stmtCons.setString(5, c.getStatut() != null ? c.getStatut().name() : null);
             stmtCons.setLong(6, c.getPatientId() != null ? c.getPatientId() : 0); // Handle nulls safely?
             stmtCons.setLong(7, c.getMedecinId() != null ? c.getMedecinId() : 0);
@@ -178,12 +178,12 @@ public class ConsultationRepositoryImpl implements ConsultationRepository {
             String sqlCons = "UPDATE consultation SET date = ?, observation = ?, diagnostic = ?, statut = ?, patient_id = ?, medecin_id = ? WHERE id = ?";
             stmtCons = conn.prepareStatement(sqlCons);
             stmtCons.setDate(1, c.getDate() != null ? Date.valueOf(c.getDate()) : null);
-            stmtCons.setString(2, c.getObservationMedecin());
-            stmtCons.setString(3, c.getDiagnostique());
+            stmtCons.setString(2, c.getObservation());
+            stmtCons.setString(3, c.getDiagnostic());
             stmtCons.setString(4, c.getStatut() != null ? c.getStatut().name() : null);
             stmtCons.setLong(5, c.getPatientId());
             stmtCons.setLong(6, c.getMedecinId());
-            stmtCons.setLong(7, c.getIdConsultation());
+            stmtCons.setLong(7, c.getId());
 
             stmtCons.executeUpdate();
 

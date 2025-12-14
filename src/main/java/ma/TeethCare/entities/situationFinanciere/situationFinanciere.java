@@ -10,29 +10,34 @@ import ma.TeethCare.common.enums.Statut;
 import ma.TeethCare.entities.dossierMedicale.dossierMedicale;
 import ma.TeethCare.entities.facture.facture;
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class situationFinanciere extends baseEntity {
-    private Long idSF;
-    private Long patientId;
-    private Long dossierMedicaleId;
-    private Double totaleDesActes;
+    private Long id; // Was idSF
+    private Double totalDesActes;
     private Double totalPaye;
     private Double credit;
-    private Double reste;
     private Statut statut;
     private Promo enPromo;
+    private Long dossierMedicaleId;
     
-    private dossierMedicale dossierMedicale;
+    // Relations
+    private dossierMedicale dossierMedicale; 
     private List<facture> factures;
+
     public static situationFinanciere createTestInstance(ma.TeethCare.entities.dossierMedicale.dossierMedicale dossierMedicale) {
         return situationFinanciere.builder()
                 .dossierMedicale(dossierMedicale)
-                .totaleDesActes(150.0)
-                .reste(150.0)
+                .dossierMedicaleId(dossierMedicale != null ? dossierMedicale.getId() : null)
+                .totalDesActes(150.0)
+                .totalPaye(0.0)
+                .credit(150.0)
+                .statut(Statut.En_attente)
+                .enPromo(Promo.Aucune)
                 .build();
     }
 }

@@ -89,7 +89,7 @@ public class InterventionMedecinRepositoryImpl implements InterventionMedecinRep
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 i.setIdEntite(id);
-                i.setIdIM(id);
+                i.setId(id);
             } else {
                 throw new SQLException("Creating Entite for InterventionMedecin failed, no ID obtained.");
             }
@@ -158,7 +158,7 @@ public class InterventionMedecinRepositoryImpl implements InterventionMedecinRep
             String sqlIM = "UPDATE interventionmedecin SET consultation_id = ? WHERE id = ?";
             stmtIM = conn.prepareStatement(sqlIM);
             stmtIM.setLong(1, i.getConsultationId());
-            stmtIM.setLong(2, i.getIdIM());
+            stmtIM.setLong(2, i.getId());
 
             stmtIM.executeUpdate();
 

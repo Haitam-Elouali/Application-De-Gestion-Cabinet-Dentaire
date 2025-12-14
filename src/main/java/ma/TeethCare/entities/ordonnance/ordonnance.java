@@ -15,19 +15,16 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class ordonnance extends baseEntity {
-    private Long idOrd;
+    private Long id; // Was idOrd
     private Long consultationId;
-    private Long medecinId;
-    private Long patientId;
-    private LocalDate date;
-    private String duree;
-    private String frequence;
+    // Removed medecinId, patientId, duree, frequence not in schema
+    private LocalDate dateOrdonnance; // Was date
     
     private consultation consultation;
     private List<prescription> prescriptions;
     public static ordonnance createTestInstance(ma.TeethCare.entities.consultation.consultation consultation) {
         return ordonnance.builder()
-                .date(LocalDate.now())
+                .dateOrdonnance(LocalDate.now())
                 .consultation(consultation)
                 .build();
     }

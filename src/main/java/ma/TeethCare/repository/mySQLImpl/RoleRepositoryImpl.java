@@ -84,7 +84,7 @@ public class RoleRepositoryImpl implements RoleRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 r.setIdEntite(id);
-                r.setIdRole(id);
+                r.setId(id);
             } else {
                 throw new SQLException("Creating Entite for Role failed, no ID obtained.");
             }
@@ -95,7 +95,7 @@ public class RoleRepositoryImpl implements RoleRepository {
             
             stmtRole = conn.prepareStatement(sqlRole);
             stmtRole.setLong(1, id);
-            stmtRole.setString(2, r.getLibeller() != null ? r.getLibeller().name() : null);
+            stmtRole.setString(2, r.getLibelle() != null ? r.getLibelle() : null);
 
             stmtRole.executeUpdate();
 
@@ -152,8 +152,8 @@ public class RoleRepositoryImpl implements RoleRepository {
             // Update Role
             String sqlRole = "UPDATE Role SET libelle = ? WHERE id = ?";
             stmtRole = conn.prepareStatement(sqlRole);
-            stmtRole.setString(1, r.getLibeller() != null ? r.getLibeller().name() : null);
-            stmtRole.setLong(2, r.getIdRole());
+            stmtRole.setString(1, r.getLibelle() != null ? r.getLibelle() : null);
+            stmtRole.setLong(2, r.getId());
 
             stmtRole.executeUpdate();
 
@@ -183,8 +183,8 @@ public class RoleRepositoryImpl implements RoleRepository {
 
     @Override
     public void delete(role r) {
-        if (r != null && r.getIdRole() != null) {
-            deleteById(r.getIdRole());
+        if (r != null && r.getId() != null) {
+            deleteById(r.getId());
         }
     }
 

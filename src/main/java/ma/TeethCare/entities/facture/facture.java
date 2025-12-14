@@ -17,13 +17,15 @@ import java.util.List;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class facture extends baseEntity {
-    private Long idFacture;
+    private Long id; // Was idFacture
     private Long consultationId;
     private Long patientId;
+    private Long secretaireId; // New
     private Double totaleFacture;
-    private Double totalPaye;
+    private Double totalePaye; // Was totalPaye
     private Double reste;
     private Statut statut;
+    private String modePaiement; // New
     private LocalDateTime dateFacture;
     
     private consultation consultation;
@@ -33,9 +35,12 @@ public class facture extends baseEntity {
         return facture.builder()
                 .dateFacture(LocalDateTime.now())
                 .totaleFacture(150.0)
+                .totalePaye(0.0) 
+                .reste(150.0)
                 .patientId(patient.getIdEntite())
                 .consultation(consultation)
                 .statut(Statut.En_attente)
+                .modePaiement("Espece")
                 .build();
     }
 }

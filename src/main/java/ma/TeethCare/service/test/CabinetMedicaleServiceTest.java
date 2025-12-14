@@ -34,20 +34,20 @@ public class CabinetMedicaleServiceTest {
 
         @Override
         public void create(cabinetMedicale entity) {
-            if (entity.getIdCabinet() == null) {
-                entity.setIdCabinet(idCounter++);
+            if (entity.getId() == null) {
+                entity.setId(idCounter++);
             }
-            data.put(entity.getIdCabinet(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void update(cabinetMedicale entity) {
-            data.put(entity.getIdCabinet(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void delete(cabinetMedicale entity) {
-            data.remove(entity.getIdCabinet());
+            data.remove(entity.getId());
         }
 
         @Override
@@ -83,20 +83,20 @@ public class CabinetMedicaleServiceTest {
     public static void testCreate(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing Create...");
         cabinetMedicale c = cabinetMedicale.builder()
-            .nom("Cabinet Alpha")
+            .nomCabinet("Cabinet Alpha")
             .email("alpha@cabinet.com")
             .adresse("1 First St")
             .build();
         cabinetMedicale created = service.create(c);
-        if (created.getIdCabinet() == null) throw new RuntimeException("Create failed: ID is null");
+        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing FindById...");
-        cabinetMedicale c = cabinetMedicale.builder().nom("Test ID").build();
+        cabinetMedicale c = cabinetMedicale.builder().nomCabinet("Test ID").build();
         c = service.create(c);
-        Optional<cabinetMedicale> found = service.findById(c.getIdCabinet());
+        Optional<cabinetMedicale> found = service.findById(c.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -104,26 +104,26 @@ public class CabinetMedicaleServiceTest {
     public static void testFindAll(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(cabinetMedicale.builder().nom("All 1").build());
+        service.create(cabinetMedicale.builder().nomCabinet("All 1").build());
         if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing Update...");
-        cabinetMedicale c = cabinetMedicale.builder().nom("Old Name").build();
+        cabinetMedicale c = cabinetMedicale.builder().nomCabinet("Old Name").build();
         c = service.create(c);
-        c.setNom("New Name");
+        c.setNomCabinet("New Name");
         cabinetMedicale updated = service.update(c);
-        if (!updated.getNom().equals("New Name")) throw new RuntimeException("Update failed: value mismatch");
+        if (!updated.getNomCabinet().equals("New Name")) throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing Delete...");
-        cabinetMedicale c = cabinetMedicale.builder().nom("Delete Me").build();
+        cabinetMedicale c = cabinetMedicale.builder().nomCabinet("Delete Me").build();
         c = service.create(c);
-        Long id = c.getIdCabinet();
+        Long id = c.getId();
         service.delete(id);
         if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
@@ -131,9 +131,9 @@ public class CabinetMedicaleServiceTest {
 
     public static void testExists(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing Exists...");
-        cabinetMedicale c = cabinetMedicale.builder().nom("Exists").build();
+        cabinetMedicale c = cabinetMedicale.builder().nomCabinet("Exists").build();
         c = service.create(c);
-        if (!service.exists(c.getIdCabinet())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(c.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 

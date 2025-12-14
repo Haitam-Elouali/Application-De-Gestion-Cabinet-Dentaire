@@ -15,14 +15,16 @@ import java.util.List;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class role extends baseEntity {
-    private Long idRole;
-    private Libeller libeller;
-    private String description;
+    private Long id; // Was idRole
+    private String libelle; // Was libeller (Enum)
+    private Long utilisateurId; // Schema says utilisateur_id
     
-    private List<utilisateur> utilisateurs;
+    // Removed description, utilisateurs list
+    
+    private utilisateur utilisateur;
     public static ma.TeethCare.entities.role.role createTestInstance() {
         return ma.TeethCare.entities.role.role.builder()
-                .libeller(ma.TeethCare.common.enums.Libeller.Admin)
+                .libelle("ADMIN")
                 .build();
     }
 }

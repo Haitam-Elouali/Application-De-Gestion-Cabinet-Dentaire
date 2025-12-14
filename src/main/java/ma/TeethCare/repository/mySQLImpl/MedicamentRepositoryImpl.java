@@ -90,7 +90,7 @@ public class MedicamentRepositoryImpl implements MedicamentRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 m.setIdEntite(id);
-                m.setIdMed(id);
+                m.setId(id);
             } else {
                 throw new SQLException("Creating Entite for Medicament failed, no ID obtained.");
             }
@@ -102,7 +102,7 @@ public class MedicamentRepositoryImpl implements MedicamentRepository {
             
             stmtMed = conn.prepareStatement(sqlMed);
             stmtMed.setLong(1, id);
-            stmtMed.setString(2, m.getNom());
+            stmtMed.setString(2, m.getNomCommercial());
             stmtMed.setString(3, m.getType());
             stmtMed.setBoolean(4, m.isRemboursable());
             stmtMed.setDouble(5, m.getPrixUnitaire());
@@ -163,12 +163,12 @@ public class MedicamentRepositoryImpl implements MedicamentRepository {
             // Update Medicament
             String sqlMed = "UPDATE medicament SET nomCommercial = ?, type = ?, remboursable = ?, prixUnitaire = ?, description = ? WHERE id = ?";
             stmtMed = conn.prepareStatement(sqlMed);
-            stmtMed.setString(1, m.getNom());
+            stmtMed.setString(1, m.getNomCommercial());
             stmtMed.setString(2, m.getType());
             stmtMed.setBoolean(3, m.isRemboursable());
             stmtMed.setDouble(4, m.getPrixUnitaire());
             stmtMed.setString(5, m.getDescription());
-            stmtMed.setLong(6, m.getIdMed());
+            stmtMed.setLong(6, m.getId());
 
             stmtMed.executeUpdate();
 

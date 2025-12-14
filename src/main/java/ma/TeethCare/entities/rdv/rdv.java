@@ -20,24 +20,27 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class rdv extends baseEntity {
-    private Long idRDV;
+    private Long id; // Was idRDV
+    private Long numero; // New
     private Long patientId;
-    private Long medecinId;
+    private Long situationfinancierId; // New
     private LocalDate date;
     private LocalTime heure;
-    private String motif;
     private Statut statut;
-    private String noteMedecin;
+    private String motif;
+    // Removed medecinId, noteMedecin
     
     private Patient patient;
-    private medecin medecin;
+    private ma.TeethCare.entities.situationFinanciere.situationFinanciere situationFinanciere;
     private consultation consultation;
     private dossierMedicale dossierMedicale;
-    public static rdv createTestInstance(ma.TeethCare.entities.patient.Patient patient, ma.TeethCare.entities.medecin.medecin medecin) {
+    public static rdv createTestInstance(ma.TeethCare.entities.patient.Patient patient) {
         return rdv.builder()
+                .numero(1L)
                 .date(LocalDate.now().plusDays(1))
+                .heure(LocalTime.of(10, 0))
                 .patient(patient)
-                .medecin(medecin)
+                .motif("consultation")
                 .statut(Statut.Planifiee)
                 .build();
     }

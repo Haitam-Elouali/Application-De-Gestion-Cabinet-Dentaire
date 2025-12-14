@@ -83,7 +83,7 @@ public class SituationFinanciereRepositoryImpl implements SituationFinanciereRep
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 sf.setIdEntite(id);
-                sf.setIdSF(id);
+                sf.setId(id);
             } else {
                 throw new SQLException("Creating Entite for SituationFinanciere failed, no ID obtained.");
             }
@@ -94,7 +94,7 @@ public class SituationFinanciereRepositoryImpl implements SituationFinanciereRep
             
             stmtSf = conn.prepareStatement(sqlSf);
             stmtSf.setLong(1, id);
-            stmtSf.setDouble(2, sf.getTotaleDesActes());
+            stmtSf.setDouble(2, sf.getTotalDesActes());
             stmtSf.setDouble(3, sf.getTotalPaye());
             stmtSf.setDouble(4, sf.getCredit());
             stmtSf.setString(5, sf.getStatut() != null ? sf.getStatut().name() : null);
@@ -155,13 +155,13 @@ public class SituationFinanciereRepositoryImpl implements SituationFinanciereRep
             // Update SituationFinancier
             String sqlSf = "UPDATE situationfinancier SET totalDesActes = ?, totalPaye = ?, credit = ?, statut = ?, enPromo = ?, dossiermedicale_id = ? WHERE id = ?";
             stmtSf = conn.prepareStatement(sqlSf);
-            stmtSf.setDouble(1, sf.getTotaleDesActes());
+            stmtSf.setDouble(1, sf.getTotalDesActes());
             stmtSf.setDouble(2, sf.getTotalPaye());
             stmtSf.setDouble(3, sf.getCredit());
             stmtSf.setString(4, sf.getStatut() != null ? sf.getStatut().name() : null);
             stmtSf.setString(5, sf.getEnPromo() != null ? sf.getEnPromo().name() : null);
             stmtSf.setObject(6, sf.getDossierMedicaleId());
-            stmtSf.setLong(7, sf.getIdSF());
+            stmtSf.setLong(7, sf.getId());
 
             stmtSf.executeUpdate();
 

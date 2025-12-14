@@ -35,20 +35,20 @@ public class CertificatServiceTest {
 
         @Override
         public void create(certificat entity) {
-            if (entity.getIdCertif() == null) {
-                entity.setIdCertif(idCounter++);
+            if (entity.getId() == null) {
+                entity.setId(idCounter++);
             }
-            data.put(entity.getIdCertif(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void update(certificat entity) {
-            data.put(entity.getIdCertif(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void delete(certificat entity) {
-            data.remove(entity.getIdCertif());
+            data.remove(entity.getId());
         }
 
         @Override
@@ -79,20 +79,20 @@ public class CertificatServiceTest {
     public static void testCreate(certificatService service) throws Exception {
         System.out.println("Testing Create...");
         certificat c = certificat.builder()
-            .noteMedecin("Repos 3 jours")
+            .note("Repos 3 jours")
             .duree(3)
             .dateDebut(LocalDate.now())
             .build();
         certificat created = service.create(c);
-        if (created.getIdCertif() == null) throw new RuntimeException("Create failed: ID is null");
+        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(certificatService service) throws Exception {
         System.out.println("Testing FindById...");
-        certificat c = certificat.builder().noteMedecin("Test ID").build();
+        certificat c = certificat.builder().note("Test ID").build();
         c = service.create(c);
-        Optional<certificat> found = service.findById(c.getIdCertif());
+        Optional<certificat> found = service.findById(c.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -100,26 +100,26 @@ public class CertificatServiceTest {
     public static void testFindAll(certificatService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(certificat.builder().noteMedecin("All 1").build());
+        service.create(certificat.builder().note("All 1").build());
         if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(certificatService service) throws Exception {
         System.out.println("Testing Update...");
-        certificat c = certificat.builder().noteMedecin("Old Note").build();
+        certificat c = certificat.builder().note("Old Note").build();
         c = service.create(c);
-        c.setNoteMedecin("New Note");
+        c.setNote("New Note");
         certificat updated = service.update(c);
-        if (!updated.getNoteMedecin().equals("New Note")) throw new RuntimeException("Update failed: value mismatch");
+        if (!updated.getNote().equals("New Note")) throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(certificatService service) throws Exception {
         System.out.println("Testing Delete...");
-        certificat c = certificat.builder().noteMedecin("Delete Me").build();
+        certificat c = certificat.builder().note("Delete Me").build();
         c = service.create(c);
-        Long id = c.getIdCertif();
+        Long id = c.getId();
         service.delete(id);
         if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
@@ -127,9 +127,9 @@ public class CertificatServiceTest {
 
     public static void testExists(certificatService service) throws Exception {
         System.out.println("Testing Exists...");
-        certificat c = certificat.builder().noteMedecin("Exists").build();
+        certificat c = certificat.builder().note("Exists").build();
         c = service.create(c);
-        if (!service.exists(c.getIdCertif())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(c.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 

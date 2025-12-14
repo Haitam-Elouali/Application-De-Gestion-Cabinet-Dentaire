@@ -16,25 +16,24 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class certificat extends baseEntity {
-    private Long idCertif;
-    private Long consultationId;
-    private Long medecinId;
-    private Long patientId;
+    private Long id; // Was idCertif
+    private String type; // New
     private LocalDate dateDebut;
-    private LocalDate dateFin;
+    private LocalDate dateFin; // New
     private int duree;
-    private String noteMedecin;
+    private String note; // Was noteMedecin
+    private Long consultationId; // Schema link
     
-    private consultation consultation;
-    private medecin medecin;
-    private Patient patient;
-    public static certificat createTestInstance(ma.TeethCare.entities.patient.Patient patient, ma.TeethCare.entities.medecin.medecin medecin) {
+    private consultation consultation; // Changed from patient/medecin to consultation
+    
+    public static certificat createTestInstance(ma.TeethCare.entities.consultation.consultation consultation) {
         return certificat.builder()
+                .type("Maladie")
                 .dateDebut(LocalDate.now())
+                .dateFin(LocalDate.now().plusDays(3))
                 .duree(3)
-                .noteMedecin("Maladie")
-                .patient(patient)
-                .medecin(medecin)
+                .note("Repose required")
+                .consultation(consultation)
                 .build();
     }
 }

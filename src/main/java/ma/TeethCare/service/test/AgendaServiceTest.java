@@ -42,7 +42,7 @@ public class AgendaServiceTest {
         agenda a = new agenda();
         a.setMedecinId(1L);
         a.setMois(Mois.Janvier);
-        a.setJoursDisponible(Arrays.asList());
+        a.setJoursNonDisponibles(Arrays.asList());
 
         // Appel structurel
         try {
@@ -81,7 +81,7 @@ public class AgendaServiceTest {
         System.out.println("=== Test Update Agenda ===");
 
         agenda a = new agenda();
-        a.setIdAgenda(1L);
+        a.setId(1L);
         a.setMedecinId(2L);
         a.setMois(Mois.Fevrier);
 

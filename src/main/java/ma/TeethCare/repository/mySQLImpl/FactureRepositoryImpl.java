@@ -97,7 +97,7 @@ public class FactureRepositoryImpl implements FactureRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 f.setIdEntite(id);
-                f.setIdFacture(id);
+                f.setId(id);
             } else {
                 throw new SQLException("Creating Entite for Facture failed, no ID obtained.");
             }
@@ -111,7 +111,7 @@ public class FactureRepositoryImpl implements FactureRepository {
             stmtFacture = conn.prepareStatement(sqlFacture);
             stmtFacture.setLong(1, id);
             stmtFacture.setDouble(2, f.getTotaleFacture());
-            stmtFacture.setDouble(3, f.getTotalPaye());
+            stmtFacture.setDouble(3, f.getTotalePaye());
             stmtFacture.setDouble(4, f.getReste());
             stmtFacture.setString(5, f.getStatut() != null ? f.getStatut().name() : null);
             stmtFacture.setTimestamp(6, f.getDateFacture() != null ? Timestamp.valueOf(f.getDateFacture()) : null);
@@ -173,12 +173,12 @@ public class FactureRepositoryImpl implements FactureRepository {
             String sqlFacture = "UPDATE facture SET totaleFacture = ?, totalePaye = ?, Reste = ?, statut = ?, dateFacture = ?, patient_id = ? WHERE id = ?";
             stmtFacture = conn.prepareStatement(sqlFacture);
             stmtFacture.setDouble(1, f.getTotaleFacture());
-            stmtFacture.setDouble(2, f.getTotalPaye());
+            stmtFacture.setDouble(2, f.getTotalePaye());
             stmtFacture.setDouble(3, f.getReste());
             stmtFacture.setString(4, f.getStatut() != null ? f.getStatut().name() : null);
             stmtFacture.setTimestamp(5, f.getDateFacture() != null ? Timestamp.valueOf(f.getDateFacture()) : null);
             stmtFacture.setLong(6, f.getPatientId());
-            stmtFacture.setLong(7, f.getIdFacture());
+            stmtFacture.setLong(7, f.getId());
 
             stmtFacture.executeUpdate();
             

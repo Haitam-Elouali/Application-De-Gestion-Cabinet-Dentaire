@@ -21,17 +21,18 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class consultation extends baseEntity {
-    private Long idConsultation;
-    private Long rdvId;
+    private Long id; // Was idConsultation
+    // Removed rdvId not in schema
     private Long patientId;
     private Long medecinId;
     private LocalDate date;
+    private String motif; // Add motif
+    private String diagnostic; // Was diagnostique
+    private String observation; // Was observationMedecin
     private Statut statut;
-    private String observationMedecin;
-    private String diagnostique;
     
     // Relations
-    private rdv rdv;
+    private rdv rdv; // Should likely remove or keep as transient? Schema does not have FK. I'll leave object link for now but fields match schema.
     private medecin medecin;
     private ordonnance ordonnance;
     
@@ -41,6 +42,7 @@ public class consultation extends baseEntity {
     public static consultation createTestInstance(ma.TeethCare.entities.patient.Patient patient, ma.TeethCare.entities.medecin.medecin medecin) {
         return consultation.builder()
                 .date(LocalDate.now())
+                .motif("Douleur dentaire")
                 .medecin(medecin)
                 .patientId(patient.getIdEntite())
                 .statut(Statut.En_attente)

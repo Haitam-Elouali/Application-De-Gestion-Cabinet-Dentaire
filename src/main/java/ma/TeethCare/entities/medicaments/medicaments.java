@@ -13,11 +13,12 @@ import java.util.List;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class medicaments extends baseEntity {
-    private Long idMed;
-    private String nom;
-    private String laboratoire;
+    private Long id; // Was idMed
+    private String nomCommercial; // Was nom
+    private String principeActif; // New
+    private String forme; // Was formatted out?
+    private String dosage; // New
     private String type;
-    //private Forme forme;
     private boolean remboursable;
     private Double prixUnitaire;
     private String description;
@@ -25,8 +26,14 @@ public class medicaments extends baseEntity {
     private List<prescription> prescriptions;
     public static ma.TeethCare.entities.medicaments.medicaments createTestInstance() {
         return ma.TeethCare.entities.medicaments.medicaments.builder()
-                .nom("Doliprane")
-                .type("Comprime") // Example
+                .nomCommercial("Doliprane")
+                .principeActif("Paracetamol")
+                .forme("Comprime")
+                .dosage("1000mg")
+                .type("Analgesique")
+                .remboursable(true)
+                .prixUnitaire(15.0)
+                .description("Douleur et fievre")
                 .build();
     }
 }

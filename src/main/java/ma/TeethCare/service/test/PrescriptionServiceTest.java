@@ -34,20 +34,20 @@ public class PrescriptionServiceTest {
 
         @Override
         public void create(prescription entity) {
-            if (entity.getIdPr() == null) {
-                entity.setIdPr(idCounter++);
+            if (entity.getId() == null) {
+                entity.setId(idCounter++);
             }
-            data.put(entity.getIdPr(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void update(prescription entity) {
-            data.put(entity.getIdPr(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void delete(prescription entity) {
-            data.remove(entity.getIdPr());
+            data.remove(entity.getId());
         }
 
         @Override
@@ -81,7 +81,7 @@ public class PrescriptionServiceTest {
             .quantite(10)
             .build();
         prescription created = service.create(p);
-        if (created.getIdPr() == null) throw new RuntimeException("Create failed: ID is null");
+        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
@@ -89,7 +89,7 @@ public class PrescriptionServiceTest {
         System.out.println("Testing FindById...");
         prescription p = prescription.builder().quantite(20).build();
         p = service.create(p);
-        Optional<prescription> found = service.findById(p.getIdPr());
+        Optional<prescription> found = service.findById(p.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -116,7 +116,7 @@ public class PrescriptionServiceTest {
         System.out.println("Testing Delete...");
         prescription p = prescription.builder().quantite(60).build();
         p = service.create(p);
-        Long id = p.getIdPr();
+        Long id = p.getId();
         service.delete(id);
         if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
@@ -126,7 +126,7 @@ public class PrescriptionServiceTest {
         System.out.println("Testing Exists...");
         prescription p = prescription.builder().quantite(70).build();
         p = service.create(p);
-        if (!service.exists(p.getIdPr())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(p.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 

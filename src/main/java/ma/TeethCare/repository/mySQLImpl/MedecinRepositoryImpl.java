@@ -96,8 +96,8 @@ public class MedecinRepositoryImpl implements MedecinRepository {
             generatedKeys = stmtEntite.getGeneratedKeys();
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
-                m.setIdMedecin(id);
-                m.setIdUser(id);
+                m.setId(id); // Was setIdMedecin
+                // m.setIdUser(id); // Was setIdUser, now covered by setId or inheritance
                 m.setIdEntite(id);
             } else {
                 throw new SQLException("Creating Entite for Medecin failed, no ID obtained.");
@@ -109,9 +109,9 @@ public class MedecinRepositoryImpl implements MedecinRepository {
             stmtUser.setLong(1, id);
             stmtUser.setString(2, m.getNom());
             stmtUser.setString(3, m.getEmail());
-            stmtUser.setString(4, m.getTel());
-            stmtUser.setString(5, m.getLogin());
-            stmtUser.setString(6, m.getMotDePasse());
+            stmtUser.setString(4, m.getTelephone());
+            stmtUser.setString(5, m.getUsername());
+            stmtUser.setString(6, m.getPassword());
             stmtUser.setString(7, m.getSexe() != null ? m.getSexe().name() : null);
             stmtUser.setObject(8, m.getDateNaissance());
             stmtUser.executeUpdate();
@@ -121,7 +121,7 @@ public class MedecinRepositoryImpl implements MedecinRepository {
             stmtStaff = conn.prepareStatement(sqlStaff);
             stmtStaff.setLong(1, id);
             stmtStaff.setDouble(2, m.getSalaire() != null ? m.getSalaire() : 0.0);
-            stmtStaff.setObject(3, m.getDateRecrutement());
+            stmtStaff.setObject(3, m.getDateEmbauche());
             stmtStaff.executeUpdate();
 
             // 4. Insert into Medecin
@@ -190,9 +190,9 @@ public class MedecinRepositoryImpl implements MedecinRepository {
             stmtUser = conn.prepareStatement(sqlUser);
             stmtUser.setString(1, m.getNom());
             stmtUser.setString(2, m.getEmail());
-            stmtUser.setString(3, m.getTel());
-            stmtUser.setString(4, m.getLogin());
-            stmtUser.setString(5, m.getMotDePasse());
+            stmtUser.setString(3, m.getTelephone());
+            stmtUser.setString(4, m.getUsername());
+            stmtUser.setString(5, m.getPassword());
             stmtUser.setString(6, m.getSexe() != null ? m.getSexe().name() : null);
             stmtUser.setObject(7, m.getDateNaissance());
             stmtUser.setLong(8, m.getIdEntite());
@@ -202,7 +202,7 @@ public class MedecinRepositoryImpl implements MedecinRepository {
             String sqlStaff = "UPDATE staff SET salaire = ?, dateRecrutement = ? WHERE id = ?";
             stmtStaff = conn.prepareStatement(sqlStaff);
             stmtStaff.setDouble(1, m.getSalaire() != null ? m.getSalaire() : 0.0);
-            stmtStaff.setObject(2, m.getDateRecrutement());
+            stmtStaff.setObject(2, m.getDateEmbauche());
             stmtStaff.setLong(3, m.getIdEntite());
             stmtStaff.executeUpdate();
 
@@ -210,7 +210,7 @@ public class MedecinRepositoryImpl implements MedecinRepository {
             String sqlMed = "UPDATE medecin SET specialite = ? WHERE id = ?";
             stmtMed = conn.prepareStatement(sqlMed);
             stmtMed.setString(1, m.getSpecialite());
-            stmtMed.setLong(2, m.getIdMedecin());
+            stmtMed.setLong(2, m.getId()); // Was getIdMedecin
             stmtMed.executeUpdate();
 
             conn.commit();

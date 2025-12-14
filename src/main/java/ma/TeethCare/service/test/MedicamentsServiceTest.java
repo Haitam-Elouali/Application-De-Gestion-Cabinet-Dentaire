@@ -34,20 +34,20 @@ public class MedicamentsServiceTest {
 
         @Override
         public void create(medicaments entity) {
-            if (entity.getIdMed() == null) {
-                entity.setIdMed(idCounter++);
+            if (entity.getId() == null) {
+                entity.setId(idCounter++);
             }
-            data.put(entity.getIdMed(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void update(medicaments entity) {
-            data.put(entity.getIdMed(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void delete(medicaments entity) {
-            data.remove(entity.getIdMed());
+            data.remove(entity.getId());
         }
 
         @Override
@@ -57,7 +57,7 @@ public class MedicamentsServiceTest {
 
         @Override
         public Optional<medicaments> findByNom(String nom) {
-            return data.values().stream().filter(m -> m.getNom().equals(nom)).findFirst();
+            return data.values().stream().filter(m -> m.getNomCommercial().equals(nom)).findFirst();
         }
     }
 
@@ -83,19 +83,19 @@ public class MedicamentsServiceTest {
     public static void testCreate(medicamentsService service) throws Exception {
         System.out.println("Testing Create...");
         medicaments m = medicaments.builder()
-            .nom("Doliprane")
+            .nomCommercial("Doliprane")
             .type("Analgesique")
             .build();
         medicaments created = service.create(m);
-        if (created.getIdMed() == null) throw new RuntimeException("Create failed: ID is null");
+        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(medicamentsService service) throws Exception {
         System.out.println("Testing FindById...");
-        medicaments m = medicaments.builder().nom("Advil").build();
+        medicaments m = medicaments.builder().nomCommercial("Advil").build();
         m = service.create(m);
-        Optional<medicaments> found = service.findById(m.getIdMed());
+        Optional<medicaments> found = service.findById(m.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -103,26 +103,26 @@ public class MedicamentsServiceTest {
     public static void testFindAll(medicamentsService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(medicaments.builder().nom("Smecta").build());
+        service.create(medicaments.builder().nomCommercial("Smecta").build());
         if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(medicamentsService service) throws Exception {
         System.out.println("Testing Update...");
-        medicaments m = medicaments.builder().nom("Old Name").build();
+        medicaments m = medicaments.builder().nomCommercial("Old Name").build();
         m = service.create(m);
-        m.setNom("New Name");
+        m.setNomCommercial("New Name");
         medicaments updated = service.update(m);
-        if (!updated.getNom().equals("New Name")) throw new RuntimeException("Update failed: value mismatch");
+        if (!updated.getNomCommercial().equals("New Name")) throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(medicamentsService service) throws Exception {
         System.out.println("Testing Delete...");
-        medicaments m = medicaments.builder().nom("Delete Me").build();
+        medicaments m = medicaments.builder().nomCommercial("Delete Me").build();
         m = service.create(m);
-        Long id = m.getIdMed();
+        Long id = m.getId();
         service.delete(id);
         if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
@@ -130,9 +130,9 @@ public class MedicamentsServiceTest {
 
     public static void testExists(medicamentsService service) throws Exception {
         System.out.println("Testing Exists...");
-        medicaments m = medicaments.builder().nom("Exists").build();
+        medicaments m = medicaments.builder().nomCommercial("Exists").build();
         m = service.create(m);
-        if (!service.exists(m.getIdMed())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(m.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 

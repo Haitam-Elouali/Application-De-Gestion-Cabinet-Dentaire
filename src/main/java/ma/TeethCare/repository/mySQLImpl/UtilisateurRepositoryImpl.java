@@ -89,7 +89,7 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 u.setIdEntite(id);
-                u.setIdUser(id);
+                u.setId(id);
             } else {
                 throw new SQLException("Creating Entite for Utilisateur failed, no ID obtained.");
             }
@@ -104,9 +104,9 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
             stmtUser.setLong(1, id);
             stmtUser.setString(2, u.getNom());
             stmtUser.setString(3, u.getEmail());
-            stmtUser.setString(4, u.getTel());
-            stmtUser.setString(5, u.getLogin());
-            stmtUser.setString(6, u.getMotDePasse());
+            stmtUser.setString(4, u.getTelephone());
+            stmtUser.setString(5, u.getUsername());
+            stmtUser.setString(6, u.getPassword());
             stmtUser.setString(7, u.getSexe() != null ? u.getSexe().name() : null);
             stmtUser.setObject(8, u.getDateNaissance());
 
@@ -167,9 +167,9 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
             stmtUser = conn.prepareStatement(sqlUser);
             stmtUser.setString(1, u.getNom());
             stmtUser.setString(2, u.getEmail());
-            stmtUser.setString(3, u.getTel());
-            stmtUser.setString(4, u.getLogin());
-            stmtUser.setString(5, u.getMotDePasse());
+            stmtUser.setString(3, u.getTelephone());
+            stmtUser.setString(4, u.getUsername());
+            stmtUser.setString(5, u.getPassword());
             stmtUser.setString(6, u.getSexe() != null ? u.getSexe().name() : null);
             stmtUser.setObject(7, u.getDateNaissance());
             stmtUser.setLong(8, u.getIdEntite());

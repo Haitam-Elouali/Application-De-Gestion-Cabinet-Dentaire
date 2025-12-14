@@ -154,7 +154,7 @@ public class LogRepositoryImpl implements LogRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 l.setIdEntite(id);
-                l.setIdLog(id);
+                l.setId(id);
             } else {
                 throw new SQLException("Creating Entite for Log failed, no ID obtained.");
             }
@@ -163,8 +163,8 @@ public class LogRepositoryImpl implements LogRepository {
             String sqlLog = "INSERT INTO log (id, typeSupp, message, utilisateur_id, dateAction) VALUES (?, ?, ?, ?, ?)";
             stmtLog = conn.prepareStatement(sqlLog);
             stmtLog.setLong(1, id);
-            stmtLog.setString(2, l.getAction()); // Parsing action as typeSupp
-            stmtLog.setString(3, l.getDescription()); // Parsing description as message
+            stmtLog.setString(2, String.valueOf(l.getDateAction())); // Parsing action as typeSupp
+            stmtLog.setString(3, l.getMessage()); // Parsing description as message
             
             // Handle utilisateur_id
             if (l.getUtilisateurEntity() != null && l.getUtilisateurEntity().getIdEntite() != null) {
@@ -230,8 +230,8 @@ public class LogRepositoryImpl implements LogRepository {
             // Update Log
             String sqlLog = "UPDATE log SET typeSupp = ?, message = ?, utilisateur_id = ?, dateAction = ? WHERE id = ?";
             stmtLog = conn.prepareStatement(sqlLog);
-            stmtLog.setString(1, l.getAction());
-            stmtLog.setString(2, l.getDescription());
+            stmtLog.setString(1, String.valueOf(l.getDateAction()));
+            stmtLog.setString(2, l.getMessage());
             
             if (l.getUtilisateurEntity() != null && l.getUtilisateurEntity().getIdEntite() != null) {
                 stmtLog.setLong(3, l.getUtilisateurEntity().getIdEntite());
@@ -240,7 +240,7 @@ public class LogRepositoryImpl implements LogRepository {
             }
             
             stmtLog.setTimestamp(4, l.getDateAction() != null ? Timestamp.valueOf(l.getDateAction()) : null);
-            stmtLog.setLong(5, l.getIdLog());
+            stmtLog.setLong(5, l.getId());
 
             stmtLog.executeUpdate();
 
@@ -269,8 +269,8 @@ public class LogRepositoryImpl implements LogRepository {
     }
     @Override
     public void delete(log l) {
-        if (l != null && l.getIdLog() != null) {
-            deleteById(l.getIdLog());
+        if (l != null && l.getId() != null) {
+            deleteById(l.getId());
         }
     }
 

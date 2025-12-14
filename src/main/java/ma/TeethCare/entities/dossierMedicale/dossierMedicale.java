@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class dossierMedicale extends baseEntity {
-    private Long idDM;
+    private Long id; // Was idDM
     private Long patientId;
     private LocalDateTime dateDeCreation;
     

@@ -34,20 +34,20 @@ public class SituationFinanciereServiceTest {
 
         @Override
         public void create(situationFinanciere entity) {
-            if (entity.getIdSF() == null) {
-                entity.setIdSF(idCounter++);
+            if (entity.getId() == null) {
+                entity.setId(idCounter++);
             }
-            data.put(entity.getIdSF(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void update(situationFinanciere entity) {
-            data.put(entity.getIdSF(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void delete(situationFinanciere entity) {
-            data.remove(entity.getIdSF());
+            data.remove(entity.getId());
         }
 
         @Override
@@ -78,20 +78,19 @@ public class SituationFinanciereServiceTest {
     public static void testCreate(situationFinanciereService service) throws Exception {
         System.out.println("Testing Create...");
         situationFinanciere s = situationFinanciere.builder()
-            .totaleDesActes(1000.0)
+            .totalDesActes(1000.0)
             .totalPaye(500.0)
-            .reste(500.0)
             .build();
         situationFinanciere created = service.create(s);
-        if (created.getIdSF() == null) throw new RuntimeException("Create failed: ID is null");
+        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(situationFinanciereService service) throws Exception {
         System.out.println("Testing FindById...");
-        situationFinanciere s = situationFinanciere.builder().totaleDesActes(200.0).build();
+        situationFinanciere s = situationFinanciere.builder().totalDesActes(200.0).build();
         s = service.create(s);
-        Optional<situationFinanciere> found = service.findById(s.getIdSF());
+        Optional<situationFinanciere> found = service.findById(s.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -99,26 +98,26 @@ public class SituationFinanciereServiceTest {
     public static void testFindAll(situationFinanciereService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(situationFinanciere.builder().totaleDesActes(300.0).build());
+        service.create(situationFinanciere.builder().totalDesActes(300.0).build());
         if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(situationFinanciereService service) throws Exception {
         System.out.println("Testing Update...");
-        situationFinanciere s = situationFinanciere.builder().totaleDesActes(400.0).build();
+        situationFinanciere s = situationFinanciere.builder().totalDesActes(400.0).build();
         s = service.create(s);
-        s.setTotaleDesActes(450.0);
+        s.setTotalDesActes(450.0);
         situationFinanciere updated = service.update(s);
-        if (!updated.getTotaleDesActes().equals(450.0)) throw new RuntimeException("Update failed: value mismatch");
+        if (!updated.getTotalDesActes().equals(450.0)) throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(situationFinanciereService service) throws Exception {
         System.out.println("Testing Delete...");
-        situationFinanciere s = situationFinanciere.builder().totaleDesActes(0.0).build();
+        situationFinanciere s = situationFinanciere.builder().totalDesActes(0.0).build();
         s = service.create(s);
-        Long id = s.getIdSF();
+        Long id = s.getId();
         service.delete(id);
         if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
@@ -126,9 +125,9 @@ public class SituationFinanciereServiceTest {
 
     public static void testExists(situationFinanciereService service) throws Exception {
         System.out.println("Testing Exists...");
-        situationFinanciere s = situationFinanciere.builder().totaleDesActes(100.0).build();
+        situationFinanciere s = situationFinanciere.builder().totalDesActes(100.0).build();
         s = service.create(s);
-        if (!service.exists(s.getIdSF())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(s.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 

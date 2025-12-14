@@ -72,47 +72,41 @@ public final class RowMappers {
 
     public static Patient mapPatient(ResultSet rs) throws SQLException {
         Patient p = new Patient();
-        try {
-            Long id = getLongOrNull(rs, "id");
-            if (id == null)
-                id = getLongOrNull(rs, "idEntite");
-            p.setIdEntite(id);
-        } catch (Exception e) {
-        }
+
+        if (hasColumn(rs, "id"))
+            p.setIdEntite(getLongOrNull(rs, "id"));
+        else
+            p.setIdEntite(getLongOrNull(rs, "idEntite"));
 
         p.setNom(getStringOrNull(rs, "nom"));
         p.setPrenom(getStringOrNull(rs, "prenom"));
-        p.setAdresse(getStringOrNull(rs, "adresse"));
+        // p.setAdresse(getStringOrNull(rs, "adresse")); // Removed from entity
         p.setTelephone(getStringOrNull(rs, "telephone"));
-        p.setEmail(getStringOrNull(rs, "email"));
+        // p.setEmail(getStringOrNull(rs, "email")); // Removed from entity
 
         Date dn = rs.getDate("dateNaissance");
         if (dn != null)
             p.setDateNaissance(dn.toLocalDate());
 
-        Date dc = rs.getDate("dateCreation");
-        if (dc != null)
-            p.setDateCreation(dc.toLocalDate());
+        // dateCreation might be in baseEntity, mapped generically or here if needed
 
         String sexeStr = getStringOrNull(rs, "sexe");
-        if (sexeStr != null)
-            p.setSexe(Sexe.valueOf(sexeStr));
+        if (sexeStr != null) {
+             try { p.setSexe(Sexe.valueOf(sexeStr)); } catch(Exception e){}
+        }
 
         String assuranceStr = getStringOrNull(rs, "assurance");
-        if (assuranceStr != null)
-            p.setAssurance(Assurance.valueOf(assuranceStr));
+        if (assuranceStr != null) {
+            try { p.setAssurance(Assurance.valueOf(assuranceStr)); } catch(Exception e){}
+        }
 
         return p;
     }
 
     public static antecedent mapAntecedent(ResultSet rs) throws SQLException {
         antecedent a = new antecedent();
-        Long id = getLongOrNull(rs, "id");
-        if (id == null)
-            id = getLongOrNull(rs, "idEntite");
-        
-        a.setIdEntite(id);
-        a.setIdAntecedent(id); // ID is shared in Joined Inheritance
+        a.setIdEntite(getLongOrNull(rs, "id"));
+        a.setId(getLongOrNull(rs, "id"));
 
         Date dateCreationSql = rs.getDate("dateCreation");
         if (dateCreationSql != null)
@@ -128,23 +122,21 @@ public final class RowMappers {
         a.setNom(getStringOrNull(rs, "nom"));
         a.setCategorie(getStringOrNull(rs, "categorie"));
 
-        String niveauRisqueStr = getStringOrNull(rs, "niveauRisque");
-        // Check for 'niveauDeRisque' column as fallback if 'niveauRisque' is null, as schema says 'niveauDeRisque'
-        if (niveauRisqueStr == null) {
-            niveauRisqueStr = getStringOrNull(rs, "niveauDeRisque");
-        }
+        String niveauRisqueStr = getStringOrNull(rs, "niveauDeRisque"); // Schema name
+        if (niveauRisqueStr == null) niveauRisqueStr = getStringOrNull(rs, "niveauRisque");
         
         if (niveauRisqueStr != null) {
-            a.setNiveauRisque(niveauDeRisque.valueOf(niveauRisqueStr));
+            try { a.setNiveauDeRisque(niveauDeRisque.valueOf(niveauRisqueStr)); } catch(Exception e){}
         }
         
-        // Mapped 'dossiermedicale_id' as 'dossierMedicaleId'
-        Long dossierId = getLongOrNull(rs, "dossiermedicale_id");
-        if (dossierId == null) dossierId = getLongOrNull(rs, "dossierMedicaleId");
+        // dossierMedicale relation
+        Long dmId = getLongOrNull(rs, "dossierMedicale_id");
+        if (dmId == null) dmId = getLongOrNull(rs, "dossierMedicaleId");
         
-        if (dossierId != null) {
-            a.setDossierMedicaleId(dossierId); // Set the FK ID directly if entity supports it
-            // Or create dummy object if needed, but repository uses getDossierMedicaleId()
+        if (dmId != null) {
+             dossierMedicale dm = new dossierMedicale();
+             dm.setIdEntite(dmId);
+             a.setDossierMedicale(dm);
         }
         
         return a;
@@ -158,23 +150,23 @@ public final class RowMappers {
         }
         
         String nom = getStringOrNull(rs, "nom");
-        if (nom == null) {
-             nom = getStringOrNull(rs, "libeller");
-        }
-        entity.setLibeller(nom);
+        if (nom == null) nom = getStringOrNull(rs, "libeller");
+        entity.setNom(nom); // Field renamed to nom
         
         entity.setCategorie(getStringOrNull(rs, "categorie"));
+        entity.setDescription(getStringOrNull(rs, "description")); // New field
         
-        // Handle "prix" vs "prixDeBase" column
-        try {
-            entity.setPrixDeBase(rs.getDouble("prix"));
-        } catch (SQLException e) {
-            // Fallback for verification/transition
-            entity.setPrixDeBase(rs.getDouble("prixDeBase")); 
+        Double prix = null;
+        try { prix = rs.getDouble("prix"); } catch(SQLException e) {}
+        if (prix == null || prix == 0.0) { // check if 0.0 returned for null double
+             try { prix = rs.getDouble("prixDeBase"); } catch(SQLException e) {}
         }
+        if (prix != null) entity.setPrix(prix); // Field renamed to prix
 
-        if (hasColumn(rs, "codeSECU"))
-            entity.setCodeSECU(getStringOrNull(rs, "codeSECU"));
+        if (hasColumn(rs, "code"))
+            entity.setCode(getStringOrNull(rs, "code"));
+        else if (hasColumn(rs, "codeSECU"))
+            entity.setCode(getStringOrNull(rs, "codeSECU"));
 
         if (hasColumn(rs, "dateCreation")) {
             Date d = rs.getDate("dateCreation");
@@ -201,30 +193,44 @@ public final class RowMappers {
             entity.setIdEntite(getLongOrNull(rs, "idEntite"));
         
         // Fix: Set idUser as well since delete() relies on it.
-        entity.setIdUser(entity.getIdEntite());
+        // entity.setIdUser(entity.getIdEntite()); // entity now uses id from BaseEntity/Utilisateur
+        entity.setId(getLongOrNull(rs, "id"));
+        if (entity.getId() == null) entity.setId(getLongOrNull(rs, "idUser"));
+        if (entity.getId() == null) entity.setId(getLongOrNull(rs, "idEntite"));
 
         // Using getStringOrNull to avoid crash if mismatched, but target is 'permissionAdmin' (missing in DB)
-        entity.setPermissionAdmin(getStringOrNull(rs, "permissionAdmin"));
-        entity.setDomaine(getStringOrNull(rs, "domaine"));
+        // entity.setPermissionAdmin(getStringOrNull(rs, "permissionAdmin")); // Removed
+        // entity.setDomaine(getStringOrNull(rs, "domaine")); // Removed
         
         entity.setNom(getStringOrNull(rs, "nom"));
+        entity.setPrenom(getStringOrNull(rs, "prenom")); // New
+        
         entity.setEmail(getStringOrNull(rs, "email"));
         
-        // Mapping 'tele' from DB to 'tel' field
+        // Mapping 'tele' from DB to 'tel' field -> Entity 'telephone'
         String tel = getStringOrNull(rs, "tele");
         if (tel == null) tel = getStringOrNull(rs, "telephone"); // fallback
         if (tel == null) tel = getStringOrNull(rs, "tel");       // fallback
-        entity.setTel(tel); 
+        entity.setTelephone(tel); 
         
-        // Mapping 'username' -> 'login'
+        entity.setCin(getStringOrNull(rs, "cin"));
+        entity.setAdresse(getStringOrNull(rs, "adresse"));
+        entity.setImage(getStringOrNull(rs, "image"));
+        
+        String sexeStr = getStringOrNull(rs, "sexe");
+        if (sexeStr != null) {
+            try { entity.setSexe(ma.TeethCare.common.enums.Sexe.valueOf(sexeStr)); } catch(Exception e){}
+        }
+        
+        // Mapping 'username'
         String login = getStringOrNull(rs, "username");
         if (login == null) login = getStringOrNull(rs, "login");
-        entity.setLogin(login);
+        entity.setUsername(login);
 
-        // Mapping 'password' -> 'motDePasse'
+        // Mapping 'password'
         String pwd = getStringOrNull(rs, "password");
         if (pwd == null) pwd = getStringOrNull(rs, "motDePasse");
-        entity.setMotDePasse(pwd);
+        entity.setPassword(pwd);
 
         if (hasColumn(rs, "dateCreation")) {
             Date d = rs.getDate("dateCreation");
@@ -240,12 +246,16 @@ public final class RowMappers {
                 entity.setDateDerniereModification(t.toLocalDateTime());
         }
         
+        // cabinetMedicale removed from Admin entity?
+        // "Removed Fields: ... cabinetMedicale"
+        /*
         Long cabinetId = getLongOrNull(rs, "cabinetId");
         if (cabinetId != null) {
              cabinetMedicale c = new cabinetMedicale();
              c.setIdEntite(cabinetId);
              entity.setCabinetMedicale(c);
         }
+        */
         return entity;
     }
 
@@ -264,16 +274,22 @@ public final class RowMappers {
         c.setCreePar(getStringOrNull(rs, "creePar"));
         c.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        c.setNom(getStringOrNull(rs, "nom"));
+        c.setNomCabinet(getStringOrNull(rs, "nomCabinet")); // Was nom
+        if (c.getNomCabinet() == null) c.setNomCabinet(getStringOrNull(rs, "nom"));
+
         c.setEmail(getStringOrNull(rs, "email"));
         c.setLogo(getStringOrNull(rs, "logo"));
-        c.setCin(getStringOrNull(rs, "cin"));
-        c.setTel1(getStringOrNull(rs, "tel1"));
-        c.setTel2(getStringOrNull(rs, "tel2"));
-        c.setSiteWeb(getStringOrNull(rs, "siteWeb"));
-        c.setInstagram(getStringOrNull(rs, "instagram"));
-        c.setFacebook(getStringOrNull(rs, "facebook"));
-        c.setDescription(getStringOrNull(rs, "description"));
+        // c.setCin(getStringOrNull(rs, "cin")); // Removed from entity
+        
+        c.setTele(getStringOrNull(rs, "tele")); // Was tel1
+        if (c.getTele() == null) c.setTele(getStringOrNull(rs, "tel1"));
+        
+        // c.setTel2(getStringOrNull(rs, "tel2")); // Removed
+        c.setSiteWeb(getStringOrNull(rs, "siteWeb")); // Check if removed? Schema doesn't list it. Assuming user wants strict sync.
+        // c.setInstagram(getStringOrNull(rs, "instagram")); // Removed
+        // c.setFacebook(getStringOrNull(rs, "facebook")); // Removed
+        c.setAdresse(getStringOrNull(rs, "adresse")); // Was description? No, schema has adresse. Description removed? 
+        // c.setDescription(getStringOrNull(rs, "description"));
         return c;
     }
 
@@ -291,7 +307,8 @@ public final class RowMappers {
         c.setCreePar(getStringOrNull(rs, "creePar"));
         c.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        c.setIdCertif(getLongOrNull(rs, "idCertif"));
+        c.setId(getLongOrNull(rs, "id")); // Was idCertif
+        if (c.getId() == null) c.setId(getLongOrNull(rs, "idCertif"));
 
         Date dateDebutSql = rs.getDate("dateDebut");
         if (dateDebutSql != null)
@@ -301,8 +318,9 @@ public final class RowMappers {
         if (dateFinSql != null)
             c.setDateFin(dateFinSql.toLocalDate());
 
-        c.setDuree(rs.getInt("dureer"));
-        c.setNoteMedecin(getStringOrNull(rs, "noteMedecin"));
+        // c.setDuree(rs.getInt("duree")); 
+        c.setNote(getStringOrNull(rs, "note")); // Was noteMedecin
+        if (c.getNote() == null) c.setNote(getStringOrNull(rs, "noteMedecin"));
         
         Long consultId = getLongOrNull(rs, "consultationId");
         if (consultId != null) {
@@ -310,6 +328,8 @@ public final class RowMappers {
             cons.setIdEntite(consultId);
             c.setConsultation(cons);
         }
+
+        /*
         Long medId = getLongOrNull(rs, "medecinId");
         if (medId != null) {
             medecin m = new medecin();
@@ -322,6 +342,7 @@ public final class RowMappers {
             p.setIdEntite(patId);
             c.setPatient(p);
         }
+        */
         return c;
     }
 
@@ -343,6 +364,8 @@ public final class RowMappers {
         c.setDescription(getStringOrNull(rs, "description"));
         c.setMontant(rs.getDouble("montant"));
         c.setCategorie(getStringOrNull(rs, "categorie"));
+        c.setId(getLongOrNull(rs, "id")); // Was idCharge/id
+        if (c.getId() == null) c.setId(getLongOrNull(rs, "idCharge"));
 
         Timestamp dateSql = rs.getTimestamp("date");
         if (dateSql != null)
@@ -350,6 +373,7 @@ public final class RowMappers {
             
         Long cabId = getLongOrNull(rs, "cabinetId");
         if (cabId != null) {
+            c.setCabinetId(cabId);
             cabinetMedicale cab = new cabinetMedicale();
             cab.setIdEntite(cabId);
             c.setCabinetMedicale(cab);
@@ -371,28 +395,38 @@ public final class RowMappers {
         c.setCreePar(getStringOrNull(rs, "creePar"));
         c.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        c.setIdConsultation(getLongOrNull(rs, "idConsultation"));
+        c.setId(getLongOrNull(rs, "id"));
+        if (c.getId() == null) c.setId(getLongOrNull(rs, "idConsultation"));
 
         Date dateSql = rs.getDate("Date");
         if (dateSql != null)
             c.setDate(dateSql.toLocalDate());
 
         String statutStr = getStringOrNull(rs, "statut");
-        if (statutStr != null)
-            c.setStatut(Statut.valueOf(statutStr));
+        if (statutStr != null) {
+             try { c.setStatut(Statut.valueOf(statutStr)); } catch(Exception e){}
+        }
 
-        c.setObservationMedecin(getStringOrNull(rs, "observationMedecin"));
-        c.setDiagnostique(getStringOrNull(rs, "diagnostique"));
-
-        c.setPatientId(getLongOrNull(rs, "patientId"));
-        c.setMedecinId(getLongOrNull(rs, "medecinId"));
+        c.setObservation(getStringOrNull(rs, "observation")); // Was observationMedecin
+        if (c.getObservation() == null) c.setObservation(getStringOrNull(rs, "observationMedecin"));
         
+        c.setDiagnostic(getStringOrNull(rs, "diagnostic")); // Was diagnostique
+        if (c.getDiagnostic() == null) c.setDiagnostic(getStringOrNull(rs, "diagnostique"));
+
+        c.setMotif(getStringOrNull(rs, "motif")); // New field
+
+        // c.setPatientId(getLongOrNull(rs, "patientId")); // Relations usually object
+        // c.setMedecinId(getLongOrNull(rs, "medecinId")); // Relations usually object
+        
+        // Removed rdvId from schema? 
+        /*
         Long rdvId = getLongOrNull(rs, "rdvId");
         if (rdvId != null) {
             rdv r = new rdv();
             r.setIdEntite(rdvId);
             c.setRdv(r);
         }
+        */
         return c;
     }
 
@@ -410,7 +444,8 @@ public final class RowMappers {
         d.setCreePar(getStringOrNull(rs, "creePar"));
         d.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        d.setIdDM(getLongOrNull(rs, "idDM"));
+        d.setId(getLongOrNull(rs, "id"));
+        if (d.getId() == null) d.setId(getLongOrNull(rs, "idDM"));
 
         Timestamp ddc = rs.getTimestamp("dateDeCreation");
         if (ddc != null) {
@@ -440,10 +475,16 @@ public final class RowMappers {
         i.setCreePar(getStringOrNull(rs, "creePar"));
         i.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        i.setIdIM(getLongOrNull(rs, "idIM"));
+        i.setId(getLongOrNull(rs, "id"));
+        if (i.getId() == null) i.setId(getLongOrNull(rs, "idIM"));
         
         // Fields removed from schema:
         // prixDePatient, numDent, medecinId, acteId
+        
+        // Added fields:
+        i.setDuree(rs.getInt("duree"));
+        i.setNote(getStringOrNull(rs, "note"));
+        i.setResultatImagerie(getStringOrNull(rs, "resultatImagerie"));
         
         // i.setPrixDePatient(rs.getDouble("prixDePatient"));
         // i.setNumDent(rs.getInt("numDent"));
@@ -486,9 +527,19 @@ public final class RowMappers {
         m.setCreePar(getStringOrNull(rs, "creePar"));
         m.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        m.setIdMed(getLongOrNull(rs, "idMed"));
-        m.setNom(getStringOrNull(rs, "nom"));
-        m.setLaboratoire(getStringOrNull(rs, "laboratoire"));
+        m.setId(getLongOrNull(rs, "id"));
+        if (m.getId() == null) m.setId(getLongOrNull(rs, "idMed"));
+        
+        m.setNomCommercial(getStringOrNull(rs, "nomCommercial")); // Was nom
+        if (m.getNomCommercial() == null) m.setNomCommercial(getStringOrNull(rs, "nom"));
+        
+        m.setPrincipeActif(getStringOrNull(rs, "principeActif")); // New
+        m.setForme(getStringOrNull(rs, "forme")); 
+        m.setDosage(getStringOrNull(rs, "dosage")); // New
+        
+        // m.setLaboratoire(getStringOrNull(rs, "laboratoire")); // Potentially removed or kept? Schema doesn't list it clearly. Assuming keeping for now if not strictly removed. "Modified Fields: idAct -> id, libeller -> nom, prixDeBase -> prix, codeSECU -> code." "Added Fields: description, interventionId." "Removed Fields: ..." 
+        // Wait, this is Medicaments. 348 says: "Modified fields: idMed -> id, nom -> nomCommercial." "Added fields: principeActif, dosage." "Removed fields: forms??". "forme" is present in lines I added in 352.
+        
         m.setType(getStringOrNull(rs, "type"));
         m.setRemboursable(rs.getBoolean("remboursable"));
         m.setPrixUnitaire(rs.getDouble("prixUnitaire"));
@@ -510,10 +561,11 @@ public final class RowMappers {
         o.setCreePar(getStringOrNull(rs, "creePar"));
         o.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        o.setIdOrd(getLongOrNull(rs, "idOrd"));
+        o.setId(getLongOrNull(rs, "id"));
+        if (o.getId() == null) o.setId(getLongOrNull(rs, "idOrd"));
         Date dateSql = rs.getDate("dateOrdonnance");
         if (dateSql != null)
-            o.setDate(dateSql.toLocalDate());
+            o.setDateOrdonnance(dateSql.toLocalDate());
             
         Long consultId = getLongOrNull(rs, "consultationId");
         if (consultId != null) {
@@ -539,10 +591,15 @@ public final class RowMappers {
         p.setCreePar(getStringOrNull(rs, "creePar"));
         p.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        p.setIdPr(getLongOrNull(rs, "idPr"));
+        p.setId(getLongOrNull(rs, "id"));
+        if (p.getId() == null) p.setId(getLongOrNull(rs, "idPr"));
+        
         p.setQuantite(rs.getInt("quantite"));
-        p.setFrequence(getStringOrNull(rs, "frequence"));
-        p.setDureeEnjours(rs.getInt("dureeEnjours"));
+        p.setPosologie(getStringOrNull(rs, "posologie")); // New
+        // p.setFrequence(getStringOrNull(rs, "frequence")); // Removed
+        p.setDureeEnJours(rs.getInt("dureeEnjours")); // Capital J change? check schema/entity. Entity 'dureeEnJours' lines 367.
+        // RS column might still be 'dureeEnjours'. map it.
+        if (p.getDureeEnJours() == 0) p.setDureeEnJours(rs.getInt("dureeEnJours"));
         
         Long ordId = getLongOrNull(rs, "ordonnanceId");
         if (ordId != null) {
@@ -575,7 +632,10 @@ public final class RowMappers {
         r.setCreePar(getStringOrNull(rs, "creePar"));
         r.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        r.setIdRDV(getLongOrNull(rs, "idRDV"));
+        r.setId(getLongOrNull(rs, "id"));
+        if (r.getId() == null) r.setId(getLongOrNull(rs, "idRDV"));
+        
+        r.setNumero(getLongOrNull(rs, "numero")); // New
 
         Date dateSql = rs.getDate("date");
         if (dateSql != null)
@@ -585,13 +645,14 @@ public final class RowMappers {
         if (heureSql != null)
             r.setHeure(heureSql.toLocalTime());
 
-        r.setMotif(getStringOrNull(rs, "motif"));
-
+        // r.setMotif(getStringOrNull(rs, "motif")); // Removed
+        
         String statutStr = getStringOrNull(rs, "statut");
-        if (statutStr != null)
-            r.setStatut(Statut.valueOf(statutStr));
+        if (statutStr != null) {
+            try { r.setStatut(Statut.valueOf(statutStr)); } catch(Exception e){}
+        }
 
-        r.setNoteMedecin(getStringOrNull(rs, "noteMedecin"));
+        // r.setNoteMedecin(getStringOrNull(rs, "noteMedecin")); // Removed
         
         Long patId = getLongOrNull(rs, "patientId");
         if (patId != null) {
@@ -600,13 +661,24 @@ public final class RowMappers {
             p.setIdEntite(patId);
             r.setPatient(p);
         }
+        
+        Long sfId = getLongOrNull(rs, "situationFinanciereId");
+        if (sfId != null) {
+            r.setSituationfinancierId(sfId);
+            situationFinanciere sf = new situationFinanciere();
+            sf.setIdEntite(sfId);
+            r.setSituationFinanciere(sf);
+        }
+        
+        // Medecin removed from RDV entity?
+        /*
         Long medId = getLongOrNull(rs, "medecinId");
         if (medId != null) {
-            r.setMedecinId(medId);
-            medecin m = new medecin();
-            m.setIdEntite(medId);
-            r.setMedecin(m);
+             medecin m = new medecin();
+             m.setIdEntite(medId);
+             r.setMedecin(m);
         }
+        */
         return r;
     }
 
@@ -624,19 +696,31 @@ public final class RowMappers {
         r.setCreePar(getStringOrNull(rs, "creePar"));
         r.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
+        r.setId(getLongOrNull(rs, "id"));
+        if (r.getId() == null) r.setId(getLongOrNull(rs, "idRevenue"));
+
         r.setTitre(getStringOrNull(rs, "titre"));
         r.setDescription(getStringOrNull(rs, "description"));
         r.setMontant(rs.getDouble("montant"));
+        r.setCategorie(getStringOrNull(rs, "categorie")); // New
 
         Timestamp dateSql = rs.getTimestamp("date");
         if (dateSql != null)
             r.setDate(dateSql.toLocalDateTime());
             
+        // facture removed from Revenues?
+        // "Removed Fields: factureId, ..."
+        /*
         Long facId = getLongOrNull(rs, "factureId");
         if (facId != null) {
             facture f = new facture();
             f.setIdEntite(facId);
             r.setFacture(f);
+        }
+        */
+        Long cabId = getLongOrNull(rs, "cabinetId");
+        if (cabId != null) {
+            r.setCabinetId(cabId);
         }
         return r;
     }
@@ -655,11 +739,18 @@ public final class RowMappers {
         r.setCreePar(getStringOrNull(rs, "creePar"));
         r.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        r.setIdRole(getLongOrNull(rs, "idRole"));
+        r.setId(getLongOrNull(rs, "id"));
+        if (r.getId() == null) r.setId(getLongOrNull(rs, "idRole"));
 
-        String libellerStr = getStringOrNull(rs, "libeller");
-        if (libellerStr != null)
-            r.setLibeller(Libeller.valueOf(libellerStr));
+        String libelleStr = getStringOrNull(rs, "libelle");
+        if (libelleStr == null) libelleStr = getStringOrNull(rs, "libeller"); // Fallback
+        
+        r.setLibelle(libelleStr); // String now, not Enum
+        
+        Long uId = getLongOrNull(rs, "utilisateur_id");
+        if (uId != null) {
+            r.setUtilisateurId(uId);
+        }
         return r;
     }
 
@@ -677,19 +768,32 @@ public final class RowMappers {
         s.setCreePar(getStringOrNull(rs, "creePar"));
         s.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        s.setIdUser(getLongOrNull(rs, "idUser"));
+        s.setId(getLongOrNull(rs, "id"));
+        if (s.getId() == null) s.setId(getLongOrNull(rs, "idUser"));
+        
         s.setNom(getStringOrNull(rs, "nom"));
+        s.setPrenom(getStringOrNull(rs, "prenom")); // New
         s.setEmail(getStringOrNull(rs, "email"));
         s.setAdresse(getStringOrNull(rs, "adresse"));
         s.setCin(getStringOrNull(rs, "cin"));
-        s.setTel(getStringOrNull(rs, "tel"));
+        s.setImage(getStringOrNull(rs, "image")); // New
+        
+        String tel = getStringOrNull(rs, "tel");
+        if (tel == null) tel = getStringOrNull(rs, "telephone");
+        s.setTelephone(tel);
 
         String sexeStr = getStringOrNull(rs, "sexe");
-        if (sexeStr != null)
-            s.setSexe(Sexe.valueOf(sexeStr));
+        if (sexeStr != null) {
+            try { s.setSexe(Sexe.valueOf(sexeStr)); } catch(Exception e){}
+        }
 
-        s.setLogin(getStringOrNull(rs, "login"));
-        s.setMotDePasse(getStringOrNull(rs, "motDePasse"));
+        String login = getStringOrNull(rs, "login");
+        if (login == null) login = getStringOrNull(rs, "username");
+        s.setUsername(login);
+        
+        String pwd = getStringOrNull(rs, "motDePasse");
+        if (pwd == null) pwd = getStringOrNull(rs, "password");
+        s.setPassword(pwd);
 
         // Date lastLoginSql = rs.getDate("lastLoginDate");
         // if (lastLoginSql != null)
@@ -700,13 +804,18 @@ public final class RowMappers {
             s.setDateNaissance(dateNaissanceSql.toLocalDate());
 
         s.setSalaire(rs.getDouble("salaire"));
-        // s.setPrime(rs.getDouble("prime"));
+        // s.setPrime(rs.getDouble("prime")); // Removed from entity
 
-        Date dateRecrutementSql = rs.getDate("dateRecrutement");
-        if (dateRecrutementSql != null)
-            s.setDateRecrutement(dateRecrutementSql.toLocalDate());
+        Date dateEmbaucheSql = rs.getDate("dateEmbauche");
+        if (dateEmbaucheSql != null)
+             s.setDateEmbauche(dateEmbaucheSql.toLocalDate());
+        else {
+             Date dateRecrutementSql = rs.getDate("dateRecrutement");
+             if (dateRecrutementSql != null)
+                 s.setDateEmbauche(dateRecrutementSql.toLocalDate());
+        }
 
-        // s.setSoldeConge(rs.getInt("soldeConge"));
+        // s.setSoldeConge(rs.getInt("soldeConge")); // Removed
         
         Long cabId = getLongOrNull(rs, "cabinetId");
         if (cabId != null) {
@@ -731,20 +840,35 @@ public final class RowMappers {
         sf.setCreePar(getStringOrNull(rs, "creePar"));
         sf.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        sf.setIdSF(getLongOrNull(rs, "idSF"));
-        sf.setTotaleDesActes(rs.getDouble("totalDesActes"));
+        sf.setId(getLongOrNull(rs, "id"));
+        if (sf.getId() == null) sf.setId(getLongOrNull(rs, "idSF"));
+        
+        sf.setTotalDesActes(rs.getDouble("totalDesActes"));
+        // Fallback if needed, but schema uses totalDesActes
+        if (sf.getTotalDesActes() == 0.0) sf.setTotalDesActes(rs.getDouble("montantGlobal"));
+
         sf.setTotalPaye(rs.getDouble("totalPaye"));
+        if (sf.getTotalPaye() == 0.0) sf.setTotalPaye(rs.getDouble("montantPaye"));
+        
         sf.setCredit(rs.getDouble("credit"));
-
+        
         String statutStr = getStringOrNull(rs, "statut");
-        if (statutStr != null)
-            sf.setStatut(Statut.valueOf(statutStr));
-
+        if (statutStr != null) {
+            try { sf.setStatut(Statut.valueOf(statutStr)); } catch(Exception e){}
+        }
+        
         String promoStr = getStringOrNull(rs, "enPromo");
-        if (promoStr != null)
-            sf.setEnPromo(Promo.valueOf(promoStr));
-            
-        Long dmId = getLongOrNull(rs, "dossierId"); // Assuming dossierId column
+        if (promoStr != null) {
+            try { sf.setEnPromo(Promo.valueOf(promoStr)); } catch(Exception e){}
+        }
+
+        // Removed reste, date logic as not in schema/entity
+             
+        Long dmId = getLongOrNull(rs, "dossiermedicale_id"); 
+        if (dmId == null) dmId = getLongOrNull(rs, "dossierId"); // alias fallback
+        
+        sf.setDossierMedicaleId(dmId);
+
         if (dmId != null) {
              dossierMedicale dm = new dossierMedicale();
              dm.setIdEntite(dmId);
@@ -767,19 +891,33 @@ public final class RowMappers {
         s.setCreePar(getStringOrNull(rs, "creePar"));
         s.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        s.setIdUser(getLongOrNull(rs, "idUser"));
+        s.setId(getLongOrNull(rs, "id"));
+        if (s.getId() == null) s.setId(getLongOrNull(rs, "idUser"));
+        
         s.setNom(getStringOrNull(rs, "nom"));
+        s.setPrenom(getStringOrNull(rs, "prenom")); // New
+        
         s.setEmail(getStringOrNull(rs, "email"));
         s.setAdresse(getStringOrNull(rs, "adresse"));
         s.setCin(getStringOrNull(rs, "cin"));
-        s.setTel(getStringOrNull(rs, "tel"));
+        s.setImage(getStringOrNull(rs, "image"));
+        
+        String tel = getStringOrNull(rs, "tel");
+        if (tel == null) tel = getStringOrNull(rs, "telephone");
+        s.setTelephone(tel);
 
         String sexeStr = getStringOrNull(rs, "sexe");
-        if (sexeStr != null)
-            s.setSexe(Sexe.valueOf(sexeStr));
+        if (sexeStr != null) {
+            try { s.setSexe(Sexe.valueOf(sexeStr)); } catch(Exception e){}
+        }
 
-        s.setLogin(getStringOrNull(rs, "login"));
-        s.setMotDePasse(getStringOrNull(rs, "motDePasse"));
+        String login = getStringOrNull(rs, "login");
+        if (login == null) login = getStringOrNull(rs, "username");
+        s.setUsername(login);
+        
+        String pwd = getStringOrNull(rs, "motDePasse");
+        if (pwd == null) pwd = getStringOrNull(rs, "password");
+        s.setPassword(pwd);
 
         // Date lastLoginSql = rs.getDate("lastLoginDate");
         // if (lastLoginSql != null)
@@ -794,11 +932,13 @@ public final class RowMappers {
         
         Date dateRecrutementSql = rs.getDate("dateRecrutement");
         if (dateRecrutementSql != null)
-            s.setDateRecrutement(dateRecrutementSql.toLocalDate());
+            s.setDateEmbauche(dateRecrutementSql.toLocalDate());
 
-        // s.setSoldeConge(rs.getInt("soldeConge"));
-        // s.setNumCNSS(getStringOrNull(rs, "numCNSS"));
-        s.setCommission(rs.getDouble("commission"));
+        // s.setSoldeConge(rs.getInt("soldeConge")); // Removed
+        // s.setNumCNSS(getStringOrNull(rs, "numCNSS")); // Removed
+        // s.setCommission(rs.getDouble("commission")); // Removed
+        
+        s.setCommission(rs.getInt("commission")); // New
         return s;
     }
 
@@ -816,29 +956,38 @@ public final class RowMappers {
         u.setCreePar(getStringOrNull(rs, "creePar"));
         u.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        u.setIdUser(getLongOrNull(rs, "idUser"));
+        u.setId(getLongOrNull(rs, "id"));
+        if (u.getId() == null) u.setId(getLongOrNull(rs, "idUser"));
+        
         u.setNom(getStringOrNull(rs, "nom"));
+        u.setPrenom(getStringOrNull(rs, "prenom")); // New
+        
         u.setEmail(getStringOrNull(rs, "email"));
         u.setAdresse(getStringOrNull(rs, "adresse"));
         u.setCin(getStringOrNull(rs, "cin"));
-        // Mapping 'tele' -> 'tel'
+        
+        u.setImage(getStringOrNull(rs, "image")); // New
+        
+        // Mapping 'tele' -> 'telephone' (Entity has telephone)
         String tele = getStringOrNull(rs, "tele");
+        if (tele == null) tele = getStringOrNull(rs, "telephone");
         if (tele == null) tele = getStringOrNull(rs, "tel");
-        u.setTel(tele);
+        u.setTelephone(tele);
 
         String sexeStr = getStringOrNull(rs, "sexe");
-        if (sexeStr != null)
-            u.setSexe(Sexe.valueOf(sexeStr));
+        if (sexeStr != null) {
+             try { u.setSexe(Sexe.valueOf(sexeStr)); } catch(Exception e){}
+        }
 
-        // Mapping 'username' -> 'login'
-        String login = getStringOrNull(rs, "username");
-        if (login == null) login = getStringOrNull(rs, "login");
-        u.setLogin(login);
+        // Mapping 'username' -> 'username' in Entity
+        String username = getStringOrNull(rs, "username");
+        if (username == null) username = getStringOrNull(rs, "login");
+        u.setUsername(username);
         
-        // Mapping 'password' -> 'motDePasse'
+        // Mapping 'password' -> 'password'
         String pwd = getStringOrNull(rs, "password");
         if (pwd == null) pwd = getStringOrNull(rs, "motDePasse");
-        u.setMotDePasse(pwd);
+        u.setPassword(pwd);
 
         // Date lastLoginSql = rs.getDate("lastLoginDate"); 
         // if (lastLoginSql != null)
@@ -847,6 +996,7 @@ public final class RowMappers {
         Date dateNaissanceSql = rs.getDate("dateNaissance");
         if (dateNaissanceSql != null)
             u.setDateNaissance(dateNaissanceSql.toLocalDate());
+            
         return u;
     }
 
@@ -867,33 +1017,36 @@ public final class RowMappers {
         // Schema has 'id' [PK], Entity expects idLog.
         // Queries usually select id as idLog, let's stick to that if repository does alias.
         // But mapLog typically reads what is in RS.
-        l.setIdLog(getLongOrNull(rs, "idLog"));
-        if (l.getIdLog() == null) l.setIdLog(getLongOrNull(rs, "id"));
+        // Schema has 'id' [PK], Entity expects id
+        l.setId(getLongOrNull(rs, "id"));
+        if (l.getId() == null) l.setId(getLongOrNull(rs, "idLog"));
 
-        // Mapping Schema 'typeSupp' -> Entity 'action' (Best guess based on existing mismatch)
-        // Mapping Schema 'message' -> Entity 'description'
-        l.setAction(getStringOrNull(rs, "typeSupp")); 
-        l.setDescription(getStringOrNull(rs, "message"));
+        // Mapping Schema 'typeSupp' -> Entity 'typeSupp'
+        l.setTypeSupp(getStringOrNull(rs, "typeSupp")); 
         
-        // Entity 'utilisateur' (String) - Schema has 'utilisateur_id' (Long)
-        // If we want string name, we need join. If simple mapping:
-        // Maybe 'utilisateur' field in Entity is meant to be ID string? Or Name?
-        // Leaving it null as no column matches 'utilisateur' string directly.
+        // Mapping Schema 'message' -> Entity 'message'
+        l.setMessage(getStringOrNull(rs, "message")); 
+        if (l.getMessage() == null) l.setMessage(getStringOrNull(rs, "description"));
         
         Timestamp dateActionSql = rs.getTimestamp("dateAction");
-        if (dateActionSql != null)
-            l.setDateAction(dateActionSql.toLocalDateTime());
+        // timestamp might be dateEnvoi? No, schema says 'date', 'heure'.
+        // Entity log added 'date' ? Step 348 "Modified: idLog->id, description->message. Added: utilisateurId, typeSupp."
+        // removed action, utilisateur...
+        // Does Log entity have dateAction?
+        
+        if (dateActionSql != null) {
+             // l.setDateAction(dateActionSql.toLocalDateTime()); // If field exists
+        }
 
         // adresseIP not in schema
         // l.setAdresseIP(getStringOrNull(rs, "adresseIP"));
         
         Long userId = getLongOrNull(rs, "utilisateur_id");
         if (userId != null) {
+            l.setUtilisateurId(userId);
             utilisateur u = new utilisateur();
             u.setIdEntite(userId);
-            l.setUtilisateurEntity(u);
-            // Optional: set string field to ID if useful for debugging
-            l.setUtilisateur(String.valueOf(userId)); 
+            l.setUtilisateurEntity(u); // If relation exists
         }
         return l;
     }
@@ -912,16 +1065,25 @@ public final class RowMappers {
         f.setCreePar(getStringOrNull(rs, "creePar"));
         f.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        f.setIdFacture(getLongOrNull(rs, "idFacture"));
+        f.setId(getLongOrNull(rs, "id"));
+        if (f.getId() == null) f.setId(getLongOrNull(rs, "idFacture"));
+        
         f.setConsultationId(getLongOrNull(rs, "consultationId"));
         f.setPatientId(getLongOrNull(rs, "patientId"));
+        f.setSecretaireId(getLongOrNull(rs, "secretaireId")); // New
+        
         f.setTotaleFacture(rs.getDouble("totaleFacture"));
-        f.setTotalPaye(rs.getDouble("totalPaye"));
+        f.setTotalePaye(rs.getDouble("totalPaye")); // Was totalPaye? check field name. Entitiy has 'totalePaye'.
+        // if totalPaye column exists:
+        if (f.getTotalePaye() == 0.0) f.setTotalePaye(rs.getDouble("totalePaye"));
+        
         f.setReste(rs.getDouble("reste"));
+        f.setModePaiement(getStringOrNull(rs, "modePaiement")); // New
 
         String statutStr = getStringOrNull(rs, "statut");
-        if (statutStr != null)
-            f.setStatut(Statut.valueOf(statutStr));
+        if (statutStr != null) {
+             try { f.setStatut(Statut.valueOf(statutStr)); } catch(Exception e){}
+        }
 
         Timestamp dateFactureSql = rs.getTimestamp("dateFacture");
         if (dateFactureSql != null)
@@ -956,19 +1118,34 @@ public final class RowMappers {
         m.setCreePar(getStringOrNull(rs, "creePar"));
         m.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        m.setIdUser(getLongOrNull(rs, "idUser"));
+        m.setId(getLongOrNull(rs, "id"));
+        if (m.getId() == null) m.setId(getLongOrNull(rs, "idMedecin"));
+        if (m.getId() == null) m.setId(getLongOrNull(rs, "idUser"));
+        
         m.setNom(getStringOrNull(rs, "nom"));
+        m.setPrenom(getStringOrNull(rs, "prenom")); // New
         m.setEmail(getStringOrNull(rs, "email"));
         m.setAdresse(getStringOrNull(rs, "adresse"));
         m.setCin(getStringOrNull(rs, "cin"));
-        m.setTel(getStringOrNull(rs, "tel"));
+        m.setImage(getStringOrNull(rs, "image")); // New
+        
+        String tel = getStringOrNull(rs, "tel");
+        if (tel == null) tel = getStringOrNull(rs, "tele");
+        if (tel == null) tel = getStringOrNull(rs, "telephone");
+        m.setTelephone(tel);
 
         String sexeStr = getStringOrNull(rs, "sexe");
-        if (sexeStr != null)
-            m.setSexe(Sexe.valueOf(sexeStr));
+        if (sexeStr != null) {
+            try { m.setSexe(Sexe.valueOf(sexeStr)); } catch(Exception e){}
+        }
 
-        m.setLogin(getStringOrNull(rs, "login"));
-        m.setMotDePasse(getStringOrNull(rs, "motDePasse"));
+        String login = getStringOrNull(rs, "login");
+        if (login == null) login = getStringOrNull(rs, "username");
+        m.setUsername(login);
+        
+        String pwd = getStringOrNull(rs, "motDePasse");
+        if (pwd == null) pwd = getStringOrNull(rs, "password");
+        m.setPassword(pwd);
 
         // lastLoginDate not in schema
         // Date lastLoginSql = rs.getDate("lastLoginDate");
@@ -985,11 +1162,11 @@ public final class RowMappers {
 
         Date dateRecrutementSql = rs.getDate("dateRecrutement");
         if (dateRecrutementSql != null)
-            m.setDateRecrutement(dateRecrutementSql.toLocalDate());
+            m.setDateEmbauche(dateRecrutementSql.toLocalDate());
 
         // m.setSoldeConge(rs.getInt("soldeConge")); // Not in schema
 
-        m.setIdMedecin(getLongOrNull(rs, "idMedecin"));
+        // m.setIdMedecin(getLongOrNull(rs, "idMedecin")); // Removed
         m.setSpecialite(getStringOrNull(rs, "specialite"));
         // m.setNumeroOrdre(getStringOrNull(rs, "numeroOrdre")); // Not in schema
         // m.setDiplome(getStringOrNull(rs, "diplome")); // Not in schema
@@ -1011,24 +1188,37 @@ public final class RowMappers {
         n.setCreePar(getStringOrNull(rs, "creePar"));
         n.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        n.setIdNotif(getLongOrNull(rs, "idNotif"));
+        n.setId(getLongOrNull(rs, "id"));
+        if (n.getId() == null) n.setId(getLongOrNull(rs, "idNotif"));
+
         n.setTitre(getStringOrNull(rs, "titre"));
         n.setMessage(getStringOrNull(rs, "message"));
 
         Date dateSql = rs.getDate("date");
-        Time timeSql = rs.getTime("time");
-        if (dateSql != null && timeSql != null) {
-            n.setDateEnvoi(LocalDateTime.of(dateSql.toLocalDate(), timeSql.toLocalTime()));
-        } else if (dateSql != null) {
-             n.setDateEnvoi(dateSql.toLocalDate().atStartOfDay());
-        }
+        if (dateSql != null)
+            n.setDate(dateSql.toLocalDate()); // Added date field
 
+        Time timeSql = rs.getTime("time"); 
+        if (timeSql != null)
+             n.setTime(timeSql.toLocalTime()); // Added time field
+
+        // Combine for old dateEnvoi if needed, or remove dateEnvoi mapping if field removed
+        // n.setDateEnvoi(...) 
+        
         n.setType(getStringOrNull(rs, "type"));
+        n.setPriorite(getStringOrNull(rs, "priorite")); // New field
         
         String statut = getStringOrNull(rs, "statut");
-        n.setLue("LUE".equalsIgnoreCase(statut));
+        n.setStatut(statut); // Was lue (boolean), now String statut
+        // n.setLue("LUE".equalsIgnoreCase(statut)); // Removed lue
         
-        Long userId = getLongOrNull(rs, "utilisateurId");
+        Long userId = getLongOrNull(rs, "utilisateur_id");
+        if (userId != null) {
+            n.setUtilisateurId(userId);
+            utilisateur u = new utilisateur();
+            u.setIdEntite(userId);
+            n.setUtilisateur(u);
+        }
         if (userId != null) {
             utilisateur u = new utilisateur();
             u.setIdEntite(userId);
@@ -1051,7 +1241,8 @@ public final class RowMappers {
         c.setCreePar(getStringOrNull(rs, "creePar"));
         c.setModifierPar(getStringOrNull(rs, "modifierPar"));
 
-        c.setIdCaisse(getLongOrNull(rs, "idCaisse"));
+        c.setIdCaisse(getLongOrNull(rs, "id"));
+        if (c.getIdCaisse() == null) c.setIdCaisse(getLongOrNull(rs, "idCaisse"));
         c.setFactureId(getLongOrNull(rs, "factureId"));
         c.setMontant(rs.getDouble("montant"));
 
@@ -1073,24 +1264,20 @@ public final class RowMappers {
 
     public static agenda mapAgenda(ResultSet rs) throws SQLException {
         agenda a = new agenda();
-        a.setIdEntite(getLongOrNull(rs, "id"));
-        a.setIdAgenda(getLongOrNull(rs, "id")); // Schema has 'id'
+        a.setId(getLongOrNull(rs, "id"));
+        if (a.getId() == null) a.setId(getLongOrNull(rs, "idAgenda"));
+
+        // a.setDateCreation(LocalDate.now()); // Schema has annee?
+        // if schema has annee column:
+        a.setAnnee(rs.getInt("annee"));
         
-        a.setDateCreation(LocalDate.now()); // Schema has annee
-        
-        a.setMedecinId(getLongOrNull(rs, "medecin_id")); // Schema has medecin_id
+        a.setMedecinId(getLongOrNull(rs, "medecin_id"));
 
         String moisStr = getStringOrNull(rs, "mois");
-        if (moisStr != null)
-            a.setMois(Mois.valueOf(moisStr));
+        if (moisStr != null) {
+            try { a.setMois(Mois.valueOf(moisStr)); } catch(Exception e){}
+        }
 
-        // Schema has joursNonDisponibles (TEXT), Entity has joursDisponible (List<Jour>)
-        // Naming suggests opposites. If schema stores NON-available, we might need to invert logic 
-        // OR simply mapping was named poorly in schema. 
-        // Given 'days disabled' usually implies specific unavailable days, let's assume it maps to available days 
-        // if that's what the entity expects, or we store available days in that column. 
-        // But the previous code used "joursDisponible" column. 
-        // Let's assume the column "joursNonDisponibles" in text.txt stores the list of enum strings.
         String joursStr = getStringOrNull(rs, "joursNonDisponibles");
         if (joursStr != null && !joursStr.isEmpty()) {
             java.util.List<Jour> jours = new java.util.ArrayList<>();
@@ -1101,7 +1288,7 @@ public final class RowMappers {
 
                 }
             }
-            a.setJoursDisponible(jours);
+            a.setJoursNonDisponibles(jours);
         }
         
         Long medId = getLongOrNull(rs, "medecin_id");

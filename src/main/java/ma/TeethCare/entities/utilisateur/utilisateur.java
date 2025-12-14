@@ -18,17 +18,18 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class utilisateur extends baseEntity {
-    private Long idUser;
+    private Long id; // Was idUser
     private String nom;
-    private String email;
+    private String prenom; // New
     private String adresse;
+    private String telephone; // Was tel
+    private String email;
     private String cin;
-    private String tel;
-    private Sexe sexe;
-    private String login;
-    private String motDePasse;
-    private LocalDate lastLoginDate;
     private LocalDate dateNaissance;
+    private Sexe sexe;
+    private String image; // New
+    private String username; // Was login
+    private String password; // Was motDePasse
     
     private List<role> roles;
     private List<notification> notifications;
@@ -36,10 +37,13 @@ public class utilisateur extends baseEntity {
     public static utilisateur createTestInstance() {
         return utilisateur.builder()
                 .nom("Utilisateur Test")
+                .prenom("Test")
                 .email("test@user.com")
-                .login("testuser")
-                .motDePasse("password")
+                .username("testuser")
+                .password("password")
+                .telephone("0600000000")
                 .dateNaissance(LocalDate.of(1990, 1, 1))
+                .sexe(Sexe.Homme)
                 .build();
     }
 }

@@ -93,7 +93,7 @@ public class RevenuesRepositoryImpl implements RevenuesRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 r.setIdEntite(id);
-                r.setIdRevenue(id); // Set specific ID if needed by entity
+                r.setId(id); // Set specific ID if needed by entity
             } else {
                 throw new SQLException("Creating Entite for Revenue failed, no ID obtained.");
             }

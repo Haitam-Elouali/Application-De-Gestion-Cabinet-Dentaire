@@ -17,19 +17,19 @@ import java.util.List;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class agenda extends baseEntity {
-    private Long idAgenda;
+    private Long id; // Was idAgenda
     private Long medecinId;
     private Mois mois;
-    private List<Jour> joursDisponible;
-    private LocalDate dateDebut;
-    private LocalDate dateFin;
+    private Integer annee; // New
+    private List<Jour> joursNonDisponibles; // Was joursDisponible
+    // dateDebut and dateFin removed as they are not in schema
     
     private medecin medecin;
     public static agenda createTestInstance(ma.TeethCare.entities.medecin.medecin medecin) {
         return agenda.builder()
                 .medecin(medecin)
-                .dateDebut(LocalDate.now())
-                .dateFin(LocalDate.now().plusYears(1))
+                .mois(Mois.Janvier) // Assuming Enum
+                .annee(2025)
                 .build();
     }
 }

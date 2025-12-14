@@ -36,20 +36,20 @@ public class NotificationServiceTest {
 
         @Override
         public void create(notification entity) {
-            if (entity.getIdNotif() == null) {
-                entity.setIdNotif(idCounter++);
+            if (entity.getId() == null) {
+                entity.setId(idCounter++);
             }
-            data.put(entity.getIdNotif(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void update(notification entity) {
-            data.put(entity.getIdNotif(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void delete(notification entity) {
-            data.remove(entity.getIdNotif());
+            data.remove(entity.getId());
         }
 
         @Override
@@ -59,7 +59,7 @@ public class NotificationServiceTest {
 
         @Override
         public List<notification> findByNonLues() {
-            return data.values().stream().filter(n -> !n.isLue()).collect(Collectors.toList());
+            return data.values().stream().filter(n -> "NON_LUE".equalsIgnoreCase(n.getStatut())).collect(Collectors.toList());
         }
 
         @Override
@@ -94,12 +94,13 @@ public class NotificationServiceTest {
         notification n = notification.builder()
             .titre("Rappel")
             .message("RDV demain")
-            .dateEnvoi(LocalDateTime.now())
-            .lue(false)
+            .date(java.time.LocalDate.now())
+            .time(java.time.LocalTime.now())
+            .statut("NON_LUE")
             .type("rappel")
             .build();
         notification created = service.create(n);
-        if (created.getIdNotif() == null) throw new RuntimeException("Create failed: ID is null");
+        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
@@ -107,7 +108,7 @@ public class NotificationServiceTest {
         System.out.println("Testing FindById...");
         notification n = notification.builder().titre("Test ID").build();
         n = service.create(n);
-        Optional<notification> found = service.findById(n.getIdNotif());
+        Optional<notification> found = service.findById(n.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -134,7 +135,7 @@ public class NotificationServiceTest {
         System.out.println("Testing Delete...");
         notification n = notification.builder().titre("Delete Me").build();
         n = service.create(n);
-        Long id = n.getIdNotif();
+        Long id = n.getId();
         service.delete(id);
         if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
@@ -144,7 +145,7 @@ public class NotificationServiceTest {
         System.out.println("Testing Exists...");
         notification n = notification.builder().titre("Exists").build();
         n = service.create(n);
-        if (!service.exists(n.getIdNotif())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(n.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 
@@ -157,20 +158,13 @@ public class NotificationServiceTest {
 
     public static void testFindByNonLues(notificationService service) throws Exception {
          System.out.println("Testing FindByNonLues...");
-         notification n1 = notification.builder().lue(false).titre("Unread").build();
-         notification n2 = notification.builder().lue(true).titre("Read").build();
+         notification n1 = notification.builder().statut("NON_LUE").titre("Unread").build();
+         notification n2 = notification.builder().statut("LUE").titre("Read").build();
          service.create(n1);
          service.create(n2);
-         List<notification> unread = ((notificationServiceImpl)service).findByNonLues(); // Cast needed if interface doesn't have it, checking interface now...
-         // Actually I should cast if the interface doesn't have it.
-         // Let's assume interface will have it based on implementation plan or I should update interface?
-         // The prompt didn't ask to update interface, but service impl has it.
-         // Let's check if interface has it.
-         // If interface doesn't have it, I should update interface too?
-         // Wait, the plan was to implement modules.
-         // I'll check interface `notificationService.java` next. For now assuming cast works or method is there.
-         if (unread.stream().anyMatch(n -> n.getIdNotif().equals(n2.getIdNotif()))) throw new RuntimeException("FindByNonLues failed: returned read notification");
-         if (unread.stream().noneMatch(n -> n.getIdNotif().equals(n1.getIdNotif()))) throw new RuntimeException("FindByNonLues failed: missing unread notification");
+         List<notification> unread = ((notificationServiceImpl)service).findByNonLues(); 
+         if (unread.stream().anyMatch(n -> n.getId().equals(n2.getId()))) throw new RuntimeException("FindByNonLues failed: returned read notification");
+         if (unread.stream().noneMatch(n -> n.getId().equals(n1.getId()))) throw new RuntimeException("FindByNonLues failed: missing unread notification");
          System.out.println("FindByNonLues passed.");
     }
 
@@ -179,7 +173,7 @@ public class NotificationServiceTest {
          notification n = notification.builder().type("alert").titre("Alert").build();
          service.create(n);
          List<notification> found = ((notificationServiceImpl)service).findByType("alert");
-         if (found.stream().noneMatch(x -> x.getIdNotif().equals(n.getIdNotif()))) throw new RuntimeException("FindByType failed");
+         if (found.stream().noneMatch(x -> x.getId().equals(n.getId()))) throw new RuntimeException("FindByType failed");
          System.out.println("FindByType passed.");
     }
 }

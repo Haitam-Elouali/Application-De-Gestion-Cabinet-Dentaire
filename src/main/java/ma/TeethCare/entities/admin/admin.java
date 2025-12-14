@@ -12,15 +12,15 @@ import ma.TeethCare.entities.admin.admin;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class admin extends utilisateur {
-    private String permissionAdmin;
-    private String domaine;
+    // Schema 'admin' only has 'id'. It inherits from 'utilisateur' (which has nom, prenom, etc.)
+    // No specific fields in schema for admin table.
     
-    private cabinetMedicale cabinetMedicale;
     public static admin createTestInstance() {
         return admin.builder()
                 .nom("AdminUser")
                 .email("admin@system.com")
-                .cin("ADM001")
+                .username("admin") // Schema has username
+                .password("password") // Schema has password
                 .build();
     }
 }

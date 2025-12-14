@@ -16,17 +16,19 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @lombok.experimental.SuperBuilder
 public class log extends baseEntity {
-    private Long idLog;
-    private String action;
-    private String utilisateur;
+    private Long id; // Was idLog
+    private Long utilisateurId; // New
     private LocalDateTime dateAction;
-    private String description;
-    private String adresseIP;
+    private String message; // Was description
+    private String typeSupp; // New
+    // Removed action, utilisateurString, adresseIP
     
     private utilisateur utilisateurEntity;
+
     public static log createTestInstance() {
         return log.builder()
-                .action("System started")
+                .message("System started")
+                .typeSupp("INFO")
                 .dateAction(LocalDateTime.now())
                 .build();
     }
