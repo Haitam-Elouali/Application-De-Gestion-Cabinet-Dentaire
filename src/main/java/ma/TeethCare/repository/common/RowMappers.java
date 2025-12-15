@@ -31,6 +31,7 @@ import ma.TeethCare.entities.situationFinanciere.situationFinanciere;
 import ma.TeethCare.entities.utilisateur.utilisateur;
 import ma.TeethCare.entities.agenda.agenda;
 import ma.TeethCare.entities.notification.notification;
+import ma.TeethCare.entities.statistique.statistique;
 
 public final class RowMappers {
 
@@ -1298,5 +1299,40 @@ public final class RowMappers {
             a.setMedecin(m);
         }
         return a;
+    }
+    public static ma.TeethCare.entities.statistique.statistique mapStatistique(ResultSet rs) throws SQLException {
+        ma.TeethCare.entities.statistique.statistique s = new ma.TeethCare.entities.statistique.statistique();
+        s.setIdEntite(getLongOrNull(rs, "idEntite"));
+
+        Date dateCreationSql = rs.getDate("dateCreation");
+        if (dateCreationSql != null)
+            s.setDateCreation(dateCreationSql.toLocalDate());
+        Timestamp dateModifSql = rs.getTimestamp("dateDerniereModification");
+        if (dateModifSql != null)
+            s.setDateDerniereModification(dateModifSql.toLocalDateTime());
+
+        s.setCreePar(getStringOrNull(rs, "creePar"));
+        s.setModifierPar(getStringOrNull(rs, "modifierPar"));
+
+        s.setId(getLongOrNull(rs, "id"));
+
+        s.setNom(getStringOrNull(rs, "nom"));
+        s.setChiffre(rs.getDouble("chiffre"));
+        s.setType(getStringOrNull(rs, "type"));
+        
+        Date dateCalculSql = rs.getDate("dateCalcul");
+        if (dateCalculSql != null)
+            s.setDateCalcul(dateCalculSql.toLocalDate());
+
+        Long cabId = getLongOrNull(rs, "cabinet_id");
+        if (cabId == null) cabId = getLongOrNull(rs, "cabinetId");
+
+        if (cabId != null) {
+            s.setCabinetId(cabId);
+            cabinetMedicale cm = new cabinetMedicale();
+            cm.setIdEntite(cabId);
+            s.setCabinetMedicale(cm);
+        }
+        return s;
     }
 }

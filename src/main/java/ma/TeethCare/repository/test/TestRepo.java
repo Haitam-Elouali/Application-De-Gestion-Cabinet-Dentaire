@@ -25,6 +25,7 @@ import ma.TeethCare.entities.agenda.agenda;
 import ma.TeethCare.entities.certificat.certificat;
 import ma.TeethCare.entities.role.role;
 import ma.TeethCare.entities.staff.staff;
+import ma.TeethCare.entities.statistique.statistique;
 import ma.TeethCare.repository.api.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -57,6 +58,7 @@ public class TestRepo {
     private SecretaireRepository secretaireRepo;
     private StaffRepository staffRepo;
     private UtilisateurRepository utilisateurRepo;
+    private StatistiqueRepository statRepo;
 
     public TestRepo() {
         // Initialize all repositories from Context
@@ -85,6 +87,7 @@ public class TestRepo {
         this.secretaireRepo = (SecretaireRepository) ApplicationContext.getBean(SecretaireRepository.class);
         this.staffRepo = (StaffRepository) ApplicationContext.getBean(StaffRepository.class);
         this.utilisateurRepo = (UtilisateurRepository) ApplicationContext.getBean(UtilisateurRepository.class);
+        this.statRepo = (StatistiqueRepository) ApplicationContext.getBean(StatistiqueRepository.class);
     }
 
     // Entity Fields for Dependencies
@@ -112,6 +115,7 @@ public class TestRepo {
     private actes acte;
     private notification notification;
     private log log;
+    private statistique stat;
 
     public void createTestRepo() {
 
@@ -145,6 +149,7 @@ public class TestRepo {
         actesRepo.create(this.acte = actes.createTestInstance());
         notificationRepo.create(this.notification = notification.createTestInstance(this.notification.getUtilisateur()));
         logRepo.create(this.log = log.createTestInstance());
+        statRepo.create(this.stat = statistique.createTestInstance());
     }
 
     public void selectTestRepo()
@@ -177,6 +182,7 @@ public class TestRepo {
         this.acte = actesRepo.findById(1L);
         this.notification = notificationRepo.findById(1L);
         this.log = logRepo.findById(1L);
+        this.stat = statRepo.findById(1L);
     }
 
     public void updateTestRepo()
@@ -276,10 +282,15 @@ public class TestRepo {
         // Update log - using action
         this.log.setMessage("Action Updated");
         logRepo.update(this.log);
+
+        // Update statistique
+        this.stat.setNom("Stat Updated");
+        statRepo.update(this.stat);
     }
 
     public void deleteTestRepo()
     {
+        statRepo.deleteById(1L);
         logRepo.deleteById(1L);
         notificationRepo.deleteById(1L);
         actesRepo.deleteById(1L);

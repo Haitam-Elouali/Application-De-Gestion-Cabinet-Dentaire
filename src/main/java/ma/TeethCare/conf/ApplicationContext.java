@@ -199,6 +199,13 @@ public class ApplicationContext {
                 context.put(ma.TeethCare.repository.api.UtilisateurRepository.class, utilisateurRepository);
                 contextByName.put("utilisateurRepo", utilisateurRepository);
 
+                // Statistique
+                String statistiqueRepoClass = properties.getProperty("statistiqueRepo");
+                Class<?> cStatistiqueRepo = Class.forName(statistiqueRepoClass);
+                ma.TeethCare.repository.api.StatistiqueRepository statistiqueRepository = (ma.TeethCare.repository.api.StatistiqueRepository) cStatistiqueRepo.getDeclaredConstructor().newInstance();
+                context.put(ma.TeethCare.repository.api.StatistiqueRepository.class, statistiqueRepository);
+                contextByName.put("statistiqueRepo", statistiqueRepository);
+
 
                 // --- SERVICES ---
 
@@ -376,6 +383,13 @@ public class ApplicationContext {
                 ma.TeethCare.service.modules.api.utilisateurService utilisateurService = (ma.TeethCare.service.modules.api.utilisateurService) cUtilisateurService.getDeclaredConstructor(ma.TeethCare.repository.api.UtilisateurRepository.class).newInstance(utilisateurRepository);
                 context.put(ma.TeethCare.service.modules.api.utilisateurService.class, utilisateurService);
                 contextByName.put("utilisateurService", utilisateurService);
+
+                // Statistique Service
+                String statistiqueServiceClass = properties.getProperty("statistiqueService");
+                Class<?> cStatistiqueService = Class.forName(statistiqueServiceClass);
+                ma.TeethCare.service.modules.api.statistiqueService statistiqueService = (ma.TeethCare.service.modules.api.statistiqueService) cStatistiqueService.getDeclaredConstructor(ma.TeethCare.repository.api.StatistiqueRepository.class).newInstance(statistiqueRepository);
+                context.put(ma.TeethCare.service.modules.api.statistiqueService.class, statistiqueService);
+                contextByName.put("statistiqueService", statistiqueService);
 
             } catch (Exception e) {
                 e.printStackTrace();
