@@ -86,7 +86,11 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 a.setIdEntite(id);
+<<<<<<< HEAD
                 a.setId(id);
+=======
+                a.setIdAntecedent(id);
+>>>>>>> 3c4bc274fcef546a5d61a180aad73956f24a2bb5
             } else {
                 throw new SQLException("Creating Entite for Antecedants failed, no ID obtained.");
             }
@@ -98,7 +102,11 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
             stmtAntecedent.setLong(1, id);
             stmtAntecedent.setString(2, a.getNom());
             stmtAntecedent.setString(3, a.getCategorie());
+<<<<<<< HEAD
             stmtAntecedent.setString(4, a.getNiveauDeRisque() != null ? a.getNiveauDeRisque().name() : null);
+=======
+            stmtAntecedent.setString(4, a.getNiveauRisque() != null ? a.getNiveauRisque().name() : null);
+>>>>>>> 3c4bc274fcef546a5d61a180aad73956f24a2bb5
             stmtAntecedent.setObject(5, a.getDossierMedicaleId());
             
             stmtAntecedent.executeUpdate();
@@ -150,7 +158,11 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
             stmtEntite = conn.prepareStatement(sqlEntite);
             stmtEntite.setTimestamp(1, Timestamp.valueOf(a.getDateDerniereModification()));
             stmtEntite.setString(2, a.getModifierPar());
+<<<<<<< HEAD
             stmtEntite.setLong(3, a.getId());
+=======
+            stmtEntite.setLong(3, a.getIdAntecedent());
+>>>>>>> 3c4bc274fcef546a5d61a180aad73956f24a2bb5
             stmtEntite.executeUpdate();
 
             // Update Antecedants
@@ -159,8 +171,13 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
             stmtAnt.setLong(1, a.getDossierMedicaleId());
             stmtAnt.setString(2, a.getNom());
             stmtAnt.setString(3, a.getCategorie());
+<<<<<<< HEAD
             stmtAnt.setString(4, a.getNiveauDeRisque().name());
             stmtAnt.setLong(5, a.getId());
+=======
+            stmtAnt.setString(4, a.getNiveauRisque().name());
+            stmtAnt.setLong(5, a.getIdAntecedent());
+>>>>>>> 3c4bc274fcef546a5d61a180aad73956f24a2bb5
             stmtAnt.executeUpdate();
 
             conn.commit();
@@ -189,8 +206,13 @@ public class AntecedentRepositoryImpl implements AntecedentRepository {
 
     @Override
     public void delete(antecedent a) {
+<<<<<<< HEAD
         if (a != null && a.getId() != null) {
             deleteById(a.getId());
+=======
+        if (a != null && a.getIdAntecedent() != null) {
+            deleteById(a.getIdAntecedent());
+>>>>>>> 3c4bc274fcef546a5d61a180aad73956f24a2bb5
         }
     }
 
