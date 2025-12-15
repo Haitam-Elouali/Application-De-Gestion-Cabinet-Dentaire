@@ -1,0 +1,9 @@
+package ma.TeethCare.repository.api;
+
+import ma.TeethCare.entities.facture.facture;
+import ma.TeethCare.repository.common.CrudRepository;
+
+import java.util.Optional;
+
+public interface FactureRepository extends CrudRepository<facture, Long> {
+}

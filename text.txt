@@ -1,0 +1,236 @@
+TABLE: sys_config
+  - variable             VARCHAR         (128) [PK]
+  - value                VARCHAR         (128)
+  - set_time             TIMESTAMP       (19)
+  - set_by               VARCHAR         (128)
+
+TABLE: acte
+  - id                   BIGINT          (19) [PK]
+  - categorie            VARCHAR         (100)
+  - nom                  VARCHAR         (255)
+  - description          TEXT            (65535)
+  - prix                 DOUBLE          (22)
+  - code                 VARCHAR         (50)
+  - intervention_id      BIGINT          (19)
+
+TABLE: admin
+  - id                   BIGINT          (19) [PK]
+
+TABLE: agendamensuel
+  - id                   BIGINT          (19) [PK]
+  - mois                 VARCHAR         (20)
+  - annee                INT             (10)
+  - joursNonDisponibles  TEXT            (65535)
+  - medecin_id           BIGINT          (19)
+
+TABLE: antecedants
+  - id                   BIGINT          (19) [PK]
+  - nom                  VARCHAR         (255)
+  - categorie            VARCHAR         (100)
+  - niveauDeRisque       VARCHAR         (50)
+  - dossiermedicale_id   BIGINT          (19)
+
+TABLE: cabinetmedicale
+  - id                   BIGINT          (19) [PK]
+  - nomCabinet           VARCHAR         (255)
+  - adresse              VARCHAR         (500)
+  - tele                 VARCHAR         (50)
+  - email                VARCHAR         (255)
+  - logo                 VARCHAR         (255)
+  - instagram            VARCHAR         (255)
+  - siteWeb              VARCHAR         (255)
+  - description          TEXT            (65535)
+
+TABLE: certificat
+  - id                   BIGINT          (19) [PK]
+  - type                 VARCHAR         (100)
+  - dateDebut            DATE            (10)
+  - dateFin              DATE            (10)
+  - duree                INT             (10)
+  - note                 TEXT            (65535)
+  - consultation_id      BIGINT          (19)
+
+TABLE: charge
+  - id                   BIGINT          (19) [PK]
+  - titre                VARCHAR         (255)
+  - description          TEXT            (65535)
+  - montant              DOUBLE          (22)
+  - categorie            VARCHAR         (100)
+  - date                 DATETIME        (19)
+  - cabinet_id           BIGINT          (19)
+
+TABLE: consultation
+  - id                   BIGINT          (19) [PK]
+  - date                 DATE            (10)
+  - motif                TEXT            (65535)
+  - diagnostic           TEXT            (65535)
+  - observation          TEXT            (65535)
+  - statut               VARCHAR         (50)
+  - patient_id           BIGINT          (19)
+  - medecin_id           BIGINT          (19)
+
+TABLE: dossiermedicale
+  - id                   BIGINT          (19) [PK]
+  - dateDeCreation       DATE            (10)
+  - patient_id           BIGINT          (19)
+
+TABLE: entite
+  - id                   BIGINT          (19) [PK]
+  - dateCreation         DATETIME        (19)
+  - dateDerniereModification DATETIME        (19)
+  - creePar              VARCHAR         (255)
+  - modifiePar           VARCHAR         (255)
+
+TABLE: facture
+  - id                   BIGINT          (19) [PK]
+  - totaleFacture        DOUBLE          (22)
+  - totalePaye           DOUBLE          (22)
+  - Reste                DOUBLE          (22)
+  - statut               VARCHAR         (50)
+  - modePaiement         VARCHAR         (50)
+  - dateFacture          DATETIME        (19)
+  - patient_id           BIGINT          (19)
+  - secretaire_id        BIGINT          (19)
+
+TABLE: interventionmedecin
+  - id                   BIGINT          (19) [PK]
+  - duree                INT             (10)
+  - note                 TEXT            (65535)
+  - resultatImagerie     VARCHAR         (255)
+  - consultation_id      BIGINT          (19)
+
+TABLE: log
+  - id                   BIGINT          (19) [PK]
+  - dateAction           DATETIME        (19)
+  - message              TEXT            (65535)
+  - typeSupp             VARCHAR         (255)
+  - utilisateur_id       BIGINT          (19)
+
+TABLE: medecin
+  - id                   BIGINT          (19) [PK]
+  - specialite           VARCHAR         (100)
+
+TABLE: medicament
+  - id                   BIGINT          (19) [PK]
+  - nomCommercial        VARCHAR         (255)
+  - principeActif        VARCHAR         (255)
+  - forme                VARCHAR         (100)
+  - dosage               VARCHAR         (100)
+  - type                 VARCHAR         (100)
+  - remboursable         BIT             (1)
+  - prixUnitaire         DOUBLE          (22)
+  - description          TEXT            (65535)
+
+TABLE: notification
+  - id                   BIGINT          (19) [PK]
+  - titre                VARCHAR         (255)
+  - message              VARCHAR         (255)
+  - date                 DATE            (10)
+  - time                 TIME            (8)
+  - statut               VARCHAR         (50)
+  - type                 VARCHAR         (100)
+  - priorite             VARCHAR         (255)
+  - utilisateur_id       BIGINT          (19)
+
+TABLE: ordonnance
+  - id                   BIGINT          (19) [PK]
+  - dateOrdonnance       DATE            (10)
+  - consultation_id      BIGINT          (19)
+
+TABLE: patient
+  - id                   BIGINT          (19) [PK]
+  - nom                  VARCHAR         (255)
+  - prenom               VARCHAR         (255)
+  - dateNaissance        DATE            (10)
+  - sexe                 ENUM            (5)
+  - telephone            VARCHAR         (50)
+  - assurance            VARCHAR         (100)
+
+TABLE: patient_antecedent
+  - patient_id           BIGINT          (19) [PK]
+  - antecedent_id        BIGINT          (19) [PK]
+  - dateAjout            DATETIME        (19)
+
+TABLE: patient_medecin
+  - patient_id           BIGINT          (19) [PK]
+  - medecin_id           BIGINT          (19) [PK]
+  - dateAssignation      DATETIME        (19)
+  - motifAssignation     VARCHAR         (500)
+
+TABLE: patient_secretaire
+  - patient_id           BIGINT          (19) [PK]
+  - secretaire_id        BIGINT          (19) [PK]
+  - dateAssignation      DATETIME        (19)
+
+TABLE: prescription
+  - id                   BIGINT          (19) [PK]
+  - quantite             INT             (10)
+  - posologie            VARCHAR         (255)
+  - dureeEnJours         INT             (10)
+  - ordonnance_id        BIGINT          (19)
+  - medicament_id        BIGINT          (19)
+
+TABLE: rdv
+  - id                   BIGINT          (19) [PK]
+  - numero               VARCHAR         (50)
+  - date                 DATE            (10)
+  - heure                TIME            (8)
+  - statut               VARCHAR         (50)
+  - patient_id           BIGINT          (19)
+  - situationfinancier_id BIGINT          (19)
+
+TABLE: revenue
+  - id                   BIGINT          (19) [PK]
+  - titre                VARCHAR         (255)
+  - description          TEXT            (65535)
+  - montant              DOUBLE          (22)
+  - categorie            VARCHAR         (100)
+  - date                 DATETIME        (19)
+  - cabinet_id           BIGINT          (19)
+
+TABLE: role
+  - id                   BIGINT          (19) [PK]
+  - libelle              VARCHAR         (50)
+
+TABLE: secretaire
+  - id                   BIGINT          (19) [PK]
+  - commission           DOUBLE          (22)
+
+TABLE: situationfinancier
+  - id                   BIGINT          (19) [PK]
+  - totalDesActes        DOUBLE          (22)
+  - totalPaye            DOUBLE          (22)
+  - credit               DOUBLE          (22)
+  - statut               VARCHAR         (50)
+  - enPromo              VARCHAR         (50)
+  - dossiermedicale_id   BIGINT          (19)
+
+TABLE: staff
+  - id                   BIGINT          (19) [PK]
+  - salaire              DOUBLE          (22)
+  - dateRecrutement      DATE            (10)
+  - dateDepart           DATE            (10)
+
+TABLE: statistique
+  - id                   BIGINT          (19) [PK]
+  - nom                  VARCHAR         (255)
+  - chiffre              DOUBLE          (22)
+  - type                 VARCHAR         (100)
+  - dateCalcul           DATE            (10)
+  - cabinet_id           BIGINT          (19)
+
+TABLE: utilisateur
+  - id                   BIGINT          (19) [PK]
+  - nom                  VARCHAR         (255)
+  - prenom               VARCHAR         (255)
+  - email                VARCHAR         (255)
+  - tele                 VARCHAR         (50)
+  - username             VARCHAR         (255)
+  - password             VARCHAR         (255)
+  - sexe                 ENUM            (5)
+  - dateNaissance        DATE            (10)
+  - role_id              BIGINT          (19)
+
+TABLE: utilisateur_notification
+  - utilisateur_id       BIGINT          (19) [PK]
+  - notification_id      BIGINT          (19) [PK]
