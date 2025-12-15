@@ -11,6 +11,7 @@ import java.util.List;
 
 public class AdminRepositoryImpl implements AdminRepository {
 
+
     @Override
     public List<admin> findAll() throws SQLException {
         List<admin> results = new ArrayList<>();

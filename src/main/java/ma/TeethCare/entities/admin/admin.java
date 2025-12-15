@@ -1,4 +1,4 @@
-spackage ma.TeethCare.entities.admin;
+package ma.TeethCare.entities.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

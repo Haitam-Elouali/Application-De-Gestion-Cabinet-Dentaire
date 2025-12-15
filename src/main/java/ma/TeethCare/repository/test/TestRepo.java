@@ -1,7 +1,6 @@
 package ma.TeethCare.repository.test;
 
 import ma.TeethCare.conf.ApplicationContext;
-// Entities
 import ma.TeethCare.entities.charges.charges;
 import ma.TeethCare.entities.interventionMedecin.interventionMedecin;
 import ma.TeethCare.entities.patient.Patient;
@@ -26,12 +25,6 @@ import ma.TeethCare.entities.agenda.agenda;
 import ma.TeethCare.entities.certificat.certificat;
 import ma.TeethCare.entities.role.role;
 import ma.TeethCare.entities.staff.staff;
-
-
-
-// Enums
-import ma.TeethCare.common.enums.Statut;
-// Repositories
 import ma.TeethCare.repository.api.*;
 import java.time.LocalDate;
 import java.util.List;
