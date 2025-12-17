@@ -1,14 +1,15 @@
 package ma.TeethCare.service.modules.impl;
+
 import ma.TeethCare.entities.antecedent.antecedent;
+import ma.TeethCare.repository.api.AntecedentRepository;
 import ma.TeethCare.service.modules.api.antecedentService;
+
 import java.util.List;
 import java.util.Optional;
 
-import ma.TeethCare.repository.api.AntecedentRepository;
-
 public class antecedentServiceImpl implements antecedentService {
 
-    private AntecedentRepository antecedentRepository;
+    private final AntecedentRepository antecedentRepository;
 
     public antecedentServiceImpl(AntecedentRepository antecedentRepository) {
         this.antecedentRepository = antecedentRepository;
@@ -16,43 +17,54 @@ public class antecedentServiceImpl implements antecedentService {
 
     @Override
     public antecedent create(antecedent entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        if (entity == null) {
+            throw new IllegalArgumentException("Antecedent ne peut pas être null");
+        }
+        antecedentRepository.create(entity);
+        return entity;
     }
 
     @Override
     public Optional<antecedent> findById(Long id) throws Exception {
-        // TODO: Implement method
-        return Optional.empty();
+        if (id == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(antecedentRepository.findById(id));
     }
 
     @Override
     public List<antecedent> findAll() throws Exception {
-        // TODO: Implement method
-        return null;
+        return antecedentRepository.findAll();
     }
 
     @Override
     public antecedent update(antecedent entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        if (entity == null || entity.getId() == null) {
+            throw new IllegalArgumentException("Antecedent ou ID invalide");
+        }
+        antecedentRepository.update(entity);
+        return entity;
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        if (id == null) {
+            return false;
+        }
+        antecedentRepository.deleteById(id);
+        return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        if (id == null) {
+            return false;
+        }
+        return antecedentRepository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        // TODO: Implement method
-        return 0;
+        return antecedentRepository.findAll().size();
     }
 }

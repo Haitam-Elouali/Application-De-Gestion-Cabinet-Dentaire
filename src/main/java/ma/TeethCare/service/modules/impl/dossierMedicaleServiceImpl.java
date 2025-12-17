@@ -1,14 +1,15 @@
 package ma.TeethCare.service.modules.impl;
+
 import ma.TeethCare.entities.dossierMedicale.dossierMedicale;
+import ma.TeethCare.repository.api.DossierMedicaleRepository;
 import ma.TeethCare.service.modules.api.dossierMedicaleService;
+
 import java.util.List;
 import java.util.Optional;
 
-import ma.TeethCare.repository.api.DossierMedicaleRepository;
-
 public class dossierMedicaleServiceImpl implements dossierMedicaleService {
 
-    private DossierMedicaleRepository dossierMedicaleRepository;
+    private final DossierMedicaleRepository dossierMedicaleRepository;
 
     public dossierMedicaleServiceImpl(DossierMedicaleRepository dossierMedicaleRepository) {
         this.dossierMedicaleRepository = dossierMedicaleRepository;
@@ -16,43 +17,54 @@ public class dossierMedicaleServiceImpl implements dossierMedicaleService {
 
     @Override
     public dossierMedicale create(dossierMedicale entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        if (entity == null) {
+            throw new IllegalArgumentException("DossierMedicale ne peut pas être null");
+        }
+        dossierMedicaleRepository.create(entity);
+        return entity;
     }
 
     @Override
     public Optional<dossierMedicale> findById(Long id) throws Exception {
-        // TODO: Implement method
-        return Optional.empty();
+        if (id == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(dossierMedicaleRepository.findById(id));
     }
 
     @Override
     public List<dossierMedicale> findAll() throws Exception {
-        // TODO: Implement method
-        return null;
+        return dossierMedicaleRepository.findAll();
     }
 
     @Override
     public dossierMedicale update(dossierMedicale entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        if (entity == null || entity.getId() == null) {
+            throw new IllegalArgumentException("DossierMedicale ou ID invalide");
+        }
+        dossierMedicaleRepository.update(entity);
+        return entity;
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        if (id == null) {
+            return false;
+        }
+        dossierMedicaleRepository.deleteById(id);
+        return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        if (id == null) {
+            return false;
+        }
+        return dossierMedicaleRepository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        // TODO: Implement method
-        return 0;
+        return dossierMedicaleRepository.findAll().size();
     }
 }
