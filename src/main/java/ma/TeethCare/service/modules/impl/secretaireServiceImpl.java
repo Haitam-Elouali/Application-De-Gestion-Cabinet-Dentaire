@@ -5,7 +5,15 @@ import ma.TeethCare.service.modules.api.secretaireService;
 import java.util.List;
 import java.util.Optional;
 
+import ma.TeethCare.repository.api.SecretaireRepository;
+
 public class secretaireServiceImpl implements secretaireService {
+
+    private SecretaireRepository secretaireRepository;
+
+    public secretaireServiceImpl(SecretaireRepository secretaireRepository) {
+        this.secretaireRepository = secretaireRepository;
+    }
 
     @Override
     public secretaire create(secretaire entity) throws Exception {

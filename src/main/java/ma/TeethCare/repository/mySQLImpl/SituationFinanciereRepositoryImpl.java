@@ -17,7 +17,7 @@ public class SituationFinanciereRepositoryImpl implements SituationFinanciereRep
     public List<situationFinanciere> findAll() throws SQLException {
         List<situationFinanciere> sfList = new ArrayList<>();
         // Join with entite
-        String sql = "SELECT t.id as idSF, t.id as idEntite, t.totalDesActes, t.totalPaye, t.credit, t.statut, t.enPromo, t.dossiermedicale_id as dossierId, " + 
+        String sql = "SELECT t.id as idSF, t.id as idEntite, t.totalDesActes, t.totalPaye, t.totalPaye as montantPaye, t.credit, t.statut, t.enPromo, t.dossiermedicale_id as dossierId, " + 
                      "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
                      "FROM situationfinancier t " + 
                      "JOIN entite e ON t.id = e.id";
@@ -38,7 +38,7 @@ public class SituationFinanciereRepositoryImpl implements SituationFinanciereRep
 
     @Override
     public situationFinanciere findById(Long id) {
-        String sql = "SELECT t.id as idSF, t.id as idEntite, t.totalDesActes, t.totalPaye, t.credit, t.statut, t.enPromo, t.dossiermedicale_id as dossierId, " + 
+        String sql = "SELECT t.id as idSF, t.id as idEntite, t.totalDesActes, t.totalPaye, t.totalPaye as montantPaye, t.credit, t.statut, t.enPromo, t.dossiermedicale_id as dossierId, " + 
                      "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
                      "FROM situationfinancier t " + 
                      "JOIN entite e ON t.id = e.id " + 

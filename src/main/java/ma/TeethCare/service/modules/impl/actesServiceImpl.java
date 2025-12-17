@@ -2,10 +2,17 @@ package ma.TeethCare.service.modules.impl;
 
 import ma.TeethCare.entities.actes.actes;
 import ma.TeethCare.service.modules.api.actesService;
+import ma.TeethCare.repository.api.ActesRepository;
 import java.util.List;
 import java.util.Optional;
 
 public class actesServiceImpl implements actesService {
+
+    private ActesRepository actesRepository;
+
+    public actesServiceImpl(ActesRepository actesRepository) {
+        this.actesRepository = actesRepository;
+    }
 
     @Override
     public actes create(actes entity) throws Exception {

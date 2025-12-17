@@ -4,7 +4,15 @@ import ma.TeethCare.service.modules.api.antecedentService;
 import java.util.List;
 import java.util.Optional;
 
+import ma.TeethCare.repository.api.AntecedentRepository;
+
 public class antecedentServiceImpl implements antecedentService {
+
+    private AntecedentRepository antecedentRepository;
+
+    public antecedentServiceImpl(AntecedentRepository antecedentRepository) {
+        this.antecedentRepository = antecedentRepository;
+    }
 
     @Override
     public antecedent create(antecedent entity) throws Exception {

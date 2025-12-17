@@ -46,7 +46,7 @@ public class StaffRepositoryImpl implements StaffRepository {
     @Override
     public staff findById(Long id) {
         String sql = "SELECT t.id as idStaff, t.id as idUser, t.id as idEntite, " +
-                     "t.salaire, t.dateRecrutement, " + 
+                     "t.salaire, t.dateRecrutement, t.dateRecrutement as dateEmbauche, " + 
                      "u.nom, u.prenom, u.email, u.tele as tel, u.username as login, u.password as motDePasse, u.sexe, u.dateNaissance, " +
                      "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
                      "FROM staff t " + 

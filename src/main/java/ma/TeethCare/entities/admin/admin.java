@@ -12,6 +12,8 @@ import ma.TeethCare.entities.cabinetMedicale.cabinetMedicale;
 public class admin extends utilisateur {
     // Schema 'admin' only has 'id'. It inherits from 'utilisateur' (which has nom, prenom, etc.)
     // No specific fields in schema for admin table.
+    private String domaine;
+    private String permissionAdmin;
     
     public static admin createTestInstance() {
         return admin.builder()

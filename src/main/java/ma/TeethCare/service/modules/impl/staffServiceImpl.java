@@ -4,7 +4,15 @@ import ma.TeethCare.service.modules.api.staffService;
 import java.util.List;
 import java.util.Optional;
 
+import ma.TeethCare.repository.api.StaffRepository;
+
 public class staffServiceImpl implements staffService {
+
+    private StaffRepository staffRepository;
+
+    public staffServiceImpl(StaffRepository staffRepository) {
+        this.staffRepository = staffRepository;
+    }
 
     @Override
     public staff create(staff entity) throws Exception {

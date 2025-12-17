@@ -4,7 +4,15 @@ import ma.TeethCare.service.modules.api.interventionMedecinService;
 import java.util.List;
 import java.util.Optional;
 
+import ma.TeethCare.repository.api.InterventionMedecinRepository;
+
 public class interventionMedecinServiceImpl implements interventionMedecinService {
+
+    private InterventionMedecinRepository interventionMedecinRepository;
+
+    public interventionMedecinServiceImpl(InterventionMedecinRepository interventionMedecinRepository) {
+        this.interventionMedecinRepository = interventionMedecinRepository;
+    }
 
     @Override
     public interventionMedecin create(interventionMedecin entity) throws Exception {

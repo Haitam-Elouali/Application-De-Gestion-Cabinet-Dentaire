@@ -416,8 +416,8 @@ public final class RowMappers {
 
         c.setMotif(getStringOrNull(rs, "motif")); // New field
 
-        // c.setPatientId(getLongOrNull(rs, "patientId")); // Relations usually object
-        // c.setMedecinId(getLongOrNull(rs, "medecinId")); // Relations usually object
+        c.setPatientId(getLongOrNull(rs, "patientId")); 
+        c.setMedecinId(getLongOrNull(rs, "medecinId"));
         
         // Removed rdvId from schema? 
         /*
@@ -1301,7 +1301,7 @@ public final class RowMappers {
         return a;
     }
     public static ma.TeethCare.entities.statistique.statistique mapStatistique(ResultSet rs) throws SQLException {
-        ma.TeethCare.entities.statistique.statistique s = new ma.TeethCare.entities.statistique.statistique();
+        statistique s = new statistique();
         s.setIdEntite(getLongOrNull(rs, "idEntite"));
 
         Date dateCreationSql = rs.getDate("dateCreation");

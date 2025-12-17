@@ -29,7 +29,7 @@ public class FactureRepositoryImpl implements FactureRepository {
         // I will select t.Reste as reste just in case mapper expects 'reste').
         // consultationId not in schema, ignoring.
         
-        String sql = "SELECT t.id as idEntite, t.id as idFacture, t.totaleFacture, t.totalePaye as totalPaye, t.Reste as reste, t.statut, t.dateFacture, " + 
+        String sql = "SELECT t.id as idEntite, t.id as idFacture, t.totaleFacture, t.totalePaye, t.totalePaye as totalPaye, t.Reste as reste, t.statut, t.dateFacture, " + 
                      "t.patient_id as patientId, " + 
                      "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
                      "FROM facture t " + 
@@ -51,7 +51,7 @@ public class FactureRepositoryImpl implements FactureRepository {
 
     @Override
     public facture findById(Long id) {
-        String sql = "SELECT t.id as idEntite, t.id as idFacture, t.totaleFacture, t.totalePaye as totalPaye, t.Reste as reste, t.statut, t.dateFacture, " + 
+        String sql = "SELECT t.id as idEntite, t.id as idFacture, t.totaleFacture, t.totalePaye, t.totalePaye as totalPaye, t.Reste as reste, t.statut, t.dateFacture, " + 
                      "t.patient_id as patientId, " + 
                      "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
                      "FROM facture t " + 

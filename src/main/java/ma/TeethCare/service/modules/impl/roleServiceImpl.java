@@ -4,7 +4,15 @@ import ma.TeethCare.service.modules.api.roleService;
 import java.util.List;
 import java.util.Optional;
 
+import ma.TeethCare.repository.api.RoleRepository;
+
 public class roleServiceImpl implements roleService {
+
+    private RoleRepository roleRepository;
+
+    public roleServiceImpl(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
+    }
 
     @Override
     public role create(role entity) throws Exception {

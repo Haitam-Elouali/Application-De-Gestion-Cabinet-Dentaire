@@ -4,7 +4,15 @@ import ma.TeethCare.service.modules.api.dossierMedicaleService;
 import java.util.List;
 import java.util.Optional;
 
+import ma.TeethCare.repository.api.DossierMedicaleRepository;
+
 public class dossierMedicaleServiceImpl implements dossierMedicaleService {
+
+    private DossierMedicaleRepository dossierMedicaleRepository;
+
+    public dossierMedicaleServiceImpl(DossierMedicaleRepository dossierMedicaleRepository) {
+        this.dossierMedicaleRepository = dossierMedicaleRepository;
+    }
 
     @Override
     public dossierMedicale create(dossierMedicale entity) throws Exception {

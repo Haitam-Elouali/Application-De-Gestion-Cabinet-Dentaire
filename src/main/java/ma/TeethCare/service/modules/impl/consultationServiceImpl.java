@@ -4,7 +4,15 @@ import ma.TeethCare.service.modules.api.consultationService;
 import java.util.List;
 import java.util.Optional;
 
+import ma.TeethCare.repository.api.ConsultationRepository;
+
 public class consultationServiceImpl implements consultationService {
+
+    private ConsultationRepository consultationRepository;
+
+    public consultationServiceImpl(ConsultationRepository consultationRepository) {
+        this.consultationRepository = consultationRepository;
+    }
 
     @Override
     public consultation create(consultation entity) throws Exception {

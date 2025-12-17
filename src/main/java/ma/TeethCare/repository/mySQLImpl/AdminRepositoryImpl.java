@@ -15,7 +15,7 @@ public class AdminRepositoryImpl implements AdminRepository {
     @Override
     public List<admin> findAll() throws SQLException {
         List<admin> results = new ArrayList<>();
-        String sql = "SELECT t.id as idEntite, t.id, t.permissionAdmin, t.cabinetId, " +
+        String sql = "SELECT t.id as idEntite, t.id, " +
                      "u.nom, u.prenom, u.email, u.tele as tel, u.username as login, u.password as motDePasse, u.sexe, u.dateNaissance, " +
                      "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
                      "FROM admin t " + 
@@ -38,7 +38,7 @@ public class AdminRepositoryImpl implements AdminRepository {
 
     @Override
     public admin findById(Long id) {
-        String sql = "SELECT t.id as idEntite, t.id, t.permissionAdmin, t.cabinetId, " +
+        String sql = "SELECT t.id as idEntite, t.id, " +
                      "u.nom, u.prenom, u.email, u.tele as tel, u.username as login, u.password as motDePasse, u.sexe, u.dateNaissance, " +
                      "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
                      "FROM admin t " + 
@@ -104,6 +104,16 @@ public class AdminRepositoryImpl implements AdminRepository {
             stmtUser.setString(8, entity.getSexe() != null ? entity.getSexe().name() : null);
             stmtUser.setObject(9, entity.getDateNaissance());
             stmtUser.executeUpdate();
+
+            // 2.5 Insert into Staff (Required by DB Constraint Admin -> Staff)
+            // Even though Admin entity doesn't extend Staff in Java, the DB table admin References staff.
+            String sqlStaff = "INSERT INTO staff (id, salaire, dateRecrutement) VALUES (?, ?, ?)";
+            try (PreparedStatement stmtStaff = conn.prepareStatement(sqlStaff)) {
+                 stmtStaff.setLong(1, id);
+                 stmtStaff.setDouble(2, 0.0); // Default or null if allowed
+                 stmtStaff.setObject(3, java.time.LocalDate.now()); // Default date
+                 stmtStaff.executeUpdate();
+            }
 
             // 3. Insert into Admin
             // Admin table: id (Only id since permissionAdmin/cabinetId removed from entity)

@@ -9,10 +9,16 @@ import java.util.Optional;
  * @date 2025-12-09
  */
 
+import ma.TeethCare.repository.api.RevenuesRepository;
+
 public class revenuesServiceImpl implements revenuesService {
     
     // Dependency Injection would be better, but for now manual instantiation as per pattern
-    private final ma.TeethCare.repository.api.RevenuesRepository revenuesRepository = new ma.TeethCare.repository.mySQLImpl.RevenuesRepositoryImpl();
+    private final RevenuesRepository revenuesRepository;
+
+    public revenuesServiceImpl(RevenuesRepository revenuesRepository) {
+        this.revenuesRepository = revenuesRepository;
+    }
 
     @Override
     public revenues create(revenues entity) throws Exception {

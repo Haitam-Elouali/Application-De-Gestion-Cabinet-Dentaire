@@ -90,6 +90,7 @@ public class CabinetMedicaleRepositoryImpl implements CabinetMedicaleRepository 
             if (generatedKeys.next()) {
                 id = generatedKeys.getLong(1);
                 c.setIdEntite(id);
+                c.setId(id);
             } else {
                 throw new SQLException("Creating Entite for CabinetMedicale failed, no ID obtained.");
             }

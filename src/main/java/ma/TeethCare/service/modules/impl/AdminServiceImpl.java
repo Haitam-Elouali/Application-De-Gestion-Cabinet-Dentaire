@@ -21,6 +21,10 @@ public class AdminServiceImpl implements adminService {
         this.adminRepository = new AdminRepositoryImpl();
     }
 
+    public AdminServiceImpl(AdminRepository adminRepository) {
+        this.adminRepository = adminRepository;
+    }
+
     @Override
     public admin create(admin entity) throws Exception {
         adminRepository.create(entity);

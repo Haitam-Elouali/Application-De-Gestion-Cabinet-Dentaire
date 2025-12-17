@@ -18,14 +18,37 @@ public class AdminServiceTest {
     private static AdminServiceImpl adminService;
     private static Long createdAdminId;
 
+    // Stub implementation for AdminRepository
+    static class AdminRepositoryStub implements ma.TeethCare.repository.api.AdminRepository {
+        private java.util.Map<Long, admin> data = new java.util.HashMap<>();
+        private long idCounter = 1;
+
+        @Override public void create(admin entity) {
+             if (entity.getIdEntite() == null) entity.setIdEntite(idCounter++);
+             data.put(entity.getIdEntite(), entity);
+        }
+        @Override public admin findById(Long id) { return data.get(id); }
+        @Override public java.util.List<admin> findAll() { return new java.util.ArrayList<>(data.values()); }
+        @Override public void update(admin entity) { data.put(entity.getIdEntite(), entity); }
+        @Override public void delete(admin entity) { if (entity != null) data.remove(entity.getIdEntite()); }
+        @Override public void deleteById(Long id) { data.remove(id); }
+
+        @Override
+        public java.util.List<admin> findByDomaine(String domaine) throws Exception {
+            return data.values().stream()
+                    .filter(a -> a.getDomaine() != null && a.getDomaine().equals(domaine))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+    }
+
     public static void main(String[] args) {
         System.out.println("=== DÉBUT DES TESTS ADMIN SERVICE ===");
         try {
             // Setup DB structure if needed
-            ensureSchema();
+            // ensureSchema(); // Disabled for Stub test
 
             // Setup
-            adminService = new AdminServiceImpl();
+            adminService = new AdminServiceImpl(new AdminRepositoryStub());
             
             testCreate();
             testFindById();

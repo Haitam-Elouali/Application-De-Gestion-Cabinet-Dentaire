@@ -13,10 +13,43 @@ import java.util.Optional;
 
 public class RevenuesServiceTest {
 
-    private static final revenuesService service = new revenuesServiceImpl();
+    // Stub implementation for RevenuesRepository
+    static class RevenuesRepositoryStub implements ma.TeethCare.repository.api.RevenuesRepository {
+        private java.util.Map<Long, revenues> data = new java.util.HashMap<>();
+        private long idCounter = 1;
+
+        @Override public void create(revenues entity) {
+             if (entity.getIdEntite() == null) entity.setIdEntite(idCounter++);
+             data.put(entity.getIdEntite(), entity);
+        }
+        @Override public revenues findById(Long id) { return data.get(id); }
+        @Override public java.util.List<revenues> findAll() { return new java.util.ArrayList<>(data.values()); }
+        @Override public void update(revenues entity) { data.put(entity.getIdEntite(), entity); }
+        @Override public void delete(revenues entity) { if (entity != null) data.remove(entity.getIdEntite()); }
+        @Override public void deleteById(Long id) { data.remove(id); }
+
+        @Override
+        public java.util.Optional<revenues> findByTitre(String titre) {
+            return data.values().stream()
+                    .filter(r -> r.getTitre() != null && r.getTitre().equals(titre))
+                    .findFirst();
+        }
+
+        @Override
+        public java.util.List<revenues> findByDateBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
+            return data.values().stream()
+                    .filter(r -> r.getDate() != null 
+                            && (r.getDate().isEqual(startDate) || r.getDate().isAfter(startDate))
+                            && (r.getDate().isEqual(endDate) || r.getDate().isBefore(endDate)))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+    }
+
+    private static revenuesService service;
     private static Long createdId;
 
     public static void main(String[] args) {
+        service = new revenuesServiceImpl(new RevenuesRepositoryStub());
         try {
             System.out.println("--- Starting RevenuesServiceTest ---");
             testCreate();

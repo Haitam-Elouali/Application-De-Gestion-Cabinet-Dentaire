@@ -24,6 +24,7 @@ public class InterventionMedecinRepositoryImpl implements InterventionMedecinRep
         // Columns: id, duree, note, resultatImagerie, consultation_id
         // Entity: consultationId (medecinId, acteId, numDent, prixDePatient ignored)
         String sql = "SELECT t.id as idEntite, t.id as idIM, t.consultation_id as consultationId, " + 
+                     "t.duree, t.note, t.resultatImagerie, " +
                      "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
                      "FROM interventionmedecin t " + 
                      "JOIN entite e ON t.id = e.id";
@@ -45,6 +46,7 @@ public class InterventionMedecinRepositoryImpl implements InterventionMedecinRep
     @Override
     public interventionMedecin findById(Long id) {
         String sql = "SELECT t.id as idEntite, t.id as idIM, t.consultation_id as consultationId, " + 
+                     "t.duree, t.note, t.resultatImagerie, " +
                      "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
                      "FROM interventionmedecin t " + 
                      "JOIN entite e ON t.id = e.id " + 
