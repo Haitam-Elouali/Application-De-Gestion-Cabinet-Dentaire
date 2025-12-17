@@ -9,9 +9,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 
-/**
- * Test manuel pour StatistiqueService (Sans JUnit/Mockito)
- */
+
 public class StatistiqueServiceTest {
 
     // Stub implementation for StatistiqueRepository (In-Memory)
