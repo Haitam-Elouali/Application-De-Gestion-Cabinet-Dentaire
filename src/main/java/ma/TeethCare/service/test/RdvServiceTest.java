@@ -10,6 +10,11 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author Hamza ALAOUI
+ * @date 2025-12-10
+ */
+
 public class RdvServiceTest {
 
     static class RdvRepositoryStub implements RdvRepository {
