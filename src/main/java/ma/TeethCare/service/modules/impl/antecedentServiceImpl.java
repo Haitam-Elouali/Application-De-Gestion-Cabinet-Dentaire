@@ -7,6 +7,11 @@ import ma.TeethCare.service.modules.api.antecedentService;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author MOKADAMI Zouhair
+ * @date 2025-12-17
+ */
+
 public class antecedentServiceImpl implements antecedentService {
 
     private final AntecedentRepository antecedentRepository;

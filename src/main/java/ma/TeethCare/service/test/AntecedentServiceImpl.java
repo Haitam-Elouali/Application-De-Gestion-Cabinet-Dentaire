@@ -7,6 +7,11 @@ import ma.TeethCare.common.enums.niveauDeRisque;
 import java.sql.SQLException;
 import java.util.*;
 
+/**
+ * @author MOKADAMI Zouhair
+ * @date 2025-12-17
+ */
+
 public class AntecedentServiceImpl {
 
     // Stub implementation for AntecedentRepository (In-Memory)

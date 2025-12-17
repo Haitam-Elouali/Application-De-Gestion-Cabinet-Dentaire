@@ -8,6 +8,11 @@ import ma.TeethCare.service.modules.api.roleService;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @author MOKADAMI Zouhair
+ * @date 2025-12-17
+ */
+
 public class roleServiceImpl implements roleService {
 
     private final RoleRepository roleRepository;

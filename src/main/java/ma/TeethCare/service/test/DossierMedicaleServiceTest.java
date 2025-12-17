@@ -7,6 +7,11 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * @author MOKADAMI Zouhair
+ * @date 2025-12-17
+ */
+
 public class DossierMedicaleServiceTest {
 
     // Stub implementation for DossierMedicaleRepository (In-Memory)

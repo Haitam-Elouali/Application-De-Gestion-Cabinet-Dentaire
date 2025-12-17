@@ -7,6 +7,11 @@ import ma.TeethCare.repository.api.RoleRepository;
 import java.sql.SQLException;
 import java.util.*;
 
+/**
+ * @author MOKADAMI Zouhair
+ * @date 2025-12-17
+ */
+
 public class RoleServiceTest {
 
     // Stub implementation for RoleRepository (In-Memory)
