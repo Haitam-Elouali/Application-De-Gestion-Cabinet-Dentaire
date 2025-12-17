@@ -1,14 +1,20 @@
 package ma.TeethCare.service.modules.impl;
+
 import ma.TeethCare.entities.staff.staff;
 import ma.TeethCare.service.modules.api.staffService;
 import java.util.List;
 import java.util.Optional;
 
 import ma.TeethCare.repository.api.StaffRepository;
+import ma.TeethCare.repository.mySQLImpl.StaffRepositoryImpl;
 
 public class staffServiceImpl implements staffService {
 
-    private StaffRepository staffRepository;
+    private final StaffRepository staffRepository;
+
+    public staffServiceImpl() {
+        this.staffRepository = new StaffRepositoryImpl();
+    }
 
     public staffServiceImpl(StaffRepository staffRepository) {
         this.staffRepository = staffRepository;
@@ -16,43 +22,49 @@ public class staffServiceImpl implements staffService {
 
     @Override
     public staff create(staff entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        staffRepository.create(entity);
+        return entity;
     }
 
     @Override
     public Optional<staff> findById(Long id) throws Exception {
-        // TODO: Implement method
-        return Optional.empty();
+        return Optional.ofNullable(staffRepository.findById(id));
     }
 
     @Override
     public List<staff> findAll() throws Exception {
-        // TODO: Implement method
-        return null;
+        return staffRepository.findAll();
     }
 
     @Override
     public staff update(staff entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        staffRepository.update(entity);
+        return entity;
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        staffRepository.deleteById(id);
+        return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        return staffRepository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        // TODO: Implement method
-        return 0;
+        return staffRepository.findAll().size();
+    }
+
+    @Override
+    public Optional<staff> findByEmail(String email) throws Exception {
+        return staffRepository.findByEmail(email);
+    }
+
+    @Override
+    public Optional<staff> findByCin(String cin) throws Exception {
+        return staffRepository.findByCin(cin);
     }
 }

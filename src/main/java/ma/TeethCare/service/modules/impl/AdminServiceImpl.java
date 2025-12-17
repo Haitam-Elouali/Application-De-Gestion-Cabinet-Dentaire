@@ -62,4 +62,9 @@ public class AdminServiceImpl implements adminService {
     public long count() throws Exception {
         return adminRepository.findAll().size();
     }
+
+    @Override
+    public List<admin> findByDomaine(String domaine) throws Exception {
+        return adminRepository.findByDomaine(domaine);
+    }
 }

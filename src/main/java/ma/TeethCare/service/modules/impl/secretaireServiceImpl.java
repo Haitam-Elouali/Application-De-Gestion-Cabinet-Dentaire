@@ -6,10 +6,15 @@ import java.util.List;
 import java.util.Optional;
 
 import ma.TeethCare.repository.api.SecretaireRepository;
+import ma.TeethCare.repository.mySQLImpl.SecretaireRepositoryImpl;
 
 public class secretaireServiceImpl implements secretaireService {
 
-    private SecretaireRepository secretaireRepository;
+    private final SecretaireRepository secretaireRepository;
+
+    public secretaireServiceImpl() {
+        this.secretaireRepository = new SecretaireRepositoryImpl();
+    }
 
     public secretaireServiceImpl(SecretaireRepository secretaireRepository) {
         this.secretaireRepository = secretaireRepository;
@@ -17,43 +22,49 @@ public class secretaireServiceImpl implements secretaireService {
 
     @Override
     public secretaire create(secretaire entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        secretaireRepository.create(entity);
+        return entity;
     }
 
     @Override
     public Optional<secretaire> findById(Long id) throws Exception {
-        // TODO: Implement method
-        return Optional.empty();
+        return Optional.ofNullable(secretaireRepository.findById(id));
     }
 
     @Override
     public List<secretaire> findAll() throws Exception {
-        // TODO: Implement method
-        return null;
+        return secretaireRepository.findAll();
     }
 
     @Override
     public secretaire update(secretaire entity) throws Exception {
-        // TODO: Implement method
-        return null;
+        secretaireRepository.update(entity);
+        return entity;
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        secretaireRepository.deleteById(id);
+        return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        // TODO: Implement method
-        return false;
+        return secretaireRepository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        // TODO: Implement method
-        return 0;
+        return secretaireRepository.findAll().size();
+    }
+
+    @Override
+    public Optional<secretaire> findByNumCNSS(String numCNSS) throws Exception {
+        return secretaireRepository.findByNumCNSS(numCNSS);
+    }
+
+    @Override
+    public Optional<secretaire> findByCin(String cin) throws Exception {
+        return secretaireRepository.findByCin(cin);
     }
 }
