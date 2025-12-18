@@ -54,5 +54,5 @@
 
 ## 👨‍💻 Développeur 5 : INFRASTRUCTURE ET AUTHENTIFICATION
 
-**Modules:** Core, BaseEntity, BaseService, BaseRepository, Auth, Utilisateur, Role, Admin, Staff, Secretaire
-**Charge:** ~10% (travail fondationnel - EN COURS)
+**Modules:** Admin, Staff, Secretaire, Statistique
+**Charge:** ~20%
