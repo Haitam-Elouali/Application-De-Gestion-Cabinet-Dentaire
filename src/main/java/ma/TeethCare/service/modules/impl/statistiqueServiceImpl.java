@@ -6,6 +6,11 @@ import ma.TeethCare.service.modules.api.statistiqueService;
 
 import java.util.List;
 
+/**
+ * @author Haitam ELOUALI
+ * @date 2025-12-17
+ */
+
 public class statistiqueServiceImpl implements statistiqueService {
 
     private final StatistiqueRepository repository;

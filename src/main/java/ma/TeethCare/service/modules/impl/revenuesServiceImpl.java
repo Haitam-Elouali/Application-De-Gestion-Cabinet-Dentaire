@@ -11,6 +11,11 @@ import java.util.Optional;
 
 import ma.TeethCare.repository.api.RevenuesRepository;
 
+/**
+ * @author Haitam ELOUALI
+ * @date 2025-12-10
+ */
+
 public class revenuesServiceImpl implements revenuesService {
     
     // Dependency Injection would be better, but for now manual instantiation as per pattern
