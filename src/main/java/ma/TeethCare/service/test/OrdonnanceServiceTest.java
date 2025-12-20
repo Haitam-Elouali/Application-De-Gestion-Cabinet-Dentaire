@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.ordonnance.ordonnance;
 import ma.TeethCare.repository.api.OrdonnanceRepository;
-import ma.TeethCare.service.modules.api.ordonnanceService;
-import ma.TeethCare.service.modules.impl.ordonnanceServiceImpl;
+import ma.TeethCare.service.modules.dossierMedical.api.ordonnanceService;
+import ma.TeethCare.service.modules.dossierMedical.impl.ordonnanceServiceImpl;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -137,3 +137,4 @@ public class OrdonnanceServiceTest {
         System.out.println("Count passed.");
     }
 }
+

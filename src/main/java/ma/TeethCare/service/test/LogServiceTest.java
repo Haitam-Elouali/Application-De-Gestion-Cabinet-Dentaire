@@ -188,3 +188,4 @@ public class LogServiceTest {
         System.out.println("Custom Queries passed.");
     }
 }
+

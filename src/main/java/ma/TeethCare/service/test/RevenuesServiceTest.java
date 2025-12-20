@@ -1,7 +1,7 @@
 package ma.TeethCare.service.test;
 import ma.TeethCare.entities.revenues.revenues;
-import ma.TeethCare.service.modules.impl.revenuesServiceImpl;
-import ma.TeethCare.service.modules.api.revenuesService;
+import ma.TeethCare.service.modules.caisse.impl.revenuesServiceImpl;
+import ma.TeethCare.service.modules.caisse.api.revenuesService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -154,3 +154,4 @@ public class RevenuesServiceTest {
         System.out.println("SUCCESS: Count is " + count);
     }
 }
+

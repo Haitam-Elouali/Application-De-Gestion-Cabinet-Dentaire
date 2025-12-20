@@ -1,7 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.staff.staff;
-import ma.TeethCare.service.modules.impl.staffServiceImpl;
+import ma.TeethCare.service.modules.users.impl.staffServiceImpl;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -205,3 +205,4 @@ public class StaffServiceTest {
         }
     }
 }
+

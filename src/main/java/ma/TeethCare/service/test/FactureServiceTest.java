@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.facture.facture;
 import ma.TeethCare.repository.api.FactureRepository;
-import ma.TeethCare.service.modules.api.factureService;
-import ma.TeethCare.service.modules.impl.factureServiceImpl;
+import ma.TeethCare.service.modules.caisse.api.factureService;
+import ma.TeethCare.service.modules.caisse.impl.factureServiceImpl;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -137,3 +137,4 @@ public class FactureServiceTest {
         System.out.println("Count passed.");
     }
 }
+

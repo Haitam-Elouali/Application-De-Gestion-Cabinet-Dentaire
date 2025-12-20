@@ -1,7 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.secretaire.secretaire;
-import ma.TeethCare.service.modules.impl.secretaireServiceImpl;
+import ma.TeethCare.service.modules.users.impl.secretaireServiceImpl;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -189,3 +189,4 @@ public class SecretaireServiceTest {
         }
     }
 }
+

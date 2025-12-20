@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.notification.notification;
 import ma.TeethCare.repository.api.NotificationRepository;
-import ma.TeethCare.service.modules.api.notificationService;
-import ma.TeethCare.service.modules.impl.notificationServiceImpl;
+import ma.TeethCare.service.modules.notifications.api.notificationService;
+import ma.TeethCare.service.modules.notifications.impl.notificationServiceImpl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -177,3 +177,4 @@ public class NotificationServiceTest {
          System.out.println("FindByType passed.");
     }
 }
+

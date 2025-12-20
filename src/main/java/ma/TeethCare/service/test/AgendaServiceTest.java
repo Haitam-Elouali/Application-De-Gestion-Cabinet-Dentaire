@@ -3,8 +3,8 @@ package ma.TeethCare.service.test;
 import ma.TeethCare.entities.agenda.agenda;
 import ma.TeethCare.repository.api.AgendaRepository;
 import ma.TeethCare.repository.mySQLImpl.AgendaRepositoryImpl;
-import ma.TeethCare.service.modules.api.agendaService;
-import ma.TeethCare.service.modules.impl.agendaServiceImpl;
+import ma.TeethCare.service.modules.agenda.api.agendaService;
+import ma.TeethCare.service.modules.agenda.impl.agendaServiceImpl;
 import ma.TeethCare.common.enums.Mois;
 
 import java.util.Arrays;
@@ -130,3 +130,4 @@ public class AgendaServiceTest {
         }
     }
 }
+

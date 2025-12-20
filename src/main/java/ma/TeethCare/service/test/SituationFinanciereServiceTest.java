@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.situationFinanciere.situationFinanciere;
 import ma.TeethCare.repository.api.SituationFinanciereRepository;
-import ma.TeethCare.service.modules.api.situationFinanciereService;
-import ma.TeethCare.service.modules.impl.situationFinanciereServiceImpl;
+import ma.TeethCare.service.modules.caisse.api.situationFinanciereService;
+import ma.TeethCare.service.modules.caisse.impl.situationFinanciereServiceImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -138,3 +138,4 @@ public class SituationFinanciereServiceTest {
         System.out.println("Count passed.");
     }
 }
+

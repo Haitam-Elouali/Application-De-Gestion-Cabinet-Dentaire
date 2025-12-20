@@ -1,7 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.admin.admin;
-import ma.TeethCare.service.modules.impl.AdminServiceImpl;
+import ma.TeethCare.service.modules.users.impl.AdminServiceImpl;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -182,3 +182,4 @@ public class AdminServiceTest {
         }
     }
 }
+

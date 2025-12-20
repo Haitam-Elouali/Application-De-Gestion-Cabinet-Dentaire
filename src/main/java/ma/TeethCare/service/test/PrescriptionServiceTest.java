@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.prescription.prescription;
 import ma.TeethCare.repository.api.PrescriptionRepository;
-import ma.TeethCare.service.modules.api.prescriptionService;
-import ma.TeethCare.service.modules.impl.prescriptionServiceImpl;
+import ma.TeethCare.service.modules.dossierMedical.api.prescriptionService;
+import ma.TeethCare.service.modules.dossierMedical.impl.prescriptionServiceImpl;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -137,3 +137,4 @@ public class PrescriptionServiceTest {
         System.out.println("Count passed.");
     }
 }
+

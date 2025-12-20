@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.actes.actes;
 import ma.TeethCare.repository.api.ActesRepository;
-import ma.TeethCare.service.modules.api.actesService;
-import ma.TeethCare.service.modules.impl.actesServiceImpl;
+import ma.TeethCare.service.modules.dossierMedical.api.actesService;
+import ma.TeethCare.service.modules.dossierMedical.impl.actesServiceImpl;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -171,3 +171,4 @@ public class ActesServiceTest {
         System.out.println("Count passed.");
     }
 }
+

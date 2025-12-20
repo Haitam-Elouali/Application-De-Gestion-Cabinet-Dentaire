@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.charges.charges;
 import ma.TeethCare.repository.api.ChargesRepository;
-import ma.TeethCare.service.modules.api.chargesService;
-import ma.TeethCare.service.modules.impl.chargesServiceImpl;
+import ma.TeethCare.service.modules.caisse.api.chargesService;
+import ma.TeethCare.service.modules.caisse.impl.chargesServiceImpl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -146,3 +146,4 @@ public class ChargesServiceTest {
         System.out.println("Count passed.");
     }
 }
+

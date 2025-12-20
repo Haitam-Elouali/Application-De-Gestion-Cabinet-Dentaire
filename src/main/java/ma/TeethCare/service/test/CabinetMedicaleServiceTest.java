@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.cabinetMedicale.cabinetMedicale;
 import ma.TeethCare.repository.api.CabinetMedicaleRepository;
-import ma.TeethCare.service.modules.api.cabinetMedicaleService;
-import ma.TeethCare.service.modules.impl.cabinetMedicaleServiceImpl;
+import ma.TeethCare.service.modules.cabinet.api.cabinetMedicaleService;
+import ma.TeethCare.service.modules.cabinet.impl.cabinetMedicaleServiceImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -144,3 +144,4 @@ public class CabinetMedicaleServiceTest {
         System.out.println("Count passed.");
     }
 }
+

@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.certificat.certificat;
 import ma.TeethCare.repository.api.CertificatRepository;
-import ma.TeethCare.service.modules.api.certificatService;
-import ma.TeethCare.service.modules.impl.certificatServiceImpl;
+import ma.TeethCare.service.modules.dossierMedical.api.certificatService;
+import ma.TeethCare.service.modules.dossierMedical.impl.certificatServiceImpl;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -140,3 +140,4 @@ public class CertificatServiceTest {
         System.out.println("Count passed.");
     }
 }
+

@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.statistique.statistique;
 import ma.TeethCare.repository.api.StatistiqueRepository;
-import ma.TeethCare.service.modules.api.statistiqueService;
-import ma.TeethCare.service.modules.impl.statistiqueServiceImpl;
+import ma.TeethCare.service.modules.dashboard_statistiques.api.statistiqueService;
+import ma.TeethCare.service.modules.dashboard_statistiques.impl.statistiqueServiceImpl;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -179,3 +179,4 @@ public class StatistiqueServiceTest {
         else throw new RuntimeException("❌ ERREUR: Count négatif.");
     }
 }
+

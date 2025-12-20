@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.rdv.rdv;
 import ma.TeethCare.repository.api.RdvRepository;
-import ma.TeethCare.service.modules.api.rdvService;
-import ma.TeethCare.service.modules.impl.rdvServiceImpl;
+import ma.TeethCare.service.modules.agenda.api.rdvService;
+import ma.TeethCare.service.modules.agenda.impl.rdvServiceImpl;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -151,3 +151,4 @@ public class RdvServiceTest {
         System.out.println("Count passed.");
     }
 }
+

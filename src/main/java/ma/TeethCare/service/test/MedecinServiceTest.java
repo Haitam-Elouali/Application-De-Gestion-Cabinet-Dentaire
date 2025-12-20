@@ -2,8 +2,8 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.medecin.medecin;
 import ma.TeethCare.repository.api.MedecinRepository;
-import ma.TeethCare.service.modules.api.medecinService;
-import ma.TeethCare.service.modules.impl.medecinServiceImpl;
+import ma.TeethCare.service.modules.users.api.medecinService;
+import ma.TeethCare.service.modules.users.impl.medecinServiceImpl;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -186,3 +186,4 @@ public class MedecinServiceTest {
         System.out.println("Count passed.");
     }
 }
+
