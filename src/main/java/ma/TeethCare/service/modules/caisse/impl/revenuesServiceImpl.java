@@ -1,68 +1,79 @@
 package ma.TeethCare.service.modules.caisse.impl;
+
 import ma.TeethCare.entities.revenues.revenues;
-import ma.TeethCare.service.modules.caisse.api.revenuesService;
-import java.util.List;
-import java.util.Optional;
-
-/**
- * @author ELOUALI Haitam
- * @date 2025-12-09
- */
-
 import ma.TeethCare.repository.api.RevenuesRepository;
+import ma.TeethCare.service.modules.caisse.api.revenuesService;
+import ma.TeethCare.service.modules.caisse.dto.RevenuesDto;
+import ma.TeethCare.service.modules.caisse.mapper.RevenuesMapper;
 
-/**
- * @author Haitam ELOUALI
- * @date 2025-12-10
- */
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class revenuesServiceImpl implements revenuesService {
-    
-    // Dependency Injection would be better, but for now manual instantiation as per pattern
-    private final RevenuesRepository revenuesRepository;
 
-    public revenuesServiceImpl(RevenuesRepository revenuesRepository) {
-        this.revenuesRepository = revenuesRepository;
+    private final RevenuesRepository repository;
+
+    public revenuesServiceImpl(RevenuesRepository repository) {
+        this.repository = repository;
     }
 
     @Override
-    public revenues create(revenues entity) throws Exception {
-        revenuesRepository.create(entity);
-        return entity;
+    public RevenuesDto create(RevenuesDto dto) {
+        try {
+            revenues entity = RevenuesMapper.toEntity(dto);
+            repository.create(entity);
+            return RevenuesMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating revenues", e);
+        }
     }
 
     @Override
-    public Optional<revenues> findById(Long id) throws Exception {
-        return Optional.ofNullable(revenuesRepository.findById(id));
+    public RevenuesDto update(Long id, RevenuesDto dto) {
+        try {
+            revenues entity = RevenuesMapper.toEntity(dto);
+            entity.setId(id);
+            repository.update(entity);
+            return RevenuesMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating revenues", e);
+        }
     }
 
     @Override
-    public List<revenues> findAll() throws Exception {
-        return revenuesRepository.findAll();
+    public RevenuesDto findById(Long id) {
+        try {
+            revenues entity = repository.findById(id);
+            return RevenuesMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding revenues", e);
+        }
     }
 
     @Override
-    public revenues update(revenues entity) throws Exception {
-        revenuesRepository.update(entity);
-        return entity;
+    public List<RevenuesDto> findAll() {
+        try {
+            return repository.findAll().stream()
+                    .map(RevenuesMapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding all revenues", e);
+        }
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        if (exists(id)) {
-            revenuesRepository.deleteById(id);
-            return true;
-        }
-        return false;
+        repository.deleteById(id);
+        return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        return revenuesRepository.findById(id) != null;
+        return repository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        return findAll().size();
+        return repository.findAll().size();
     }
 }

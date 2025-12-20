@@ -1,14 +1,13 @@
 package ma.TeethCare.service.modules.caisse.impl;
-import ma.TeethCare.entities.facture.facture;
-import ma.TeethCare.service.modules.caisse.api.factureService;
-import ma.TeethCare.repository.api.FactureRepository;
-import java.util.List;
-import java.util.Optional;
 
-/**
- * @author ELOUALI Haitam
- * @date 2025-12-09
- */
+import ma.TeethCare.entities.facture.facture;
+import ma.TeethCare.repository.api.FactureRepository;
+import ma.TeethCare.service.modules.caisse.api.factureService;
+import ma.TeethCare.service.modules.caisse.dto.FactureDto;
+import ma.TeethCare.service.modules.caisse.mapper.FactureMapper;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class factureServiceImpl implements factureService {
 
@@ -19,25 +18,47 @@ public class factureServiceImpl implements factureService {
     }
 
     @Override
-    public facture create(facture entity) throws Exception {
-        repository.create(entity);
-        return entity;
+    public FactureDto create(FactureDto dto) {
+        try {
+            facture entity = FactureMapper.toEntity(dto);
+            repository.create(entity);
+            return FactureMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating facture", e);
+        }
     }
 
     @Override
-    public Optional<facture> findById(Long id) throws Exception {
-        return Optional.ofNullable(repository.findById(id));
+    public FactureDto update(Long id, FactureDto dto) {
+        try {
+            facture entity = FactureMapper.toEntity(dto);
+            entity.setId(id);
+            repository.update(entity);
+            return FactureMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating facture", e);
+        }
     }
 
     @Override
-    public List<facture> findAll() throws Exception {
-        return repository.findAll();
+    public FactureDto findById(Long id) {
+        try {
+            facture entity = repository.findById(id);
+            return FactureMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding facture", e);
+        }
     }
 
     @Override
-    public facture update(facture entity) throws Exception {
-        repository.update(entity);
-        return entity;
+    public List<FactureDto> findAll() {
+        try {
+            return repository.findAll().stream()
+                    .map(FactureMapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding all factures", e);
+        }
     }
 
     @Override

@@ -1,14 +1,13 @@
 package ma.TeethCare.service.modules.caisse.impl;
-import ma.TeethCare.entities.situationFinanciere.situationFinanciere;
-import ma.TeethCare.service.modules.caisse.api.situationFinanciereService;
-import ma.TeethCare.repository.api.SituationFinanciereRepository;
-import java.util.List;
-import java.util.Optional;
 
-/**
- * @author Haitam ELOUALI
- * @date 2025-12-14
- */
+import ma.TeethCare.entities.situationFinanciere.situationFinanciere;
+import ma.TeethCare.repository.api.SituationFinanciereRepository;
+import ma.TeethCare.service.modules.caisse.api.situationFinanciereService;
+import ma.TeethCare.service.modules.caisse.dto.SituationFinanciereDto;
+import ma.TeethCare.service.modules.caisse.mapper.SituationFinanciereMapper;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class situationFinanciereServiceImpl implements situationFinanciereService {
 
@@ -19,25 +18,47 @@ public class situationFinanciereServiceImpl implements situationFinanciereServic
     }
 
     @Override
-    public situationFinanciere create(situationFinanciere entity) throws Exception {
-        repository.create(entity);
-        return entity;
+    public SituationFinanciereDto create(SituationFinanciereDto dto) {
+        try {
+            situationFinanciere entity = SituationFinanciereMapper.toEntity(dto);
+            repository.create(entity);
+            return SituationFinanciereMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating situationFinanciere", e);
+        }
     }
 
     @Override
-    public Optional<situationFinanciere> findById(Long id) throws Exception {
-        return Optional.ofNullable(repository.findById(id));
+    public SituationFinanciereDto update(Long id, SituationFinanciereDto dto) {
+        try {
+            situationFinanciere entity = SituationFinanciereMapper.toEntity(dto);
+            entity.setId(id);
+            repository.update(entity);
+            return SituationFinanciereMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating situationFinanciere", e);
+        }
     }
 
     @Override
-    public List<situationFinanciere> findAll() throws Exception {
-        return repository.findAll();
+    public SituationFinanciereDto findById(Long id) {
+        try {
+            situationFinanciere entity = repository.findById(id);
+            return SituationFinanciereMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding situationFinanciere", e);
+        }
     }
 
     @Override
-    public situationFinanciere update(situationFinanciere entity) throws Exception {
-        repository.update(entity);
-        return entity;
+    public List<SituationFinanciereDto> findAll() {
+        try {
+            return repository.findAll().stream()
+                    .map(SituationFinanciereMapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding all situationFinancieres", e);
+        }
     }
 
     @Override

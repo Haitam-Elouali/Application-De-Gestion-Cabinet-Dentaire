@@ -1,14 +1,13 @@
 package ma.TeethCare.service.modules.caisse.impl;
-import ma.TeethCare.entities.charges.charges;
-import ma.TeethCare.service.modules.caisse.api.chargesService;
-import ma.TeethCare.repository.api.ChargesRepository;
-import java.util.List;
-import java.util.Optional;
 
-/**
- * @author Haitam ELOUALI
- * @date 2025-12-14
- */
+import ma.TeethCare.entities.charges.charges;
+import ma.TeethCare.repository.api.ChargesRepository;
+import ma.TeethCare.service.modules.caisse.api.chargesService;
+import ma.TeethCare.service.modules.caisse.dto.ChargesDto;
+import ma.TeethCare.service.modules.caisse.mapper.ChargesMapper;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class chargesServiceImpl implements chargesService {
 
@@ -19,25 +18,47 @@ public class chargesServiceImpl implements chargesService {
     }
 
     @Override
-    public charges create(charges entity) throws Exception {
-        repository.create(entity);
-        return entity;
+    public ChargesDto create(ChargesDto dto) {
+        try {
+            charges entity = ChargesMapper.toEntity(dto);
+            repository.create(entity);
+            return ChargesMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating charges", e);
+        }
     }
 
     @Override
-    public Optional<charges> findById(Long id) throws Exception {
-        return Optional.ofNullable(repository.findById(id));
+    public ChargesDto update(Long id, ChargesDto dto) {
+        try {
+            charges entity = ChargesMapper.toEntity(dto);
+            entity.setId(id);
+            repository.update(entity);
+            return ChargesMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating charges", e);
+        }
     }
 
     @Override
-    public List<charges> findAll() throws Exception {
-        return repository.findAll();
+    public ChargesDto findById(Long id) {
+        try {
+            charges entity = repository.findById(id);
+            return ChargesMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding charges", e);
+        }
     }
 
     @Override
-    public charges update(charges entity) throws Exception {
-        repository.update(entity);
-        return entity;
+    public List<ChargesDto> findAll() {
+        try {
+            return repository.findAll().stream()
+                    .map(ChargesMapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding all charges", e);
+        }
     }
 
     @Override
