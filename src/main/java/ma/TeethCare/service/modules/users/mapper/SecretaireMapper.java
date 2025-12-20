@@ -37,9 +37,11 @@ public class SecretaireMapper {
                 .username(request.login()) // DTO says 'login'. Entity user usually 'username' or 'login'.
                 .password(request.motDePasse()) // DTO 'motDePasse'. Entity 'password'.
                 .dateNaissance(request.dateNaissance())
+                .salaire(request.salaire()) // Assuming salaire -> salary? No, Entity likely has 'salaire' or 'salary'?
+                // Wait, staff.java had 'salaire'.
                 .salaire(request.salaire())
-                // .prime(request.prime()) // Does staff have prime? Assuming yes.
-                .dateRecrutement(request.dateRecrutement())
+                // .prime(request.prime())
+                .dateEmbauche(request.dateRecrutement())
                 // .soldeConge(request.soldeConge())
                 // .numCNSS(request.numCNSS())
                 .commission(request.commission() != null ? request.commission().intValue() : 0)
