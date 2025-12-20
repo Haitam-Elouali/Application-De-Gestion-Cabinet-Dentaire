@@ -10,10 +10,10 @@ public class CredentialsValidatorImpl implements CredentialsValidator {
         if (request == null) {
             throw new IllegalArgumentException("AuthRequest cannot be null");
         }
-        if (request.getLogin() == null || request.getLogin().trim().isEmpty()) {
+        if (request.login() == null || request.login().trim().isEmpty()) {
             throw new IllegalArgumentException("Login cannot be empty");
         }
-        if (request.getPassword() == null || request.getPassword().isEmpty()) {
+        if (request.password() == null || request.password().isEmpty()) {
             throw new IllegalArgumentException("Password cannot be empty");
         }
     }

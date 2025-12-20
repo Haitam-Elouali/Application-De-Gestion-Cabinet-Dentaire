@@ -35,10 +35,10 @@ public class AuthServiceImpl implements AuthService {
             credentialsValidator.validate(request);
 
             // 2. Find user
-            return utilisateurRepository.findByLogin(request.getLogin())
+            return utilisateurRepository.findByLogin(request.login())
                     .map(user -> {
                         // 3. Check password
-                        if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                        if (passwordEncoder.matches(request.password(), user.getPassword())) {
                             String token = UUID.randomUUID().toString(); // Placeholder token
                             UserPrincipal principal = mapToPrincipal(user);
                             return AuthResult.success(token, principal);
