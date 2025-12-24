@@ -2,53 +2,68 @@ package ma.TeethCare.service.modules.dossierMedical.impl;
 
 import ma.TeethCare.entities.dossierMedicale.dossierMedicale;
 import ma.TeethCare.repository.api.DossierMedicaleRepository;
+import ma.TeethCare.repository.mySQLImpl.DossierMedicaleRepositoryImpl;
 import ma.TeethCare.service.modules.dossierMedical.api.dossierMedicaleService;
+import ma.TeethCare.service.modules.dossierMedical.dto.DossierMedicalDto;
+import ma.TeethCare.service.modules.dossierMedical.mapper.DossierMedicalMapper;
 
 import java.util.List;
-import java.util.Optional;
-
-/**
- * @author MOKADAMI Zouhair
- * @date 2025-12-17
- */
+import java.util.stream.Collectors;
 
 public class dossierMedicaleServiceImpl implements dossierMedicaleService {
 
     private final DossierMedicaleRepository dossierMedicaleRepository;
+
+    public dossierMedicaleServiceImpl() {
+        this.dossierMedicaleRepository = new DossierMedicaleRepositoryImpl();
+    }
 
     public dossierMedicaleServiceImpl(DossierMedicaleRepository dossierMedicaleRepository) {
         this.dossierMedicaleRepository = dossierMedicaleRepository;
     }
 
     @Override
-    public dossierMedicale create(dossierMedicale entity) throws Exception {
-        if (entity == null) {
-            throw new IllegalArgumentException("DossierMedicale ne peut pas être null");
+    public DossierMedicalDto create(DossierMedicalDto dto) {
+        try {
+            dossierMedicale entity = DossierMedicalMapper.toEntity(dto);
+            dossierMedicaleRepository.create(entity);
+            return DossierMedicalMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating dossier medical", e);
         }
-        dossierMedicaleRepository.create(entity);
-        return entity;
     }
 
     @Override
-    public Optional<dossierMedicale> findById(Long id) throws Exception {
-        if (id == null) {
-            return Optional.empty();
+    public DossierMedicalDto update(Long id, DossierMedicalDto dto) {
+        try {
+            dossierMedicale entity = DossierMedicalMapper.toEntity(dto);
+            entity.setId(id); // Ensure ID is set for update
+            dossierMedicaleRepository.update(entity);
+            return DossierMedicalMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating dossier medical", e);
         }
-        return Optional.ofNullable(dossierMedicaleRepository.findById(id));
     }
 
     @Override
-    public List<dossierMedicale> findAll() throws Exception {
-        return dossierMedicaleRepository.findAll();
+    public DossierMedicalDto findById(Long id) {
+        try {
+            dossierMedicale entity = dossierMedicaleRepository.findById(id);
+            return DossierMedicalMapper.toDto(entity);
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding dossier medical by id", e);
+        }
     }
 
     @Override
-    public dossierMedicale update(dossierMedicale entity) throws Exception {
-        if (entity == null || entity.getId() == null) {
-            throw new IllegalArgumentException("DossierMedicale ou ID invalide");
+    public List<DossierMedicalDto> findAll() {
+        try {
+            return dossierMedicaleRepository.findAll().stream()
+                    .map(DossierMedicalMapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding all dossier medicals", e);
         }
-        dossierMedicaleRepository.update(entity);
-        return entity;
     }
 
     @Override

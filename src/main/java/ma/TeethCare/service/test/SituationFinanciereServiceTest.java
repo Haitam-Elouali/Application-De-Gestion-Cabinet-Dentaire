@@ -16,6 +16,10 @@ import java.sql.SQLException;
  * @date 2025-12-14
  */
 
+import ma.TeethCare.service.modules.caisse.dto.SituationFinanciereDto;
+import ma.TeethCare.common.enums.Statut;
+import ma.TeethCare.common.enums.Promo;
+
 public class SituationFinanciereServiceTest {
 
     static class SituationFinanciereRepositoryStub implements SituationFinanciereRepository {
@@ -68,7 +72,7 @@ public class SituationFinanciereServiceTest {
             testDelete(service);
             testExists(service);
             testCount(service);
-            
+
             System.out.println("All SituationFinanciereService tests passed!");
         } catch (Exception e) {
             e.printStackTrace();
@@ -77,65 +81,79 @@ public class SituationFinanciereServiceTest {
 
     public static void testCreate(situationFinanciereService service) throws Exception {
         System.out.println("Testing Create...");
-        situationFinanciere s = situationFinanciere.builder()
-            .totalDesActes(1000.0)
-            .totalPaye(500.0)
-            .build();
-        situationFinanciere created = service.create(s);
-        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
+        SituationFinanciereDto s = new SituationFinanciereDto(null, 1000.0, 500.0, 500.0, Statut.En_attente,
+                Promo.Aucune,
+                1L);
+
+        SituationFinanciereDto created = service.create(s);
+        if (created.id() == null)
+            throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(situationFinanciereService service) throws Exception {
         System.out.println("Testing FindById...");
-        situationFinanciere s = situationFinanciere.builder().totalDesActes(200.0).build();
+        SituationFinanciereDto s = new SituationFinanciereDto(null, 200.0, 0.0, 200.0, Statut.En_attente, Promo.Aucune,
+                1L);
         s = service.create(s);
-        Optional<situationFinanciere> found = service.findById(s.getId());
-        if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
+
+        SituationFinanciereDto found = service.findById(s.id());
+        if (found == null)
+            throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
 
     public static void testFindAll(situationFinanciereService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(situationFinanciere.builder().totalDesActes(300.0).build());
-        if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
+        service.create(new SituationFinanciereDto(null, 300.0, 0.0, 300.0, Statut.En_attente, Promo.Aucune, 1L));
+
+        if (service.findAll().size() != initialCount + 1)
+            throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(situationFinanciereService service) throws Exception {
         System.out.println("Testing Update...");
-        situationFinanciere s = situationFinanciere.builder().totalDesActes(400.0).build();
+        SituationFinanciereDto s = new SituationFinanciereDto(null, 400.0, 0.0, 400.0, Statut.En_attente, Promo.Aucune,
+                1L);
         s = service.create(s);
-        s.setTotalDesActes(450.0);
-        situationFinanciere updated = service.update(s);
-        if (!updated.getTotalDesActes().equals(450.0)) throw new RuntimeException("Update failed: value mismatch");
+
+        SituationFinanciereDto toUpdate = new SituationFinanciereDto(s.id(), 450.0, s.totalPaye(), 450.0, s.statut(),
+                s.enPromo(), s.dossierMedicaleId());
+
+        SituationFinanciereDto updated = service.update(s.id(), toUpdate);
+        if (!updated.totalDesActes().equals(450.0))
+            throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(situationFinanciereService service) throws Exception {
         System.out.println("Testing Delete...");
-        situationFinanciere s = situationFinanciere.builder().totalDesActes(0.0).build();
+        SituationFinanciereDto s = new SituationFinanciereDto(null, 0.0, 0.0, 0.0, Statut.Payee, Promo.Aucune, 1L);
         s = service.create(s);
-        Long id = s.getId();
+        Long id = s.id();
         service.delete(id);
-        if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
+        if (service.exists(id))
+            throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
     }
 
     public static void testExists(situationFinanciereService service) throws Exception {
         System.out.println("Testing Exists...");
-        situationFinanciere s = situationFinanciere.builder().totalDesActes(100.0).build();
+        SituationFinanciereDto s = new SituationFinanciereDto(null, 100.0, 0.0, 100.0, Statut.En_attente, Promo.Aucune,
+                1L);
         s = service.create(s);
-        if (!service.exists(s.getId())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(s.id()))
+            throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 
     public static void testCount(situationFinanciereService service) throws Exception {
         System.out.println("Testing Count...");
         long count = service.count();
-        if (count < 0) throw new RuntimeException("Count failed: negative");
+        if (count < 0)
+            throw new RuntimeException("Count failed: negative");
         System.out.println("Count passed.");
     }
 }
-

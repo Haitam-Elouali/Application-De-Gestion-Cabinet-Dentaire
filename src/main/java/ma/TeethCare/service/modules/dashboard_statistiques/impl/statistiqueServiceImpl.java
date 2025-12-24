@@ -2,71 +2,80 @@ package ma.TeethCare.service.modules.dashboard_statistiques.impl;
 
 import ma.TeethCare.entities.statistique.statistique;
 import ma.TeethCare.repository.api.StatistiqueRepository;
+import ma.TeethCare.repository.mySQLImpl.StatistiqueRepositoryImpl;
 import ma.TeethCare.service.modules.dashboard_statistiques.api.statistiqueService;
+import ma.TeethCare.service.modules.dashboard_statistiques.dto.StatistiqueDto;
+import ma.TeethCare.service.modules.dashboard_statistiques.mapper.StatistiqueMapper;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * @author Haitam ELOUALI
- * @date 2025-12-17
- */
+import ma.TeethCare.entities.statistique.statistique;
+import ma.TeethCare.repository.api.StatistiqueRepository;
+import ma.TeethCare.common.exceptions.ServiceException;
+import ma.TeethCare.entities.statistique.statistique;
+import ma.TeethCare.repository.api.StatistiqueRepository;
+import ma.TeethCare.service.modules.dashboard_statistiques.dto.StatistiqueDto;
+import ma.TeethCare.service.modules.dashboard_statistiques.mapper.StatistiqueMapper;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class statistiqueServiceImpl implements statistiqueService {
 
     private final StatistiqueRepository repository;
 
+    // No Mapper injection needed if methods are static
     public statistiqueServiceImpl(StatistiqueRepository repository) {
         this.repository = repository;
     }
 
     @Override
-    public statistique create(statistique entity) throws Exception {
+    public StatistiqueDto create(StatistiqueDto dto) {
         try {
-            if (entity == null) {
-                throw new ma.TeethCare.common.exceptions.ServiceException("Statistique ne peut pas être null");
-            }
+            statistique entity = StatistiqueMapper.toEntity(dto);
             repository.create(entity);
-            return entity;
+            return StatistiqueMapper.toDto(entity);
         } catch (Exception e) {
-            throw new ma.TeethCare.common.exceptions.ServiceException("Erreur lors de la création de la statistique",
-                    e);
+            throw new ServiceException("Erreur lors de la création de la statistique", e);
         }
     }
 
     @Override
-    public java.util.Optional<statistique> findById(Long id) throws Exception {
+    public StatistiqueDto update(Long id, StatistiqueDto dto) {
         try {
-            if (id == null) {
-                throw new ma.TeethCare.common.exceptions.ServiceException("ID ne peut pas être null");
+            statistique existing = repository.findById(id);
+            if (existing == null) {
+                throw new ServiceException("Statistique non trouvée avec l'ID: " + id);
             }
-            return java.util.Optional.ofNullable(repository.findById(id));
+            // Update fields from DTO to Entity
+            statistique updatedEntity = StatistiqueMapper.toEntity(dto);
+            updatedEntity.setId(id); // Ensure ID is preserved
+            repository.update(updatedEntity);
+            return StatistiqueMapper.toDto(updatedEntity);
         } catch (Exception e) {
-            throw new ma.TeethCare.common.exceptions.ServiceException(
-                    "Erreur lors de la récupération de la statistique", e);
+            throw new ServiceException("Erreur lors de la mise à jour de la statistique", e);
         }
     }
 
     @Override
-    public List<statistique> findAll() throws Exception {
+    public StatistiqueDto findById(Long id) {
         try {
-            return repository.findAll();
+            statistique entity = repository.findById(id);
+            return StatistiqueMapper.toDto(entity);
         } catch (Exception e) {
-            throw new ma.TeethCare.common.exceptions.ServiceException(
-                    "Erreur lors de la récupération de la liste des statistiques", e);
+            throw new ServiceException("Erreur lors de la récupération de la statistique", e);
         }
     }
 
     @Override
-    public statistique update(statistique entity) throws Exception {
+    public List<StatistiqueDto> findAll() {
         try {
-            if (entity == null) {
-                throw new ma.TeethCare.common.exceptions.ServiceException("Statistique ne peut pas être null");
-            }
-            repository.update(entity);
-            return entity;
+            return repository.findAll().stream()
+                    .map(StatistiqueMapper::toDto)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new ma.TeethCare.common.exceptions.ServiceException("Erreur lors de la mise à jour de la statistique",
-                    e);
+            throw new ServiceException("Erreur lors de la récupération des statistiques", e);
         }
     }
 
@@ -79,21 +88,18 @@ public class statistiqueServiceImpl implements statistiqueService {
             repository.deleteById(id);
             return true;
         } catch (Exception e) {
-            throw new ma.TeethCare.common.exceptions.ServiceException("Erreur lors de la suppression de la statistique",
-                    e);
+            throw new ServiceException("Erreur lors de la suppression de la statistique", e);
         }
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
         try {
-            if (id == null) {
+            if (id == null)
                 return false;
-            }
             return repository.findById(id) != null;
         } catch (Exception e) {
-            throw new ma.TeethCare.common.exceptions.ServiceException(
-                    "Erreur lors de la vérification de l'existence de la statistique", e);
+            throw new ServiceException("Erreur lors de la vérification de l'existence", e);
         }
     }
 
@@ -102,7 +108,7 @@ public class statistiqueServiceImpl implements statistiqueService {
         try {
             return repository.findAll().size();
         } catch (Exception e) {
-            throw new ma.TeethCare.common.exceptions.ServiceException("Erreur lors du comptage des statistiques", e);
+            throw new ServiceException("Erreur lors du comptage", e);
         }
     }
 }

@@ -17,6 +17,8 @@ import java.sql.SQLException;
  * @date 2025-12-14
  */
 
+import ma.TeethCare.service.modules.caisse.dto.ChargesDto;
+
 public class ChargesServiceTest {
 
     static class ChargesRepositoryStub implements ChargesRepository {
@@ -74,7 +76,7 @@ public class ChargesServiceTest {
             testDelete(service);
             testExists(service);
             testCount(service);
-            
+
             System.out.println("All ChargesService tests passed!");
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,67 +85,74 @@ public class ChargesServiceTest {
 
     public static void testCreate(chargesService service) throws Exception {
         System.out.println("Testing Create...");
-        charges c = charges.builder()
-            .titre("Facture Electrique")
-            .montant(500.0)
-            .date(LocalDateTime.now())
-            .categorie("Utilities")
-            .build();
-        charges created = service.create(c);
-        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
+        ChargesDto c = new ChargesDto(null, "Facture Electrique", "Desc", 500.0, "Utilities", LocalDateTime.now(), 1L);
+
+        ChargesDto created = service.create(c);
+        if (created.id() == null)
+            throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(chargesService service) throws Exception {
         System.out.println("Testing FindById...");
-        charges c = charges.builder().titre("Test ID").build();
+        ChargesDto c = new ChargesDto(null, "Test ID", "Desc", 100.0, "Cat", LocalDateTime.now(), 1L);
         c = service.create(c);
-        Optional<charges> found = service.findById(c.getId());
-        if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
+
+        ChargesDto found = service.findById(c.id());
+        if (found == null)
+            throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
 
     public static void testFindAll(chargesService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(charges.builder().titre("All 1").build());
-        if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
+        service.create(new ChargesDto(null, "All 1", "Desc", 100.0, "Cat", LocalDateTime.now(), 1L));
+
+        if (service.findAll().size() != initialCount + 1)
+            throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(chargesService service) throws Exception {
         System.out.println("Testing Update...");
-        charges c = charges.builder().titre("Old Title").build();
+        ChargesDto c = new ChargesDto(null, "Old Title", "Desc", 100.0, "Cat", LocalDateTime.now(), 1L);
         c = service.create(c);
-        c.setTitre("New Title");
-        charges updated = service.update(c);
-        if (!updated.getTitre().equals("New Title")) throw new RuntimeException("Update failed: value mismatch");
+
+        ChargesDto toUpdate = new ChargesDto(c.id(), "New Title", c.description(), c.montant(), c.categorie(), c.date(),
+                c.cabinetId());
+
+        ChargesDto updated = service.update(c.id(), toUpdate);
+        if (!updated.titre().equals("New Title"))
+            throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(chargesService service) throws Exception {
         System.out.println("Testing Delete...");
-        charges c = charges.builder().titre("Delete Me").build();
+        ChargesDto c = new ChargesDto(null, "Delete Me", "Desc", 100.0, "Cat", LocalDateTime.now(), 1L);
         c = service.create(c);
-        Long id = c.getId();
+        Long id = c.id();
         service.delete(id);
-        if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
+        if (service.exists(id))
+            throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
     }
 
     public static void testExists(chargesService service) throws Exception {
         System.out.println("Testing Exists...");
-        charges c = charges.builder().titre("Exists").build();
+        ChargesDto c = new ChargesDto(null, "Exists", "Desc", 100.0, "Cat", LocalDateTime.now(), 1L);
         c = service.create(c);
-        if (!service.exists(c.getId())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(c.id()))
+            throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 
     public static void testCount(chargesService service) throws Exception {
         System.out.println("Testing Count...");
         long count = service.count();
-        if (count < 0) throw new RuntimeException("Count failed: negative");
+        if (count < 0)
+            throw new RuntimeException("Count failed: negative");
         System.out.println("Count passed.");
     }
 }
-

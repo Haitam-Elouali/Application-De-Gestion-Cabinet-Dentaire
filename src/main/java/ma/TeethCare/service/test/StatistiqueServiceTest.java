@@ -14,6 +14,9 @@ import java.util.*;
  * @date 2025-12-10
  */
 
+import ma.TeethCare.service.modules.dashboard_statistiques.dto.StatistiqueDto;
+import java.util.stream.Collectors;
+
 public class StatistiqueServiceTest {
 
     // Stub implementation for StatistiqueRepository (In-Memory)
@@ -58,8 +61,8 @@ public class StatistiqueServiceTest {
     }
 
     public static void main(String[] args) {
+        System.out.println("=== DÉBUT DES TESTS STATISTIQUE SERVICE ===");
         try {
-            System.out.println("=== DÉBUT DES TESTS STATISTIQUE SERVICE ===");
             StatistiqueRepositoryStub repo = new StatistiqueRepositoryStub();
             statistiqueService service = new statistiqueServiceImpl(repo);
 
@@ -71,25 +74,27 @@ public class StatistiqueServiceTest {
             testExists(service);
             testCount(service);
 
-            System.out.println("\n=== TOUS LES TESTS SONT TERMINÉS AVEC SUCCÈS ===");
+            System.out.println("=== TOUS LES TESTS SONT TERMINÉS AVEC SUCCÈS ===");
         } catch (Exception e) {
-            System.err.println("❌ UNE EXCEPTION CRITIQUE EST SURVENUE:");
+            System.err.println("❌ UNE ERREUR EST SURVENUE DURANT LES TESTS:");
             e.printStackTrace();
         }
     }
 
     public static void testCreate(statistiqueService service) throws Exception {
         System.out.println("\n--- TEST: CREATE ---");
-        statistique s = new statistique();
-        s.setNom("Chiffre d'affaire");
-        s.setChiffre(10000.0);
-        s.setType("FINANCIER");
-        s.setDateCalcul(LocalDate.now());
+        StatistiqueDto s = new StatistiqueDto(
+                null,
+                "Chiffre d'affaire",
+                10000.0,
+                "FINANCIER",
+                LocalDate.now(),
+                null);
 
-        statistique created = service.create(s);
-        
-        if (created.getId() != null) {
-            System.out.println("✅ Statistique créée avec ID : " + created.getId());
+        StatistiqueDto created = service.create(s);
+
+        if (created.id() != null) {
+            System.out.println("✅ Statistique créée avec ID : " + created.id());
         } else {
             throw new RuntimeException("❌ ERREUR: ID est null après création.");
         }
@@ -98,9 +103,9 @@ public class StatistiqueServiceTest {
     public static void testFindById(statistiqueService service) throws Exception {
         System.out.println("\n--- TEST: FIND BY ID ---");
         // Assuming ID 1 created in previous step
-        Optional<statistique> found = service.findById(1L);
-        if (found.isPresent()) {
-            System.out.println("✅ Statistique trouvée: " + found.get().getNom());
+        StatistiqueDto found = service.findById(1L);
+        if (found != null) {
+            System.out.println("✅ Statistique trouvée: " + found.nom());
         } else {
             throw new RuntimeException("❌ ERREUR: Statistique non trouvée avec ID 1");
         }
@@ -109,32 +114,36 @@ public class StatistiqueServiceTest {
     public static void testFindAll(statistiqueService service) throws Exception {
         System.out.println("\n--- TEST: FIND ALL ---");
         int initialCount = service.findAll().size();
-        
-        statistique s2 = new statistique();
-        s2.setNom("Stat 2");
-        s2.setChiffre(500.0);
+
+        StatistiqueDto s2 = new StatistiqueDto(null, "Stat 2", 500.0, "TEST", LocalDate.now(), null);
         service.create(s2);
-        
-        List<statistique> list = service.findAll();
+
+        List<StatistiqueDto> list = service.findAll();
         System.out.println("ℹ️ Nombre de statistiques: " + list.size());
-        
+
         if (list.size() == initialCount + 1) {
-             System.out.println("✅ FindAll retourne le bon nombre de résultats.");
+            System.out.println("✅ FindAll retourne le bon nombre de résultats.");
         } else {
-             throw new RuntimeException("❌ ERREUR: Nombre de résultats incorrect.");
+            throw new RuntimeException("❌ ERREUR: Nombre de résultats incorrect.");
         }
     }
 
     public static void testUpdate(statistiqueService service) throws Exception {
         System.out.println("\n--- TEST: UPDATE ---");
-        Optional<statistique> found = service.findById(1L);
-        if (found.isPresent()) {
-            statistique s = found.get();
-            s.setNom("Updated Stat");
-            service.update(s);
-            
-            Optional<statistique> updated = service.findById(1L);
-            if (updated.isPresent() && "Updated Stat".equals(updated.get().getNom())) {
+        StatistiqueDto found = service.findById(1L);
+        if (found != null) {
+            StatistiqueDto toUpdate = new StatistiqueDto(
+                    found.id(),
+                    "Updated Stat",
+                    found.chiffre(),
+                    found.type(),
+                    found.dateCalcul(),
+                    found.cabinetId());
+
+            service.update(found.id(), toUpdate);
+
+            StatistiqueDto updated = service.findById(1L);
+            if (updated != null && "Updated Stat".equals(updated.nom())) {
                 System.out.println("✅ Statistique mise à jour avec succès.");
             } else {
                 throw new RuntimeException("❌ ERREUR: Mise à jour échouée.");
@@ -148,35 +157,37 @@ public class StatistiqueServiceTest {
         if (deleted) {
             System.out.println("✅ Delete retourné true.");
         } else {
-             throw new RuntimeException("❌ ERREUR: Delete retourné false.");
+            throw new RuntimeException("❌ ERREUR: Delete retourné false.");
         }
-        
+
         if (!service.exists(1L)) {
             System.out.println("✅ Statistique supprimée (vérifié par exists).");
         } else {
-             throw new RuntimeException("❌ ERREUR: Statistique existe toujours !");
+            throw new RuntimeException("❌ ERREUR: Statistique existe toujours !");
         }
     }
 
     public static void testExists(statistiqueService service) throws Exception {
         System.out.println("\n--- TEST: EXISTS ---");
-        statistique s = new statistique();
-        s.setNom("For Exists");
-        statistique created = service.create(s);
-        Long id = created.getId();
-        
+        StatistiqueDto s = new StatistiqueDto(null, "For Exists", 0.0, "TEST", LocalDate.now(), null);
+        StatistiqueDto created = service.create(s);
+        Long id = created.id();
+
         boolean exists = service.exists(id);
         System.out.println("Exists (" + id + "): " + exists);
-        if (exists) System.out.println("✅ Exists OK.");
-        else throw new RuntimeException("❌ ERREUR: Exists KO.");
+        if (exists)
+            System.out.println("✅ Exists OK.");
+        else
+            throw new RuntimeException("❌ ERREUR: Exists KO.");
     }
 
     public static void testCount(statistiqueService service) throws Exception {
         System.out.println("\n--- TEST: COUNT ---");
         long count = service.count();
         System.out.println("Count: " + count);
-        if (count >= 0) System.out.println("✅ Count OK.");
-        else throw new RuntimeException("❌ ERREUR: Count négatif.");
+        if (count >= 0)
+            System.out.println("✅ Count OK.");
+        else
+            throw new RuntimeException("❌ ERREUR: Count négatif.");
     }
 }
-

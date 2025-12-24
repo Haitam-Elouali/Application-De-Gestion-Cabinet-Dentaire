@@ -1,7 +1,22 @@
 package ma.TeethCare.service.modules.dossierMedical.api;
 
-import ma.TeethCare.entities.dossierMedicale.dossierMedicale;
-import ma.TeethCare.service.common.BaseService;
+import ma.TeethCare.service.modules.dossierMedical.dto.DossierMedicalDto;
 
-public interface dossierMedicaleService extends BaseService<dossierMedicale, Long> {
+import java.util.List;
+
+public interface dossierMedicaleService {
+
+    DossierMedicalDto create(DossierMedicalDto dto);
+
+    DossierMedicalDto update(Long id, DossierMedicalDto dto);
+
+    DossierMedicalDto findById(Long id);
+
+    List<DossierMedicalDto> findAll();
+
+    boolean delete(Long id) throws Exception;
+
+    boolean exists(Long id) throws Exception;
+
+    long count() throws Exception;
 }

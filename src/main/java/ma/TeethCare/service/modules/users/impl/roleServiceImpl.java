@@ -13,7 +13,9 @@ import java.util.Optional;
  * @date 2025-12-17
  */
 
-public class roleServiceImpl implements BaseService<role, Long> {
+import ma.TeethCare.service.modules.users.api.roleService;
+
+public class roleServiceImpl implements roleService {
 
     private final RoleRepository roleRepository;
 

@@ -11,28 +11,28 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public boolean hasRole(UserPrincipal principal, RoleType role) {
-        if (principal == null || principal.getRoles() == null || role == null) {
+        if (principal == null || principal.roles() == null || role == null) {
             return false;
         }
-        return principal.getRoles().contains(role.name());
+        return principal.roles().contains(role.name());
     }
 
     @Override
     public boolean hasAnyRole(UserPrincipal principal, RoleType... roles) {
-        if (principal == null || principal.getRoles() == null || roles == null) {
+        if (principal == null || principal.roles() == null || roles == null) {
             return false;
         }
-        List<String> userRoles = principal.getRoles();
+        List<String> userRoles = principal.roles();
         return Arrays.stream(roles)
                 .anyMatch(r -> userRoles.contains(r.name()));
     }
 
     @Override
     public boolean hasPrivilege(UserPrincipal principal, String privilege) {
-        if (principal == null || principal.getPrivileges() == null || privilege == null) {
+        if (principal == null || principal.privileges() == null || privilege == null) {
             return false;
         }
-        return principal.getPrivileges().contains(privilege);
+        return principal.privileges().contains(privilege);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package ma.TeethCare.common.exceptions;
 
-public class ServiceException extends Exception {
+public class ServiceException extends RuntimeException {
     public ServiceException(String m) {
         super(m);
     }
