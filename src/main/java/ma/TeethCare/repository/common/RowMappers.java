@@ -884,13 +884,23 @@ public final class RowMappers {
         s.setSalaire(rs.getDouble("salaire"));
         // s.setPrime(rs.getDouble("prime")); // Removed from entity
 
-        Date dateEmbaucheSql = rs.getDate("dateEmbauche");
-        if (dateEmbaucheSql != null)
-            s.setDateEmbauche(dateEmbaucheSql.toLocalDate());
-        else {
-            Date dateRecrutementSql = rs.getDate("dateRecrutement");
-            if (dateRecrutementSql != null)
-                s.setDateEmbauche(dateRecrutementSql.toLocalDate());
+        Date dateRecrutementSql = null;
+        try {
+            dateRecrutementSql = rs.getDate("dateRecrutement");
+        } catch (SQLException e) {
+            // Column not found, try dateEmbauche
+        }
+
+        if (dateRecrutementSql != null) {
+            s.setDateEmbauche(dateRecrutementSql.toLocalDate());
+        } else {
+             try {
+                Date dateEmbaucheSql = rs.getDate("dateEmbauche");
+                if (dateEmbaucheSql != null)
+                    s.setDateEmbauche(dateEmbaucheSql.toLocalDate());
+            } catch (SQLException e) {
+                // Ignore if neither exists or handle appropriately
+            }
         }
 
         // s.setSoldeConge(rs.getInt("soldeConge")); // Removed
@@ -1025,13 +1035,23 @@ public final class RowMappers {
         s.setSalaire(rs.getDouble("salaire"));
         // s.setPrime(rs.getDouble("prime"));
 
-        Date dateEmbaucheSql = rs.getDate("dateEmbauche");
-        if (dateEmbaucheSql != null)
-            s.setDateEmbauche(dateEmbaucheSql.toLocalDate());
-        else {
-            Date dateRecrutementSql = rs.getDate("dateRecrutement");
-            if (dateRecrutementSql != null)
-                s.setDateEmbauche(dateRecrutementSql.toLocalDate());
+        Date dateRecrutementSql = null;
+        try {
+            dateRecrutementSql = rs.getDate("dateRecrutement");
+        } catch (SQLException e) {
+            // Try fallback
+        }
+        
+        if (dateRecrutementSql != null) {
+            s.setDateEmbauche(dateRecrutementSql.toLocalDate());
+        } else {
+            try {
+                Date dateEmbaucheSql = rs.getDate("dateEmbauche");
+                if (dateEmbaucheSql != null)
+                    s.setDateEmbauche(dateEmbaucheSql.toLocalDate());
+            } catch (SQLException e) {
+                // Ignore
+            }
         }
 
         // s.setSoldeConge(rs.getInt("soldeConge")); // Removed
