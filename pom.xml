@@ -172,11 +172,13 @@
                 <configuration>
                     <release>${maven.compiler.release}</release>
                     <encoding>${project.build.sourceEncoding}</encoding>
+<!-- 
                     <excludes>
                         <exclude>ma/TeethCare/mvc/**</exclude>
                         <exclude>ma/TeethCare/MainApp.java</exclude>
                         <exclude>ma/TeethCare/conf/ApplicationContext.java</exclude>
                     </excludes>
+-->
                 </configuration>
             </plugin>
 
