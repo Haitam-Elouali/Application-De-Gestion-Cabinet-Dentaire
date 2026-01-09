@@ -5,7 +5,12 @@ public class MainApp
 {
     public static void main( String[] args )
     {
-        System.out.println("Application starting...");
-        // ApplicationContext.getBean(PatientController.class).showRecentPatients();
+        try {
+            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {}
+
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            new ma.TeethCare.mvc.ui.login.LoginView().setVisible(true);
+        });
     }
 }
