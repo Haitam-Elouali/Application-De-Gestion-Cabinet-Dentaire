@@ -22,7 +22,7 @@ public class GenericCatalogView extends JPanel {
         this.hasPrice = hasPrice;
         
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setOpaque(false); // Enable transparent background
         setBorder(new EmptyBorder(24, 24, 24, 24));
         
         initUI();
@@ -39,12 +39,13 @@ public class GenericCatalogView extends JPanel {
         titleLabel.setForeground(TailwindPalette.GRAY_50); // Using Gray-800 equivalent or just Dark Gray
         titleLabel.setForeground(Color.decode("#1f2937"));
         
-        ModernButton addBtn = new ModernButton("Ajouter " + itemName, ModernButton.Variant.DEFAULT); // Default = Blue, maybe Red preferred? React uses Blue/Primary often for actions inside. Checked React: No specific color for "Ajouter" found but usually primary.
+        ModernButton addBtn = new ModernButton("Ajouter " + itemName, ModernButton.Variant.DESTRUCTIVE);
         
         header.add(titleLabel, BorderLayout.WEST);
         header.add(addBtn, BorderLayout.EAST);
         
-        add(header, BorderLayout.NORTH);
+        // Header moved into card
+        // add(header, BorderLayout.NORTH);
         
         // Table
         String[] columns = hasPrice 
@@ -68,9 +69,18 @@ public class GenericCatalogView extends JPanel {
         ModernTable table = new ModernTable();
         table.setModel(new DefaultTableModel(data, columns));
         
+        // Wraps content in a white card
+        ma.TeethCare.mvc.ui.palette.containers.RoundedPanel card = new ma.TeethCare.mvc.ui.palette.containers.RoundedPanel(12);
+        card.setBackground(Color.WHITE);
+        card.setLayout(new BorderLayout());
+        card.setBorder(new EmptyBorder(24, 24, 24, 24));
+
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createLineBorder(TailwindPalette.BORDER));
         
-        add(sp, BorderLayout.CENTER);
+        card.add(header, BorderLayout.NORTH); // Move header inside card for clean look
+        card.add(sp, BorderLayout.CENTER);
+        
+        add(card, BorderLayout.CENTER);
     }
 }

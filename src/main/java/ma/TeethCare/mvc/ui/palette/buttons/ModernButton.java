@@ -188,9 +188,9 @@ public class ModernButton extends JButton {
                 return null;
                 
             case SUCCESS:
-                if (isPressed) return new Color(TailwindPalette.GREEN_600.getRed(), TailwindPalette.GREEN_600.getGreen(), TailwindPalette.GREEN_600.getBlue(), 200);
-                if (isHovered) return new Color(TailwindPalette.GREEN_600.getRed(), TailwindPalette.GREEN_600.getGreen(), TailwindPalette.GREEN_600.getBlue(), 230);
-                return TailwindPalette.GREEN_600;
+                if (isPressed) return new Color(16, 185, 129, 200); // #10B981
+                if (isHovered) return new Color(16, 185, 129, 230);
+                return new Color(16, 185, 129); // Emerald Green #10B981
         }
         return TailwindPalette.PRIMARY;
     }

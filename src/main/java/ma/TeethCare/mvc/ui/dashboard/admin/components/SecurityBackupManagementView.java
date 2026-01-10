@@ -6,6 +6,7 @@ import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
@@ -25,7 +26,7 @@ public class SecurityBackupManagementView extends JPanel {
 
     public SecurityBackupManagementView() {
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setOpaque(false); // Transparent for background
         setBorder(new EmptyBorder(24, 24, 24, 24));
         
         initUI();
@@ -40,13 +41,20 @@ public class SecurityBackupManagementView extends JPanel {
         updateTabs();
         add(tabsPanel, BorderLayout.NORTH);
         
-        // Content
+        // Content Card
+        ma.TeethCare.mvc.ui.palette.containers.RoundedPanel card = new ma.TeethCare.mvc.ui.palette.containers.RoundedPanel(12);
+        card.setBackground(Color.WHITE);
+        card.setLayout(new BorderLayout());
+        card.setBorder(new EmptyBorder(24, 24, 24, 24));
+
         contentPanel = new JPanel(new BorderLayout());
         contentPanel.setOpaque(false);
-        contentPanel.setBorder(new EmptyBorder(24, 0, 0, 0));
+        // contentPanel.setBorder(new EmptyBorder(24, 0, 0, 0)); // No extra spacing needed inside card
         
         updateContent();
-        add(contentPanel, BorderLayout.CENTER);
+        card.add(contentPanel, BorderLayout.CENTER);
+        
+        add(card, BorderLayout.CENTER);
     }
 
     private void updateTabs() {
@@ -105,32 +113,99 @@ public class SecurityBackupManagementView extends JPanel {
         JPanel p = new JPanel(new BorderLayout(16, 16));
         p.setOpaque(false);
         
-        // Sessions Table
+        // --- Sessions Section ---
         String[] columns = {"Utilisateur", "IP", "Début", "Durée", "Action"};
         Object[][] data = {
-            {"Dr. Dupont", "192.168.1.105", "10:00", "2h 15m", ""},
-            {"Secrétaire Sophie", "192.168.1.102", "08:30", "4h 45m", ""},
-             {"Admin", "10.0.0.1", "14:00", "15m", ""}
+            {"Dr. Dupont", "192.168.1.105", "10:00", "2h 15m", "DECONNECTER"},
+            {"Secrétaire Sophie", "192.168.1.102", "08:30", "4h 45m", "DECONNECTER"},
+            {"Admin", "10.0.0.1", "14:00", "15m", ""} // Admin usually can't disconnect self here
         };
         
         ModernTable table = new ModernTable();
         table.setModel(new DefaultTableModel(data, columns));
+        table.setRowHeight(50);
         
-        // Wrapper for title
-        JPanel container = new JPanel(new BorderLayout());
-        container.setOpaque(false);
+        // Red Text Renderer for Action Column
+        table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                l.setForeground(TailwindPalette.RED_600);
+                l.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                l.setHorizontalAlignment(SwingConstants.CENTER);
+                l.setText((value != null) ? value.toString() : "");
+                l.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                return l;
+            }
+        });
+
+        JPanel sessionContainer = new JPanel(new BorderLayout());
+        sessionContainer.setOpaque(false);
         JLabel title = new JLabel("Sessions Actives");
         title.setFont(new Font("Segoe UI", Font.BOLD, 16));
         title.setBorder(new EmptyBorder(0, 0, 12, 0));
-        container.add(title, BorderLayout.NORTH);
+        sessionContainer.add(title, BorderLayout.NORTH);
         
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createLineBorder(TailwindPalette.BORDER));
-        container.add(sp, BorderLayout.CENTER);
+        sp.setPreferredSize(new Dimension(0, 200)); // Limit height
+        sessionContainer.add(sp, BorderLayout.CENTER);
         
-        p.add(container, BorderLayout.CENTER);
+        p.add(sessionContainer, BorderLayout.NORTH);
+        
+        // --- Terminal Logs Section ---
+        JPanel terminalContainer = new JPanel(new BorderLayout());
+        terminalContainer.setOpaque(false);
+        
+        JLabel termTitle = new JLabel("Security Logs (Live Feed)");
+        termTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        termTitle.setBorder(new EmptyBorder(16, 0, 12, 0));
+        terminalContainer.add(termTitle, BorderLayout.NORTH);
+        
+        JPanel terminal = new JPanel();
+        terminal.setLayout(new BoxLayout(terminal, BoxLayout.Y_AXIS));
+        terminal.setBackground(new Color(15, 23, 42)); // #0F172A (Slate-900)
+        terminal.setBorder(new EmptyBorder(16, 16, 16, 16));
+        
+        // Add Logs
+        terminal.add(createLogLine("INFO", "System initialized successfully.", TailwindPalette.GREEN_400));
+        terminal.add(createLogLine("INFO", "User 'Dr. Dupont' logged in from 192.168.1.105", TailwindPalette.GREEN_400));
+        terminal.add(createLogLine("WARN", "Failed login attempt from 192.168.1.55 (Invalid Password)", TailwindPalette.ORANGE_400));
+        terminal.add(createLogLine("INFO", "Backup service started.", TailwindPalette.GREEN_400));
+        terminal.add(createLogLine("ERROR", "Connection timeout: External SMTP Server response delayed.", TailwindPalette.RED_400));
+        terminal.add(createLogLine("INFO", "User 'Secrétaire Sophie' updated patient record #4521", TailwindPalette.GREEN_400));
+        
+        // Fill remaining space
+        JPanel filler = new JPanel(); 
+        filler.setOpaque(false);
+        terminal.add(filler);
+
+        JScrollPane termScroll = new JScrollPane(terminal);
+        termScroll.setBorder(null);
+        termScroll.getVerticalScrollBar().setUnitIncrement(16);
+        terminalContainer.add(termScroll, BorderLayout.CENTER);
+        
+        p.add(terminalContainer, BorderLayout.CENTER);
         
         return p;
+    }
+
+    private JPanel createLogLine(String level, String msg, Color color) {
+        JPanel line = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 2));
+        line.setOpaque(false);
+        line.setMaximumSize(new Dimension(Short.MAX_VALUE, 24));
+        
+        JLabel lblLevel = new JLabel("[" + level + "]");
+        lblLevel.setFont(new Font("Consolas", Font.BOLD, 12)); // Monospaced
+        lblLevel.setForeground(color);
+        
+        JLabel lblMsg = new JLabel(msg + "  -- " + java.time.LocalTime.now().toString());
+        lblMsg.setFont(new Font("Consolas", Font.PLAIN, 12));
+        lblMsg.setForeground(new Color(226, 232, 240)); // Slate-200
+        
+        line.add(lblLevel);
+        line.add(lblMsg);
+        return line;
     }
     
     private JPanel createBackupPanel() {

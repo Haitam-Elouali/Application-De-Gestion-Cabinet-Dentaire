@@ -33,7 +33,7 @@ public class AdminDashboardView extends JFrame {
 
         // Content Area (Center)
         contentArea = new JPanel(new BorderLayout());
-        contentArea.setBackground(new Color(254, 242, 242)); // bg-red-50
+        contentArea.setBackground(Color.WHITE); // Switched to White per user request
         
         // Toggle Area
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 12));
@@ -41,7 +41,7 @@ public class AdminDashboardView extends JFrame {
         topBar.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10)); // mb-6 approx
         
         JButton toggleBtn = new JButton("Cacher Menu");
-        toggleBtn.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.MENU, 18, ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.RED_900));
+        toggleBtn.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_HIDE, 18, ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.RED_900));
         toggleBtn.setBackground(ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.RED_100);
         toggleBtn.setForeground(ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.RED_900);
         toggleBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -55,7 +55,13 @@ public class AdminDashboardView extends JFrame {
         toggleBtn.addActionListener(e -> {
             boolean isVisible = sidebar.isVisible();
             sidebar.setVisible(!isVisible);
-            toggleBtn.setText(!isVisible ? "Cacher Menu" : "Menu");
+            if (!isVisible) {
+                toggleBtn.setText("Cacher Menu");
+                toggleBtn.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_HIDE, 18, ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.RED_900));
+            } else {
+                toggleBtn.setText("Menu");
+                toggleBtn.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_VIEW, 18, ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.RED_900));
+            }
         });
         
         topBar.add(toggleBtn);

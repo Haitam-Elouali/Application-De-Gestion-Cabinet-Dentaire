@@ -1,11 +1,11 @@
 package ma.TeethCare.mvc.ui.palette.sidebarBuilder;
 
-import ma.TeethCare.mvc.dto.authentificationDtos.UserPrincipal;
+import ma.TeethCare.service.modules.auth.dto.UserPrincipal;
 import ma.TeethCare.mvc.ui.palette.alert.Alert;
 import ma.TeethCare.mvc.ui.palette.buttons.PillNavButtonLight;
 import ma.TeethCare.mvc.ui.palette.utils.ImageTools;
 import ma.TeethCare.mvc.ui.palette.utils.UIConstants;
-import ma.TeethCare.service.authentificationService.api.AuthorizationService;
+import ma.TeethCare.service.modules.auth.api.AuthorizationService;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

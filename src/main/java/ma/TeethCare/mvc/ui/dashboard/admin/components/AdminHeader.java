@@ -17,9 +17,9 @@ public class AdminHeader extends JPanel {
         this.logoutAction = logoutAction;
         
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
-        setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, TailwindPalette.RED_100)); // border-b-2 red-100
-        setPreferredSize(new Dimension(100, 72)); // px-6 py-3 (approx 64-80px height)
+        setBackground(TailwindPalette.ROSE_50); // Admin Theme
+        setBorder(new EmptyBorder(0, 0, 10, 0)); // Standardized spacing
+        setPreferredSize(new Dimension(100, 80)); // Standardized Height 80px
 
         initUI();
     }
@@ -27,31 +27,17 @@ public class AdminHeader extends JPanel {
     private void initUI() {
         // Left: Logo
         JLabel logoLabel = new JLabel(); 
-        try {
-             java.io.File logoFile = new java.io.File("c:/Users/Choukhairi/Desktop/Maquette JAVA FINAL/LOGO.jpeg");
-             if (logoFile.exists()) {
-                 java.awt.image.BufferedImage img = javax.imageio.ImageIO.read(logoFile);
-                 if (img != null) {
-                     Image scaled = img.getScaledInstance(150, -1, Image.SCALE_SMOOTH);
-                     logoLabel.setIcon(new ImageIcon(scaled));
-                 } else {
-                      logoLabel.setText("TeethCare");
-                 }
-             } else {
-                 logoLabel.setText("TeethCare");
-                 logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-                 logoLabel.setForeground(TailwindPalette.RED_600); 
-             }
-        } catch (Exception e) {
-             logoLabel.setText("TeethCare");
-             logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-             logoLabel.setForeground(TailwindPalette.RED_600); 
-        }
+        // Use IconUtils for Logo (Width 180, Auto Height) - Standardized Size
+        Icon logoIcon = ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(
+                ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_LOGO, 180, -1, null);
+        logoLabel.setIcon(logoIcon);
+        
         logoLabel.setBorder(new EmptyBorder(0, 24, 0, 0)); 
+        logoLabel.setVerticalAlignment(SwingConstants.CENTER);
         add(logoLabel, BorderLayout.WEST);
 
         // Right: User Info + Logout
-        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 20)); // Align vertically better (standard 20 gap)
         rightPanel.setOpaque(false);
         rightPanel.setBorder(new EmptyBorder(0, 0, 0, 24)); // px-6
 
@@ -72,8 +58,8 @@ public class AdminHeader extends JPanel {
         
         rightPanel.add(userInfo);
 
-        // Logout Button
-        ModernButton logoutBtn = new ModernButton("SE DÉCONNECTER", ModernButton.Variant.DESTRUCTIVE); // Red button
+        // Logout Button - Standardized to ModernButton
+        ModernButton logoutBtn = new ModernButton("Se déconnecter", ModernButton.Variant.DESTRUCTIVE); // Red
         logoutBtn.addActionListener(e -> {
             if (logoutAction != null) logoutAction.run();
         });

@@ -13,7 +13,7 @@ public class RoleManagementView extends JPanel {
 
     public RoleManagementView() {
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setOpaque(false);
         setBorder(new EmptyBorder(24, 24, 24, 24));
         
         initUI();
@@ -25,12 +25,17 @@ public class RoleManagementView extends JPanel {
         toolbar.setOpaque(false);
         toolbar.setBorder(new EmptyBorder(0, 0, 16, 0));
         
+        // Title
+        JLabel title = new JLabel("Gestion des Rôles");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        title.setForeground(Color.decode("#1f2937"));
+        
+        toolbar.add(title, BorderLayout.WEST);
+        
         // Add Button
         ModernButton addBtn = new ModernButton("Ajouter Rôle", ModernButton.Variant.DESTRUCTIVE); // Red
         
         toolbar.add(addBtn, BorderLayout.EAST);
-        
-        add(toolbar, BorderLayout.NORTH);
         
         // Table
         String[] columns = {"ID", "Rôle", "Description", "Permissions Clés", "Actions"};
@@ -42,10 +47,32 @@ public class RoleManagementView extends JPanel {
 
         ModernTable table = new ModernTable();
         table.setModel(new DefaultTableModel(data, columns));
+        table.setRowHeight(60);
+        
+        // Renderers
+        table.getColumnModel().getColumn(3).setCellRenderer(new ma.TeethCare.mvc.ui.palette.renderers.PermissionTagRenderer());
+        
+        // Actions
+        ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer actionRenderer = new ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer(
+            ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.EDIT,
+            ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.DELETE
+        );
+        table.getColumnModel().getColumn(4).setCellRenderer(actionRenderer);
+        table.getColumnModel().getColumn(4).setCellEditor(actionRenderer);
         
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createLineBorder(TailwindPalette.BORDER));
+        sp.getViewport().setBackground(Color.WHITE);
         
-        add(sp, BorderLayout.CENTER);
+        // Card
+        ma.TeethCare.mvc.ui.palette.containers.RoundedPanel card = new ma.TeethCare.mvc.ui.palette.containers.RoundedPanel(12);
+        card.setBackground(Color.WHITE);
+        card.setLayout(new BorderLayout());
+        card.setBorder(new EmptyBorder(24, 24, 24, 24));
+        
+        card.add(toolbar, BorderLayout.NORTH);
+        card.add(sp, BorderLayout.CENTER);
+        
+        add(card, BorderLayout.CENTER);
     }
 }

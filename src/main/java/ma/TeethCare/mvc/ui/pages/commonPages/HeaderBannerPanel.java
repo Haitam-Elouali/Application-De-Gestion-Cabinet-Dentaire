@@ -1,12 +1,12 @@
 package ma.TeethCare.mvc.ui.pages.commonPages;
 
-import ma.TeethCare.config.ApplicationContext;
-import ma.TeethCare.mvc.dto.authentificationDtos.UserPrincipal;
-import ma.TeethCare.mvc.dto.profileDtos.ProfileData;
+import ma.TeethCare.conf.ApplicationContext;
+import ma.TeethCare.service.modules.auth.dto.UserPrincipal;
+// import ma.TeethCare.mvc.dto.profileDtos.ProfileData; // COMMENTED: ProfileData class does not exist
+// import ma.TeethCare.service.profileService.api.ProfileService; // COMMENTED: ProfileService class does not exist
 import ma.TeethCare.mvc.ui.pages.pagesNames.ApplicationPages;
 import ma.TeethCare.mvc.ui.palette.utils.ImageTools;
 import ma.TeethCare.mvc.ui.palette.utils.UIConstants;
-import ma.TeethCare.service.profileService.api.ProfileService;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -86,31 +86,34 @@ public class HeaderBannerPanel extends JPanel {
     public void refresh(UserPrincipal principal) {
         if (principal == null)
             return;
-        lblUserName.setText(principal.nom() != null ? principal.nom().toUpperCase() : "UTILISATEUR");
-        lblRole.setText(principal.rolePrincipal() != null ? principal.rolePrincipal().name() : "-");
+        lblUserName.setText(principal.username() != null ? principal.username().toUpperCase() : "UTILISATEUR");
+        lblRole.setText((principal.roles() != null && !principal.roles().isEmpty()) ? principal.roles().get(0) : "-");
     }
 
     public void refreshFromContext(UserPrincipal principal) {
-        try {
-            var profileService = ApplicationContext.getBean(ProfileService.class);
-            var profile = profileService.loadByUserId(principal.id());
-            refreshFromProfile(profile);
-        } catch (Exception ignored) {
-        }
+        // COMMENTED: ProfileService does not exist
+        // try {
+        // var profileService = ApplicationContext.getBean(ProfileService.class);
+        // var profile = profileService.loadByUserId(principal.id());
+        // refreshFromProfile(profile);
+        // } catch (Exception ignored) {
+        // }
     }
 
-    public void refreshFromProfile(ProfileData profile) {
-        if (profile == null)
-            return;
-        String fullName = (profile.prenom() + " " + profile.nom()).trim();
-        lblUserName.setText(fullName.isBlank() ? "SANS NOM" : fullName.toUpperCase());
-
-        BufferedImage img = ImageTools.loadBufferedImageFromPath(profile.avatar()); // Assuming this exists or similar
-        if (img != null) {
-            avatarLabel.setIcon(new ImageIcon(makeCircleAvatar(img, 40)));
-        } else {
-            setDefaultAvatar();
-        }
+    public void refreshFromProfile(Object profile) { // Changed ProfileData to Object
+        // COMMENTED: ProfileData class does not exist
+        // if (profile == null)
+        // return;
+        // String fullName = (profile.prenom() + " " + profile.nom()).trim();
+        // lblUserName.setText(fullName.isBlank() ? "SANS NOM" :
+        // fullName.toUpperCase());
+        //
+        // BufferedImage img = ImageTools.loadBufferedImageFromPath(profile.avatar());
+        // if (img != null) {
+        // avatarLabel.setIcon(new ImageIcon(makeCircleAvatar(img, 40)));
+        // } else {
+        // setDefaultAvatar();
+        // }
     }
 
     private void setDefaultAvatar() {

@@ -14,8 +14,8 @@ public class DashboardHome extends JPanel {
 
     public DashboardHome() {
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE); // Or TailwindPalette.BACKGROUND
-        setBorder(new EmptyBorder(24, 24, 24, 24));
+        setOpaque(false); // Transparent to show Blue background
+        setBorder(new EmptyBorder(0, 0, 0, 0)); // Padding handled by parent modulePanel
 
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
@@ -26,10 +26,10 @@ public class DashboardHome extends JPanel {
         statsPanel.setOpaque(false);
         statsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
         
-        statsPanel.add(new StatsCard("Patients du jour", "8", StatsCard.Type.BLUE));
-        statsPanel.add(new StatsCard("Consultations", "5", StatsCard.Type.GREEN));
-        statsPanel.add(new StatsCard("Actes réalisés", "12", StatsCard.Type.PURPLE));
-        statsPanel.add(new StatsCard("Revenus du jour", "3 450 MAD", StatsCard.Type.ORANGE));
+        statsPanel.add(new StatsCard("Patients du jour", "8", StatsCard.Type.BLUE, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_PATIENTS));
+        statsPanel.add(new StatsCard("Consultations", "5", StatsCard.Type.GREEN, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_CONSULTATION));
+        statsPanel.add(new StatsCard("Actes réalisés", "12", StatsCard.Type.PURPLE, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_ACTS));
+        statsPanel.add(new StatsCard("Revenus du jour", "3 450 MAD", StatsCard.Type.ORANGE, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_CASH));
         
         content.add(statsPanel);
         content.add(Box.createVerticalStrut(24)); // Gap
@@ -70,7 +70,8 @@ public class DashboardHome extends JPanel {
         
         ModernTable table = new ModernTable();
         table.setModel(new DefaultTableModel(data, columns));
-        // Add badges logic for status later if needed via Renderer, string for now
+        // Add status renderer
+        table.getColumnModel().getColumn(3).setCellRenderer(new ma.TeethCare.mvc.ui.palette.renderers.StatusPillRenderer());
         
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createEmptyBorder());

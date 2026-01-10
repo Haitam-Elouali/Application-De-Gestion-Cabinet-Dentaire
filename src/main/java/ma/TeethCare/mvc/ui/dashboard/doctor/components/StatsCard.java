@@ -3,6 +3,7 @@ package ma.TeethCare.mvc.ui.dashboard.doctor.components;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class StatsCard extends JPanel {
@@ -18,52 +19,63 @@ public class StatsCard extends JPanel {
         Type(Color fg, Color bg) { this.fg = fg; this.bg = bg; }
     }
 
-    public StatsCard(String title, String value, Type type) {
+    public StatsCard(String title, String value, Type type, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType iconType) {
         setLayout(new BorderLayout());
-        setBackground(type.bg); // bg-color-50
-        // border border-color-100 rounded-lg
-        setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(type.bg.getRed()-10, type.bg.getGreen()-10, type.bg.getBlue()-10)), // darker border
-            BorderFactory.createEmptyBorder(16, 16, 16, 16)
-        ));
+        setOpaque(false); // Custom painting
+        setBorder(new EmptyBorder(16, 16, 16, 16));
         
         JPanel textPanel = new JPanel(new GridLayout(2, 1));
         textPanel.setOpaque(false);
         
         JLabel titleLbl = new JLabel(title);
         titleLbl.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        titleLbl.setForeground(type.fg.darker()); // text-color-800
+        titleLbl.setForeground(Color.GRAY); // Neutral gray for title
         
         JLabel valueLbl = new JLabel(value);
-        valueLbl.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        valueLbl.setForeground(type.fg); // text-color-600
+        valueLbl.setFont(new Font("Segoe UI", Font.BOLD, 28)); // Large
+        valueLbl.setForeground(new Color(30, 41, 59)); // #1E293B Slate-800
         
         textPanel.add(titleLbl);
         textPanel.add(valueLbl);
         
         add(textPanel, BorderLayout.CENTER);
         
-        // Icon circle (Placeholder visual)
-        JPanel iconCircle = new JPanel() {
+        // Icon circle
+        JPanel iconCircle = new JPanel(new BorderLayout()); 
+        iconCircle.setOpaque(false);
+        iconCircle.setPreferredSize(new Dimension(56, 56)); // Fixed size
+        iconCircle.setMinimumSize(new Dimension(56, 56));
+        iconCircle.setMaximumSize(new Dimension(56, 56));
+
+        JLabel iconLabel = new JLabel(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(iconType, 28, type.fg)) {
              @Override
              protected void paintComponent(Graphics g) {
-                 super.paintComponent(g);
-                 Graphics2D g2 = (Graphics2D)g;
+                 Graphics2D g2 = (Graphics2D)g.create();
                  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                 g2.setColor(new Color(type.fg.getRed(), type.fg.getGreen(), type.fg.getBlue(), 50)); // light circle
+                 g2.setColor(type.bg); // Light colored circle
                  g2.fillOval(0, 0, getWidth(), getHeight());
+                 g2.dispose();
+                 super.paintComponent(g);
              }
         };
-        iconCircle.setOpaque(false);
-        iconCircle.setPreferredSize(new Dimension(48, 48));
+        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        iconLabel.setPreferredSize(new Dimension(56, 56));
+        
+        iconCircle.add(iconLabel, BorderLayout.CENTER);
         add(iconCircle, BorderLayout.EAST);
     }
     
     @Override
     protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        // White Rounded Card
+        g2.setColor(Color.WHITE);
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+        
         super.paintComponent(g);
-        // Custom rounded border painting if needed, but standard border is okay for now.
-        // To match rounded-lg (8px), we might need custom painting if BorderFactory doesn't look round enough.
-        // For standard JLabel/JPanel, setBackground handles rect.
     }
+    
+
 }

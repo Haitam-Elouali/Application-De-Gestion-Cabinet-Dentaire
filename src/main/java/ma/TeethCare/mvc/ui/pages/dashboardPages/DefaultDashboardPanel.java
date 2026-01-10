@@ -1,6 +1,6 @@
 package ma.TeethCare.mvc.ui.pages.dashboardPages;
 
-import ma.TeethCare.mvc.dto.authentificationDtos.UserPrincipal;
+import ma.TeethCare.service.modules.auth.dto.UserPrincipal;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,7 +10,7 @@ public class DefaultDashboardPanel extends JPanel {
     public DefaultDashboardPanel(UserPrincipal principal) {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
-        setBorder(new EmptyBorder(22,22,22,22));
+        setBorder(new EmptyBorder(22, 22, 22, 22));
 
         JLabel title = new JLabel("Dashboard");
         title.setFont(new Font("Optima", Font.BOLD, 28));
@@ -21,4 +21,3 @@ public class DefaultDashboardPanel extends JPanel {
         add(msg, BorderLayout.CENTER);
     }
 }
-

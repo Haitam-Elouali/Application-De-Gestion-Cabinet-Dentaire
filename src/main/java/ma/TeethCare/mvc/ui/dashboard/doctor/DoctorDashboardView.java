@@ -34,20 +34,20 @@ public class DoctorDashboardView extends JFrame {
 
         // Content Area (Center)
         contentArea = new JPanel(new BorderLayout());
-        contentArea.setBackground(new Color(243, 244, 246)); // bg-gray-100 base
+        contentArea.setBackground(Color.WHITE); // Switched to White per user request
         
         // Toggle Button Area
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 12));
         topBar.setOpaque(false);
         topBar.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10)); // mb-6 approx
         
-        JButton toggleBtn = new JButton("Cacher Menu");
-        toggleBtn.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.MENU, 18, ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.BLUE_900));
+        JButton toggleBtn = new JButton("Cacher");
+        toggleBtn.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_HIDE, 18, ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.BLUE_900));
         toggleBtn.setBackground(ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.BLUE_100);
         toggleBtn.setForeground(ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.BLUE_900);
         toggleBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         toggleBtn.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.BLUE_300),
+            BorderFactory.createLineBorder(ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.BLUE_200),
             BorderFactory.createEmptyBorder(8, 16, 8, 16)
         ));
         toggleBtn.setFocusPainted(false);
@@ -56,7 +56,13 @@ public class DoctorDashboardView extends JFrame {
         toggleBtn.addActionListener(e -> {
             boolean isVisible = sidebar.isVisible();
             sidebar.setVisible(!isVisible);
-            toggleBtn.setText(!isVisible ? "Cacher Menu" : "Menu");
+            if (!isVisible) {
+                toggleBtn.setText("Cacher");
+                toggleBtn.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_HIDE, 18, ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.BLUE_900));
+            } else {
+                toggleBtn.setText("Menu");
+                toggleBtn.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_VIEW, 18, ma.TeethCare.mvc.ui.palette.utils.TailwindPalette.BLUE_900));
+            }
         });
         
         topBar.add(toggleBtn);
@@ -126,8 +132,11 @@ public class DoctorDashboardView extends JFrame {
 
     public static void main(String[] args) {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {}
+            com.formdev.flatlaf.FlatLightLaf.setup();
+            UIManager.put("Panel.background", Color.decode("#EFF6FF")); // Blue-50 default
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
         SwingUtilities.invokeLater(() -> {
             new DoctorDashboardView().setVisible(true);

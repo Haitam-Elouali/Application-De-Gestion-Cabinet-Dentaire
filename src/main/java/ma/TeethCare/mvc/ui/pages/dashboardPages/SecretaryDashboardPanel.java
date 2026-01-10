@@ -1,6 +1,6 @@
 package ma.TeethCare.mvc.ui.pages.dashboardPages;
 
-import ma.TeethCare.mvc.dto.authentificationDtos.UserPrincipal;
+import ma.TeethCare.service.modules.auth.dto.UserPrincipal;
 import ma.TeethCare.mvc.ui.palette.cards.StatCard;
 import ma.TeethCare.mvc.ui.palette.utils.UIConstants;
 import javax.swing.*;
@@ -15,7 +15,8 @@ public class SecretaryDashboardPanel extends JPanel {
                 setBorder(new EmptyBorder(32, 40, 32, 40));
 
                 // Header Title
-                JLabel title = new JLabel("Bienvenue, " + (principal.nom() != null ? principal.nom() : "Secrétaire"));
+                JLabel title = new JLabel(
+                                "Bienvenue, " + (principal.username() != null ? principal.username() : "Secrétaire"));
                 title.setFont(UIConstants.FONT_TITLE.deriveFont(32f));
                 title.setForeground(UIConstants.TEXT_DARK);
                 add(title, BorderLayout.NORTH);

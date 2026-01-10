@@ -1,8 +1,10 @@
 package ma.TeethCare.mvc.ui.dashboard.doctor.components;
 
 import ma.TeethCare.mvc.ui.palette.buttons.ModernButton;
+import ma.TeethCare.mvc.ui.palette.containers.RoundedPanel;
 import ma.TeethCare.mvc.ui.palette.data.ModernTable;
-import ma.TeethCare.mvc.ui.palette.fields.ModernTextField;
+import ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer;
+import ma.TeethCare.mvc.ui.palette.utils.IconUtils;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
 
 import javax.swing.*;
@@ -12,35 +14,71 @@ import java.awt.*;
 
 public class MedicalRecordsView extends JPanel {
 
-    public MedicalRecordsView() {
+    private final ModernButton.Variant actionVariant;
+
+    public MedicalRecordsView(ModernButton.Variant actionVariant) {
+        this.actionVariant = actionVariant;
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE); 
-        setBorder(new EmptyBorder(24, 24, 24, 24));
+        setOpaque(false); // Transparent to show Mint BG
+        setBorder(new EmptyBorder(24, 24, 24, 24)); // Outer padding
 
         initUI();
     }
+    
+    public MedicalRecordsView() {
+        this(ModernButton.Variant.DEFAULT);
+    }
 
     private void initUI() {
-        // Top Bar
+        // Content Card
+        RoundedPanel card = new RoundedPanel(12);
+        card.setBackground(Color.WHITE);
+        card.setLayout(new BorderLayout());
+        card.setBorder(new EmptyBorder(24, 24, 24, 24));
+
+        // Top Bar (inside card)
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setOpaque(false);
         topBar.setBorder(new EmptyBorder(0, 0, 20, 0));
 
         // Search Field
-        JPanel searchPanel = new JPanel(new BorderLayout());
-        searchPanel.setOpaque(false);
-        searchPanel.setPreferredSize(new Dimension(300, 36)); 
+        JPanel searchContainer = new JPanel(new BorderLayout());
+        searchContainer.setOpaque(false);
         
-        ModernTextField searchField = new ModernTextField("Rechercher un dossier...");
-        searchPanel.add(searchField, BorderLayout.CENTER);
+        JPanel searchFieldPanel = new JPanel(new BorderLayout()) {
+             @Override
+             protected void paintComponent(Graphics g) {
+                  Graphics2D g2 = (Graphics2D)g;
+                  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                  g2.setColor(Color.WHITE);
+                  g2.fillRoundRect(0,0,getWidth(), getHeight(), 8, 8);
+                  g2.setColor(TailwindPalette.BORDER);
+                  g2.drawRoundRect(0,0,getWidth()-1, getHeight()-1, 8, 8);
+             }
+        };
+        searchFieldPanel.setOpaque(false);
+        searchFieldPanel.setPreferredSize(new Dimension(300, 40));
+        searchFieldPanel.setBorder(new EmptyBorder(0, 12, 0, 12));
         
-        topBar.add(searchPanel, BorderLayout.WEST);
+        JLabel searchIcon = new JLabel(IconUtils.getIcon(IconUtils.IconType.SEARCH, 18, Color.GRAY));
+        JTextField searchField = new JTextField("Rechercher un dossier...");
+        searchField.setBorder(null);
+        searchField.setOpaque(false);
+        searchField.setForeground(Color.GRAY);
+        searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
+        searchFieldPanel.add(searchIcon, BorderLayout.WEST);
+        searchFieldPanel.add(Box.createHorizontalStrut(8), BorderLayout.CENTER);
+        searchFieldPanel.add(searchField, BorderLayout.CENTER);
+        
+        searchContainer.add(searchFieldPanel, BorderLayout.WEST);
+        topBar.add(searchContainer, BorderLayout.WEST);
 
         // Add Button
-        ModernButton addBtn = new ModernButton("Nouveau Dossier", ModernButton.Variant.DEFAULT);
+        ModernButton addBtn = new ModernButton("Nouveau Dossier", this.actionVariant);
         topBar.add(addBtn, BorderLayout.EAST);
 
-        add(topBar, BorderLayout.NORTH);
+        card.add(topBar, BorderLayout.NORTH);
 
         // Table
         String[] columns = {"Patient", "Date Création", "Diagnostic Principal", "Traitement en cours", "Actions"};
@@ -50,11 +88,33 @@ public class MedicalRecordsView extends JPanel {
         };
 
         ModernTable table = new ModernTable();
-        table.setModel(new DefaultTableModel(data, columns));
+        table.setModel(new DefaultTableModel(data, columns) {
+             @Override
+             public boolean isCellEditable(int row, int column) {
+                 return column == 4;
+             }
+        });
+        
+        table.setRowHeight(60);
+        table.setShowGrid(false);
+        
+        // Renderers - Using NEW TableActionCellRenderer
+        // Renderers - Using NEW TableActionCellRenderer with specific actions
+        ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer actionRenderer = new ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer(
+            ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.VIEW_ICON,
+            TableActionCellRenderer.ActionType.RDV_MANAGE,
+            ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.EDIT,
+            ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.DELETE
+        );
+        table.getColumnModel().getColumn(4).setCellRenderer(actionRenderer);
+        table.getColumnModel().getColumn(4).setCellEditor(actionRenderer);
         
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createLineBorder(TailwindPalette.BORDER));
+        sp.getViewport().setBackground(Color.WHITE);
         
-        add(sp, BorderLayout.CENTER);
+        card.add(sp, BorderLayout.CENTER);
+        
+        add(card, BorderLayout.CENTER);
     }
 }

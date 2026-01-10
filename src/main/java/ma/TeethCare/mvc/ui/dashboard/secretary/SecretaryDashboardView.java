@@ -1,5 +1,6 @@
 package ma.TeethCare.mvc.ui.dashboard.secretary;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import ma.TeethCare.mvc.ui.dashboard.secretary.components.SecretaryHeader;
 import ma.TeethCare.mvc.ui.dashboard.secretary.components.SecretaryHome;
 import ma.TeethCare.mvc.ui.dashboard.secretary.components.SecretarySidebar;
@@ -19,7 +20,7 @@ public class SecretaryDashboardView extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1366, 768);
         setLocationRelativeTo(null);
-        
+
         initUI();
     }
 
@@ -37,82 +38,98 @@ public class SecretaryDashboardView extends JFrame {
 
         // Content Area (Center)
         contentArea = new JPanel(new BorderLayout());
-        contentArea.setBackground(TailwindPalette.GREEN_50);
-        
+        contentArea.setBackground(Color.WHITE); // Switched to White per user request
+
         // Toggle Area
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 12));
         topBar.setOpaque(false);
         topBar.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
-        
-        JButton toggleBtn = new JButton("Cacher Menu");
-        toggleBtn.setIcon(IconUtils.getIcon(IconUtils.IconType.MENU, 18, TailwindPalette.GREEN_900));
+
+        JButton toggleBtn = new JButton("Cacher");
+        toggleBtn.setIcon(IconUtils.getIcon(IconUtils.IconType.ICON_HIDE, 18, TailwindPalette.GREEN_900));
         toggleBtn.setBackground(TailwindPalette.GREEN_100);
         toggleBtn.setForeground(TailwindPalette.GREEN_900);
         toggleBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         toggleBtn.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(TailwindPalette.GREEN_300),
-            BorderFactory.createEmptyBorder(8, 16, 8, 16)
-        ));
+                BorderFactory.createLineBorder(TailwindPalette.GREEN_100), 
+                BorderFactory.createEmptyBorder(8, 16, 8, 16)));
         toggleBtn.setFocusPainted(false);
         toggleBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        
+
         toggleBtn.addActionListener(e -> {
             boolean isVisible = sidebar.isVisible();
             sidebar.setVisible(!isVisible);
-            toggleBtn.setText(!isVisible ? "Cacher Menu" : "Menu");
+            if (!isVisible) {
+                toggleBtn.setText("Cacher");
+                toggleBtn.setIcon(IconUtils.getIcon(IconUtils.IconType.ICON_HIDE, 18, TailwindPalette.GREEN_900));
+            } else {
+                toggleBtn.setText("Menu");
+                toggleBtn.setIcon(IconUtils.getIcon(IconUtils.IconType.ICON_VIEW, 18, TailwindPalette.GREEN_900)); 
+            }
         });
-        
+
         topBar.add(toggleBtn);
         contentArea.add(topBar, BorderLayout.NORTH);
-        
+
         // Modules Panel
         JPanel modulePanel = new JPanel(new BorderLayout());
         modulePanel.setOpaque(false);
         modulePanel.setBorder(BorderFactory.createEmptyBorder(10, 24, 24, 24));
         contentArea.add(modulePanel, BorderLayout.CENTER);
-        
+
         // Default
         modulePanel.add(new SecretaryHome(), BorderLayout.CENTER);
-        
+
         root.add(contentArea, BorderLayout.CENTER);
     }
-    
+
     // Explicitly import or qualify internal Enum
     private void onModuleSelected(SecretarySidebar.Module module) {
-         if (contentArea.getComponentCount() < 2) return;
-         JPanel modulePanel = (JPanel) contentArea.getComponent(1);
-         modulePanel.removeAll();
-         
+        if (contentArea.getComponentCount() < 2)
+            return;
+        JPanel modulePanel = (JPanel) contentArea.getComponent(1);
+        modulePanel.removeAll();
+
         switch (module) {
             case DASHBOARD:
                 modulePanel.add(new SecretaryHome(), BorderLayout.CENTER);
                 break;
             case PATIENTS:
-                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.doctor.components.PatientManagementView(), BorderLayout.CENTER);
+                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.doctor.components.PatientManagementView(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.SUCCESS),
+                        BorderLayout.CENTER);
                 break;
             case APPOINTMENTS:
-                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.secretary.components.AppointmentView(), BorderLayout.CENTER);
+                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.secretary.components.AppointmentView(),
+                        BorderLayout.CENTER);
                 break;
             case MEDICAL_RECORDS:
-                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.doctor.components.MedicalRecordsView(), BorderLayout.CENTER);
+                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.doctor.components.MedicalRecordsView(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.SUCCESS),
+                        BorderLayout.CENTER);
                 break;
             case FINANCIAL_SITUATION:
-                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.doctor.components.FinancialSituationView(), BorderLayout.CENTER);
+                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.doctor.components.FinancialSituationView(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.SUCCESS),
+                        BorderLayout.CENTER);
                 break;
             case AGENDA:
-                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.secretary.components.AgendaView(), BorderLayout.CENTER);
+                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.secretary.components.AgendaView(),
+                        BorderLayout.CENTER);
                 break;
             case ANTECEDENTS:
-                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.secretary.components.AntecedentView(), BorderLayout.CENTER);
+                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.secretary.components.AntecedentView(),
+                        BorderLayout.CENTER);
+                break;
+            case CASH_MANAGEMENT:
+                modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.secretary.components.CashManagementView(),
+                        BorderLayout.CENTER);
                 break;
             default:
                 break;
         }
-        
+
         modulePanel.revalidate();
         modulePanel.repaint();
     }
-    
+
     private JPanel createPlaceholder(String title) {
         JPanel p = new JPanel(new GridBagLayout());
         p.setOpaque(false);
@@ -125,9 +142,12 @@ public class SecretaryDashboardView extends JFrame {
 
     public static void main(String[] args) {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {}
-        
+            FlatLightLaf.setup();
+            UIManager.put("Panel.background", Color.decode("#F3F8F5"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         SwingUtilities.invokeLater(() -> {
             new SecretaryDashboardView().setVisible(true);
         });

@@ -5,7 +5,6 @@ import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -32,22 +31,21 @@ public class AgendaView extends JPanel {
         // Top Bar
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setOpaque(false);
-        topBar.setBorder(new EmptyBorder(0, 0, 16, 0));
+        topBar.setBorder(new EmptyBorder(0, 0, 24, 0));
 
         // Month Navigation
-        JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 0));
         navPanel.setOpaque(false);
         
-        ModernButton prevBtn = new ModernButton("<", ModernButton.Variant.OUTLINE);
-        prevBtn.setPreferredSize(new Dimension(40, 36));
+        // Rounded Buttons
+        JButton prevBtn = createNavButton("<");
         prevBtn.addActionListener(e -> { currentDate = currentDate.minusMonths(1); updateCalendar(); });
         
         monthLabel = new JLabel("", SwingConstants.CENTER);
-        monthLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        monthLabel.setPreferredSize(new Dimension(200, 36));
+        monthLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        monthLabel.setForeground(TailwindPalette.GRAY_900);
         
-        ModernButton nextBtn = new ModernButton(">", ModernButton.Variant.OUTLINE);
-        nextBtn.setPreferredSize(new Dimension(40, 36));
+        JButton nextBtn = createNavButton(">");
         nextBtn.addActionListener(e -> { currentDate = currentDate.plusMonths(1); updateCalendar(); });
 
         navPanel.add(prevBtn);
@@ -59,21 +57,43 @@ public class AgendaView extends JPanel {
         // Actions
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         actionsPanel.setOpaque(false);
-        actionsPanel.add(new ModernButton("Générer Type", ModernButton.Variant.SECONDARY));
-        actionsPanel.add(new ModernButton("Effacer Mois", ModernButton.Variant.DESTRUCTIVE));
+        actionsPanel.add(new ModernButton("Générer Type", ModernButton.Variant.SUCCESS));
+        // actionsPanel.add(new ModernButton("Effacer Mois", ModernButton.Variant.DESTRUCTIVE));
         
         topBar.add(actionsPanel, BorderLayout.EAST);
         
         add(topBar, BorderLayout.NORTH);
 
         // Calendar Grid
-        calendarGrid = new JPanel(new GridLayout(0, 7, 1, 1));
-        calendarGrid.setBackground(TailwindPalette.BORDER); // Grid lines color
-        calendarGrid.setBorder(BorderFactory.createLineBorder(TailwindPalette.BORDER));
+        calendarGrid = new JPanel(new GridLayout(0, 7, 0, 0)); // No gap, handled by border
+        calendarGrid.setBackground(Color.WHITE); 
         
         add(calendarGrid, BorderLayout.CENTER);
         
         updateCalendar();
+    }
+    
+    private JButton createNavButton(String text) {
+        JButton btn = new JButton(text) {
+             @Override
+             protected void paintComponent(Graphics g) {
+                 Graphics2D g2 = (Graphics2D)g;
+                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                 g2.setColor(getModel().isRollover() ? TailwindPalette.GRAY_100 : Color.WHITE);
+                 g2.fillOval(0, 0, getWidth(), getHeight());
+                 g2.setColor(TailwindPalette.GRAY_300);
+                 g2.drawOval(0, 0, getWidth()-1, getHeight()-1);
+                 super.paintComponent(g);
+             }
+        };
+        btn.setPreferredSize(new Dimension(32, 32));
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setForeground(TailwindPalette.GRAY_600);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return btn;
     }
 
     private void updateCalendar() {
@@ -83,37 +103,31 @@ public class AgendaView extends JPanel {
         monthLabel.setText(currentDate.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.FRENCH)).substring(0, 1).toUpperCase() + currentDate.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.FRENCH)).substring(1));
 
         // Header
-        String[] days = {"DIM", "LUN", "MAR", "MER", "JEU", "VEN", "SAM"};
+        String[] days = {"LUN", "MAR", "MER", "JEU", "VEN", "SAM", "DIM"};
         for (String d : days) {
             JPanel headerCell = new JPanel(new BorderLayout());
             headerCell.setBackground(Color.WHITE);
             headerCell.setPreferredSize(new Dimension(0, 40));
+            headerCell.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, TailwindPalette.GRAY_200));
+            
             JLabel l = new JLabel(d, SwingConstants.CENTER);
             l.setFont(new Font("Segoe UI", Font.BOLD, 12));
-            l.setForeground(Color.GRAY);
+            l.setForeground(TailwindPalette.GRAY_400);
             headerCell.add(l, BorderLayout.CENTER);
             calendarGrid.add(headerCell);
         }
 
-        // Days
+        // Days calculation
         LocalDate firstOfMonth = yearMonth.atDay(1);
-        int emptySlots = firstOfMonth.getDayOfWeek().getValue() % 7; // Sunday is 7 in java.time, but 0 in standard calendar view often. Adjust logic:
-        // java.time: Mon=1 ... Sun=7.
-        // Array above: DIM(0), LUN(1)...
-        // So if day 1 is Mon(1), we need 1 empty slot (Sun).
-        // If day 1 is Sun(7), we need 0 empty slots.
-        // Wait, standard view starts Sun.
-        // If Mon(1), skip Sun(0). 1 empty slot.
-        // If Sun(7), skip nothing? No, Sun is first col.
-        // Let's assume standard Sun-Sat grid.
-        // java.time.DayOfWeek: Mon(1) -> Sun(7).
-        // Target: Sun(0) -> Sat(6).
-        // Mapping: map(7) -> 0.
-        int startDay = (firstOfMonth.getDayOfWeek().getValue() % 7); 
+        // Map Monday(1) -> 0 ... Sunday(7) -> 6
+        int dayOfWeek = firstOfMonth.getDayOfWeek().getValue(); // 1=Mon, 7=Sun
+        int startOffset = dayOfWeek - 1; 
         
-        for (int i = 0; i < startDay; i++) {
+        // Empty slots before
+        for (int i = 0; i < startOffset; i++) {
              JPanel empty = new JPanel();
-             empty.setBackground(TailwindPalette.GRAY_50);
+             empty.setBackground(Color.WHITE);
+             empty.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, TailwindPalette.GRAY_100));
              calendarGrid.add(empty);
         }
         
@@ -123,10 +137,11 @@ public class AgendaView extends JPanel {
         }
         
         // Fill remaining
-        int totalCells = startDay + yearMonth.lengthOfMonth();
+        int totalCells = startOffset + yearMonth.lengthOfMonth();
         while (totalCells % 7 != 0) {
              JPanel empty = new JPanel();
-             empty.setBackground(TailwindPalette.GRAY_50);
+             empty.setBackground(Color.WHITE);
+             empty.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, TailwindPalette.GRAY_100));
              calendarGrid.add(empty);
              totalCells++;
         }
@@ -139,41 +154,33 @@ public class AgendaView extends JPanel {
         JPanel cell = new JPanel(new BorderLayout());
         cell.setBackground(Color.WHITE);
         cell.setPreferredSize(new Dimension(0, 100)); // Min height
-        cell.setBorder(new EmptyBorder(4, 8, 4, 8));
+        cell.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, TailwindPalette.GRAY_200)); // Light grid
         cell.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         
         // Top Right Day Number
         boolean isWeekend = (date.getDayOfWeek().getValue() == 6 || date.getDayOfWeek().getValue() == 7);
-        JLabel num = new JLabel(String.valueOf(date.getDayOfMonth()), SwingConstants.RIGHT);
-        num.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        num.setForeground(isWeekend ? Color.RED : Color.GRAY);
-        cell.add(num, BorderLayout.NORTH);
+        JLabel num = new JLabel(String.valueOf(date.getDayOfMonth()));
+        num.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        num.setForeground(isWeekend ? TailwindPalette.RED_500 : TailwindPalette.GRAY_400); // Red for weekend
         
-        // Content (Status) - Mock data logic
-        // Center panel
-        JPanel center = new JPanel(new GridBagLayout());
-        center.setOpaque(false);
+        JPanel topContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
+        topContainer.setOpaque(false);
+        topContainer.add(num);
+        cell.add(topContainer, BorderLayout.NORTH);
         
-        if (!isWeekend) {
-             JLabel status = new JLabel("Disponible");
-             status.setOpaque(true);
-             status.setBackground(TailwindPalette.GREEN_100);
-             status.setForeground(TailwindPalette.GREEN_800);
-             status.setFont(new Font("Segoe UI", Font.BOLD, 10));
-             status.setBorder(new EmptyBorder(2, 6, 2, 6));
-             center.add(status);
+        // Content (Appointments)
+        // Only show if mock data exists
+        if (date.getDayOfMonth() == 15 || date.getDayOfMonth() == 22) { // Mock logic
+             JPanel content = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+             content.setOpaque(false);
              
-             JLabel slots = new JLabel("12 créneaux");
-             slots.setFont(new Font("Segoe UI", Font.PLAIN, 10));
-             slots.setForeground(Color.GRAY);
-             GridBagConstraints gbc = new GridBagConstraints();
-             gbc.gridy = 1;
-             center.add(slots, gbc);
-        } else {
-             cell.setBackground(TailwindPalette.GRAY_50);
+             JLabel dot = new JLabel("● 8 RDV"); // Bullet
+             dot.setForeground(TailwindPalette.BLUE_600);
+             dot.setFont(new Font("Segoe UI", Font.BOLD, 11));
+             content.add(dot);
+             
+             cell.add(content, BorderLayout.CENTER);
         }
-        
-        cell.add(center, BorderLayout.CENTER);
         
         return cell;
     }

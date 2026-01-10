@@ -1,6 +1,6 @@
 package ma.TeethCare.mvc.ui.pages.otherPages.common;
 
-import ma.TeethCare.mvc.dto.authentificationDtos.UserPrincipal;
+import ma.TeethCare.service.modules.auth.dto.UserPrincipal;
 import ma.TeethCare.mvc.ui.palette.utils.UIConstants;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -25,8 +25,8 @@ public class BasePlaceholderPanel extends JPanel {
 
         if (principal != null) {
             String details = String.format("Session: %s • Rôle: %s",
-                    safe(principal.nom()),
-                    principal.rolePrincipal() != null ? principal.rolePrincipal().name() : "—");
+                    safe(principal.username()),
+                    (principal.roles() != null && !principal.roles().isEmpty()) ? principal.roles().get(0) : "—");
             JLabel lblUser = new JLabel(details);
             lblUser.setFont(UIConstants.FONT_REGULAR.deriveFont(14f));
             lblUser.setForeground(UIConstants.TEXT_GRAY);

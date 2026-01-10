@@ -35,12 +35,11 @@ public class AdminSidebar extends JPanel {
 
     private void initMenu() {
         setLayout(new BorderLayout());
-        setBackground(TailwindPalette.RED_100);
-        setBorder(BorderFactory.createMatteBorder(0, 0, 0, 2, new Color(254, 202, 202))); // border-red-200
-        setPreferredSize(new Dimension(256, 0)); // w-64
+        setBackground(TailwindPalette.ROSE_50); // #FFF1F2 (Pale Pink)
+        setBorder(null); // No border or minimal
+        setPreferredSize(new Dimension(260, 0));
 
-        // Logo
-        // Removed as it is now in Header
+        // Logo Space (header handles logo)
         add(Box.createVerticalStrut(20), BorderLayout.NORTH);
 
         // Menu
@@ -52,23 +51,28 @@ public class AdminSidebar extends JPanel {
             menuContainer.add(createMenuItem(m));
         }
 
-        add(new JScrollPane(menuContainer, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER);
+        JScrollPane sp = new JScrollPane(menuContainer, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        sp.setBorder(null);
+        sp.setOpaque(false);
+        sp.getViewport().setOpaque(false);
+        add(sp, BorderLayout.CENTER);
     }
 
     private JButton createMenuItem(Module module) {
         JButton btn = new JButton(module.getLabel()) {
             @Override
             protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
                 if (activeModule == module) {
-                    g.setColor(Color.WHITE);
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                    
-                    // Left Red Border
-                    g.setColor(TailwindPalette.RED_600);
-                    g.fillRect(0, 0, 4, getHeight());
+                    // Active: Rose-100 BG with Rose-600 text
+                    g2.setColor(TailwindPalette.ROSE_100); 
+                    g2.fillRoundRect(12, 0, getWidth()-24, getHeight(), 12, 12);
                 } else if (getModel().isRollover()) {
-                    g.setColor(TailwindPalette.RED_200);
-                    g.fillRect(0, 0, getWidth(), getHeight());
+                    // Rollover: Rose-50 or slightly darker
+                    g2.setColor(new Color(255, 228, 230, 100)); // Subtle Rose tint
+                    g2.fillRoundRect(12, 0, getWidth()-24, getHeight(), 12, 12);
                 }
                 
                 super.paintComponent(g);
@@ -76,31 +80,33 @@ public class AdminSidebar extends JPanel {
         };
 
         // Icons
+        // Icons - specific mappings
+        // Icons - specific mappings
         ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ACTIVITY; 
         switch(module) {
-            case USERS: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.USERS; break;
-            case ROLES: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.SHIELD; break;
-            case CATALOG_ACTS: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ACTIVITY; break;
-            case CATALOG_MEDS: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.PILL; break;
-            case CATALOG_ANTECEDENTS: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.FILE_WARNING; break;
-            case INSURANCE: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.BUILDING; break;
-            case SECURITY: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.LOCK; break;
+            case USERS: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_USERS_ADMIN; break; // utilisateur_png.png
+            case ROLES: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_ROLES; break; // role_img.png
+            case CATALOG_ACTS: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_ACTS; break; // actes.png
+            case CATALOG_MEDS: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_PRESCRIPTION; break; // medicament_img.png
+            case CATALOG_ANTECEDENTS: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_ANTECEDENTS; break; // antecedent_img.png
+            case INSURANCE: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_INSURANCE; break; // assurance.png
+            case SECURITY: iconType = ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_SECURITY; break; // security_img.png
         }
 
-        btn.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(iconType, 18, 
-            activeModule == module ? TailwindPalette.RED_600 : Color.GRAY));
-        btn.setIconTextGap(12);
+        btn.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(iconType, 20, 
+            activeModule == module ? TailwindPalette.ROSE_600 : TailwindPalette.GRAY_500));
+        btn.setIconTextGap(16); // Standard 16
 
         btn.setFont(new Font("Segoe UI", activeModule == module ? Font.BOLD : Font.PLAIN, 14));
-        btn.setForeground(activeModule == module ? TailwindPalette.RED_600 : TailwindPalette.FOREGROUND);
+        btn.setForeground(activeModule == module ? TailwindPalette.ROSE_600 : TailwindPalette.GRAY_600);
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setContentAreaFilled(false);
         btn.setOpaque(false);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.setHorizontalAlignment(SwingConstants.LEFT);
-        btn.setBorder(BorderFactory.createEmptyBorder(16, 24, 16, 24));
-        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 56));
+        btn.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20)); // Standard 12,20
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 52)); // Standard 52
         
         btn.addActionListener(e -> {
             activeModule = module;

@@ -116,12 +116,33 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- (Optionnel) Assertions plus lisibles -->
+        <!-- Optionnel) Assertions plus lisibles -->
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>3.26.3</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- FlatLaf Look and Feel -->
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.4.1</version>
+        </dependency>
+
+        <!-- MigLayout for Swing -->
+        <dependency>
+            <groupId>com.miglayout</groupId>
+            <artifactId>miglayout-swing</artifactId>
+            <version>11.3</version>
+        </dependency>
+
+        <!-- JFreeChart -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.3</version>
         </dependency>
 
     </dependencies>

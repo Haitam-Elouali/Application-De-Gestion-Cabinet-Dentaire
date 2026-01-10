@@ -1,6 +1,6 @@
 package ma.TeethCare.mvc.ui.frames;
 
-import ma.TeethCare.mvc.controllers.authentificationModule.api.LoginController;
+// import ma.TeethCare.mvc.controllers.authentificationModule.api.LoginController; // COMMENTED: LoginController does not exist
 import ma.TeethCare.mvc.ui.palette.buttons.MyButton;
 import ma.TeethCare.mvc.ui.palette.fields.CustomPasswordField;
 import ma.TeethCare.mvc.ui.palette.fields.CustomTextField;
@@ -17,7 +17,9 @@ import java.util.Map;
 
 public class LoginUI extends JFrame {
 
-        private final LoginController controller;
+        // private final LoginController controller; // COMMENTED: LoginController does
+        // not exist
+        private final Object controller; // Placeholder
 
         private JTextField txt_lg;
         private JPasswordField txt_pass;
@@ -27,7 +29,7 @@ public class LoginUI extends JFrame {
         // Bouton Login (référence nécessaire pour KeyBinding)
         private JButton btLogin, btCancel;
 
-        public LoginUI(LoginController controller) {
+        public LoginUI(Object controller) { // Changed LoginController to Object
                 this.controller = controller;
 
                 setSize(450, 600);
@@ -44,11 +46,13 @@ public class LoginUI extends JFrame {
         private void loginAction(ActionEvent e) {
                 String login = txt_lg.getText();
                 String pass = new String(txt_pass.getPassword());
-                controller.onLoginRequested(login, pass);
+                // controller.onLoginRequested(login, pass); // COMMENTED: LoginController does
+                // not exist
         }
 
         private void cancelAction(ActionEvent e) {
-                controller.onCancelRequested();
+                // controller.onCancelRequested(); // COMMENTED: LoginController does not exist
+                System.exit(0); // Fallback: exit application
         }
         // ——————————————————————————————————————————————————————————————————————————
 

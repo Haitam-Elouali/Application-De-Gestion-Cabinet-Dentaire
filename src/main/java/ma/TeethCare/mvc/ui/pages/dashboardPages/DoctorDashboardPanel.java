@@ -1,6 +1,6 @@
 package ma.TeethCare.mvc.ui.pages.dashboardPages;
 
-import ma.TeethCare.mvc.dto.authentificationDtos.UserPrincipal;
+import ma.TeethCare.service.modules.auth.dto.UserPrincipal;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -31,9 +31,8 @@ public class DoctorDashboardPanel extends JPanel {
         JPanel p = new JPanel(new GridLayout(0, 1, 0, 6));
         p.setBackground(Color.WHITE);
         p.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(230,230,230)),
-                new EmptyBorder(16, 16, 16, 16)
-        ));
+                BorderFactory.createLineBorder(new Color(230, 230, 230)),
+                new EmptyBorder(16, 16, 16, 16)));
 
         JLabel h = new JLabel(head);
         h.setFont(new Font("Optima", Font.BOLD, 18));

@@ -1,6 +1,5 @@
 package ma.TeethCare.mvc.ui.dashboard.secretary.components;
 
-import ma.TeethCare.mvc.ui.palette.buttons.ModernButton;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
 
 import javax.swing.*;
@@ -17,43 +16,29 @@ public class SecretaryHeader extends JPanel {
         this.logoutAction = logoutAction;
         
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
-        setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, TailwindPalette.BORDER)); // border-b-2
-        setPreferredSize(new Dimension(100, 72)); // px-6 py-3 (approx 64-80px height)
+        setOpaque(true);
+        setBackground(TailwindPalette.GREEN_50); // Secretary Theme
+        setBorder(new EmptyBorder(0, 0, 10, 0)); // No bottom border, just spacing if needed
+        setPreferredSize(new Dimension(100, 80)); // Taller header
 
         initUI();
     }
 
     private void initUI() {
         // Left: Logo
-        JLabel logoLabel = new JLabel(); 
-        try {
-             java.io.File logoFile = new java.io.File("c:/Users/Choukhairi/Desktop/Maquette JAVA FINAL/LOGO.jpeg");
-             if (logoFile.exists()) {
-                 java.awt.image.BufferedImage img = javax.imageio.ImageIO.read(logoFile);
-                 if (img != null) {
-                     Image scaled = img.getScaledInstance(150, -1, Image.SCALE_SMOOTH);
-                     logoLabel.setIcon(new ImageIcon(scaled));
-                 } else {
-                      logoLabel.setText("TeethCare");
-                 }
-             } else {
-                 logoLabel.setText("TeethCare");
-                 logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-                 logoLabel.setForeground(TailwindPalette.GREEN_600); 
-             }
-        } catch (Exception e) {
-             logoLabel.setText("TeethCare");
-             logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-             logoLabel.setForeground(TailwindPalette.GREEN_600); 
-        }
+        JLabel logoLabel = new JLabel();
+        // Standardized Size 180
+        Icon logoIcon = ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(
+                ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_LOGO, 180, -1, null);
+        logoLabel.setIcon(logoIcon);
         logoLabel.setBorder(new EmptyBorder(0, 24, 0, 0)); 
+        logoLabel.setVerticalAlignment(SwingConstants.CENTER); // Ensure vertical center
         add(logoLabel, BorderLayout.WEST);
 
         // Right: User Info + Logout
-        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 12));
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 20)); // Align vertically better
         rightPanel.setOpaque(false);
-        rightPanel.setBorder(new EmptyBorder(0, 0, 0, 24)); // px-6
+        rightPanel.setBorder(new EmptyBorder(0, 0, 0, 24));
 
         // User Info Container
         JPanel userInfo = new JPanel(new GridLayout(2, 1));
@@ -65,18 +50,19 @@ public class SecretaryHeader extends JPanel {
         
         JLabel userLabel = new JLabel(userName + " (Secrétaire)", SwingConstants.RIGHT);
         userLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        userLabel.setForeground(Color.BLACK); // text-gray-900
+        userLabel.setForeground(new Color(31, 41, 55)); // Gray 800
 
         userInfo.add(connectedLabel);
         userInfo.add(userLabel);
         
         rightPanel.add(userInfo);
 
-        // Logout Button
-        ModernButton logoutBtn = new ModernButton("SE DÉCONNECTER", ModernButton.Variant.SUCCESS); // Using SUCCESS for Green button
+        // Logout Button - Standardized to ModernButton
+        ma.TeethCare.mvc.ui.palette.buttons.ModernButton logoutBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Se déconnecter", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.SUCCESS);
         logoutBtn.addActionListener(e -> {
             if (logoutAction != null) logoutAction.run();
         });
+        
         rightPanel.add(logoutBtn);
 
         add(rightPanel, BorderLayout.EAST);
