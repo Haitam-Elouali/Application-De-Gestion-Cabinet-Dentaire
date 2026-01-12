@@ -9,13 +9,17 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class AgendaView extends JPanel {
 
     private LocalDate currentDate;
     private JPanel calendarGrid;
     private JLabel monthLabel;
+    private Map<LocalDate, String> dayStatuses = new HashMap<>();
+    private Map<LocalDate, java.util.List<String>> daySlots = new HashMap<>();
 
     public AgendaView() {
         this.currentDate = LocalDate.now();
@@ -57,8 +61,12 @@ public class AgendaView extends JPanel {
         // Actions
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         actionsPanel.setOpaque(false);
-        actionsPanel.add(new ModernButton("Générer Type", ModernButton.Variant.SUCCESS));
-        // actionsPanel.add(new ModernButton("Effacer Mois", ModernButton.Variant.DESTRUCTIVE));
+        ModernButton generateBtn = new ModernButton("Générer Type", ModernButton.Variant.SUCCESS);
+        generateBtn.addActionListener(e -> generateMonthSchedule());
+        actionsPanel.add(generateBtn);
+        ModernButton clearBtn = new ModernButton("Effacer Mois", ModernButton.Variant.DESTRUCTIVE);
+        clearBtn.addActionListener(e -> clearMonthSchedule());
+        actionsPanel.add(clearBtn);
         
         topBar.add(actionsPanel, BorderLayout.EAST);
         
@@ -150,12 +158,66 @@ public class AgendaView extends JPanel {
         calendarGrid.repaint();
     }
     
+    private void clearMonthSchedule() {
+        // Confirmation Dialog
+        int response = JOptionPane.showConfirmDialog(this, 
+            "Voulez-vous vraiment effacer tous les statuts et créneaux pour ce mois ?", 
+            "Confirmation", 
+            JOptionPane.YES_NO_OPTION, 
+            JOptionPane.WARNING_MESSAGE);
+            
+        if (response == JOptionPane.YES_OPTION) {
+            YearMonth yearMonth = YearMonth.from(currentDate);
+            for (int i = 1; i <= yearMonth.lengthOfMonth(); i++) {
+                LocalDate date = yearMonth.atDay(i);
+                dayStatuses.remove(date);
+                daySlots.remove(date);
+            }
+            updateCalendar();
+        }
+    }
+    
+    private void generateMonthSchedule() {
+        YearMonth yearMonth = YearMonth.from(currentDate);
+        for (int i = 1; i <= yearMonth.lengthOfMonth(); i++) {
+            LocalDate date = yearMonth.atDay(i);
+            int dayOfWeek = date.getDayOfWeek().getValue();
+            if (dayOfWeek == 6 || dayOfWeek == 7) { // Saturday, Sunday
+                dayStatuses.put(date, "INDISPONIBLE");
+            } else {
+                dayStatuses.put(date, "DISPONIBLE");
+            }
+        }
+        updateCalendar();
+    }
+    
     private JPanel createDayCell(LocalDate date) {
         JPanel cell = new JPanel(new BorderLayout());
         cell.setBackground(Color.WHITE);
         cell.setPreferredSize(new Dimension(0, 100)); // Min height
         cell.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, TailwindPalette.GRAY_200)); // Light grid
         cell.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        
+        cell.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                java.util.List<String> initialSlots = daySlots.get(date);
+                // If day is not generated/set yet (no status), start with empty slots
+                if (initialSlots == null && !dayStatuses.containsKey(date)) {
+                    initialSlots = new java.util.ArrayList<>();
+                }
+
+                new DayManagementDialog(
+                    (JFrame) SwingUtilities.getWindowAncestor(AgendaView.this),
+                    date,
+                    dayStatuses.getOrDefault(date, "DISPONIBLE"),
+                    initialSlots,
+                    newStatus -> dayStatuses.put(date, newStatus),
+                    newSlots -> daySlots.put(date, newSlots),
+                    () -> updateCalendar()
+                ).setVisible(true);
+            }
+        });
         
         // Top Right Day Number
         boolean isWeekend = (date.getDayOfWeek().getValue() == 6 || date.getDayOfWeek().getValue() == 7);
@@ -170,16 +232,63 @@ public class AgendaView extends JPanel {
         
         // Content (Appointments)
         // Only show if mock data exists
-        if (date.getDayOfMonth() == 15 || date.getDayOfMonth() == 22) { // Mock logic
-             JPanel content = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-             content.setOpaque(false);
-             
-             JLabel dot = new JLabel("● 8 RDV"); // Bullet
-             dot.setForeground(TailwindPalette.BLUE_600);
-             dot.setFont(new Font("Segoe UI", Font.BOLD, 11));
-             content.add(dot);
-             
-             cell.add(content, BorderLayout.CENTER);
+        // Content (Appointments or Status)
+        String status = dayStatuses.get(date);
+        
+        if (status != null) {
+            JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+            statusPanel.setOpaque(false);
+            
+            Color textColor = TailwindPalette.RED_800;
+            Color bgColor = TailwindPalette.RED_100;
+            
+            if (status.equals("DISPONIBLE")) {
+                textColor = TailwindPalette.GREEN_800;
+                bgColor = TailwindPalette.GREEN_100;
+            } else if (status.equals("CONGE")) {
+                textColor = TailwindPalette.ORANGE_800;
+                bgColor = TailwindPalette.ORANGE_100;
+            }
+
+            JLabel statusLabel = new JLabel(status);
+            statusLabel.setFont(new Font("Segoe UI", Font.BOLD, 10));
+            statusLabel.setForeground(textColor);
+            
+            JPanel pill = new JPanel(new BorderLayout());
+            pill.setOpaque(false);
+            pill.setBorder(new EmptyBorder(2, 8, 2, 8));
+            pill.add(statusLabel);
+            
+            Color finalBgColor = bgColor;
+            JPanel container = new JPanel(new BorderLayout()) {
+                 @Override
+                 protected void paintComponent(Graphics g) {
+                     Graphics2D g2 = (Graphics2D)g;
+                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                     g2.setColor(finalBgColor);
+                     g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                     super.paintComponent(g);
+                 }
+            };
+            container.setOpaque(false);
+            container.add(pill);
+            statusPanel.add(container);
+            
+            JPanel wrapper = new JPanel(new BorderLayout());
+            wrapper.setOpaque(false);
+            wrapper.setBorder(new EmptyBorder(10, 0, 0, 0)); // Top margin
+            wrapper.add(statusPanel, BorderLayout.NORTH);
+            
+            if (status.equals("DISPONIBLE")) {
+                 int count = daySlots.containsKey(date) && daySlots.get(date) != null ? daySlots.get(date).size() : 13; // Default 13
+                 JLabel slots = new JLabel(count + " créneaux", SwingConstants.CENTER);
+                 slots.setFont(new Font("Segoe UI", Font.PLAIN, 10));
+                 slots.setForeground(TailwindPalette.GRAY_500);
+                 slots.setBorder(new EmptyBorder(4, 0, 0, 0));
+                 wrapper.add(slots, BorderLayout.CENTER);
+            }
+            
+            cell.add(wrapper, BorderLayout.CENTER);
         }
         
         return cell;

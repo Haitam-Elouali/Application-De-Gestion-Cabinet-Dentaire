@@ -3,6 +3,7 @@ package ma.TeethCare.mvc.ui.palette.data;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
@@ -104,7 +105,7 @@ public class ModernTable extends JTable {
         
         // Padding wrapper
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 12)); // match cell padding
-        p.setBackground(isSelected ? TailwindPalette.MUTED : Color.WHITE);
+        p.setOpaque(false); // Transparent
         p.add(label);
         
         // Rounded Badge Border (using EmptyBorder for padding inside label is better)
@@ -117,6 +118,6 @@ public class ModernTable extends JTable {
 
     @Override
     public boolean isCellEditable(int row, int column) {
-        return false;
+        return getModel().isCellEditable(row, column);
     }
 }

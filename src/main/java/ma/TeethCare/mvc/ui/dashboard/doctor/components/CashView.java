@@ -59,12 +59,40 @@ public class CashView extends JPanel {
         chartCard.setBorder(new EmptyBorder(20, 20, 20, 20));
         chartCard.setLayout(new BorderLayout());
         
-        // Chart Title
-        JLabel chartTitle = new JLabel("Recettes vs Dépenses (Derniers 6 mois)");
+        // Chart Header with Filters
+        JPanel chartHeader = new JPanel(new BorderLayout());
+        chartHeader.setOpaque(false);
+        chartHeader.setBorder(new EmptyBorder(0, 0, 16, 0));
+        
+        JLabel chartTitle = new JLabel("Recettes vs Dépenses");
         chartTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         chartTitle.setForeground(TailwindPalette.GRAY_800);
-        chartTitle.setBorder(new EmptyBorder(0, 0, 16, 0));
-        chartCard.add(chartTitle, BorderLayout.NORTH);
+        chartHeader.add(chartTitle, BorderLayout.WEST);
+        
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        filterPanel.setOpaque(false);
+        
+        ma.TeethCare.mvc.ui.palette.buttons.ModernButton weekBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Semaine", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
+        ma.TeethCare.mvc.ui.palette.buttons.ModernButton monthBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Mois", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.OUTLINE);
+        
+        weekBtn.addActionListener(e -> {
+             weekBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.OUTLINE);
+             monthBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
+             weekBtn.repaint(); monthBtn.repaint();
+        });
+        
+        monthBtn.addActionListener(e -> {
+             monthBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.OUTLINE);
+             weekBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
+             weekBtn.repaint(); monthBtn.repaint();
+        });
+        
+        filterPanel.add(weekBtn);
+        filterPanel.add(monthBtn);
+        
+        chartHeader.add(filterPanel, BorderLayout.EAST);
+        
+        chartCard.add(chartHeader, BorderLayout.NORTH);
 
         // JFreeChart
         ChartPanel chartPanel = createChartPanel();

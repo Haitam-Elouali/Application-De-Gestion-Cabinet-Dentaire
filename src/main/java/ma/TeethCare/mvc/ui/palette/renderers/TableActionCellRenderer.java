@@ -4,7 +4,9 @@ import ma.TeethCare.mvc.ui.palette.utils.IconUtils;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
@@ -30,7 +32,10 @@ public class TableActionCellRenderer extends AbstractCellEditor implements Table
     public TableActionCellRenderer(TableActionEvent event, ActionType... actions) {
         this.event = event;
         panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 4));
-        panel.setOpaque(false);
+        panel.setOpaque(false); // Transparent
+        // Removed border to let table grid show naturally if transparent? 
+        // Or if we need padding:
+        panel.setBorder(null); // FlowLayout handles spacing, or add EmptyBorder if needed
 
         if (actions.length == 0) {
             actions = new ActionType[]{ActionType.VIEW_FULL, ActionType.EDIT, ActionType.DELETE};
@@ -45,8 +50,8 @@ public class TableActionCellRenderer extends AbstractCellEditor implements Table
                 if (event != null && table != null) {
                     int row = table.getEditingRow();
                     int col = table.getEditingColumn();
+                    fireEditingStopped(); // Stop editing BEFORE action (especially if action is modal)
                     event.onAction(row, col, type);
-                    fireEditingStopped();
                 }
             });
         }
@@ -64,7 +69,14 @@ public class TableActionCellRenderer extends AbstractCellEditor implements Table
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         this.table = table;
-        panel.setBackground(table.getSelectionBackground());
+        panel.setOpaque(false); // Transparent
+        // panel.setBackground(Color.WHITE); // Removed
+        
+        // Forward the click if it started editing
+        // This is a simplified approach. Ideally use a MouseListener on the table
+        // that delegates to the buttons, but this works if the user clicked exactly on a button.
+        // However, standard JTable absorbs the first click.
+        
         return panel;
     }
 

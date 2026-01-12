@@ -77,52 +77,17 @@ public class DashboardHome extends JPanel {
         sp.setBorder(BorderFactory.createEmptyBorder());
         planningCard.add(sp, BorderLayout.CENTER);
         
-        mainGrid.add(planningCard, gbc);
+        // Right: Notifications REMOVED
         
-        // Right: Notifications
-        gbc.gridx = 1; 
-        gbc.weightx = 0.3;
+        // Adjust Planning to take full width
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.weightx = 1.0; gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(0, 0, 0, 0);
         
-        ModernCard notifCard = new ModernCard();
-        notifCard.setLayout(new BorderLayout());
-        
-        JLabel nTitle = new JLabel("À faire / Rappels");
-        nTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        nTitle.setForeground(new Color(153, 27, 27)); // red-800
-        nTitle.setBorder(new EmptyBorder(0, 0, 16, 0));
-        notifCard.add(nTitle, BorderLayout.NORTH);
-        
-        JPanel list = new JPanel();
-        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
-        list.setOpaque(false);
-        
-        // Item 1
-        JLabel l1 = new JLabel("<html><b>Labo Prothèse</b><br><span style='color:gray;font-size:10px'>Appeler pour confirmer...</span></html>");
-        l1.setIcon(new Icon() { // Simple dot
-            public void paintIcon(Component c, Graphics g, int x, int y) {
-                g.setColor(Color.RED); g.fillOval(x, y+4, 8, 8);
-            }
-            public int getIconWidth() { return 12; }
-            public int getIconHeight() { return 16; }
-        });
-        l1.setBorder(new EmptyBorder(0,0,12,0));
-        
-        JLabel l2 = new JLabel("<html><b>Fournitures</b><br><span style='color:gray;font-size:10px'>Stock de compresses faible</span></html>");
-        l2.setIcon(new Icon() {
-            public void paintIcon(Component c, Graphics g, int x, int y) {
-                g.setColor(Color.ORANGE); g.fillOval(x, y+4, 8, 8);
-            }
-            public int getIconWidth() { return 12; }
-            public int getIconHeight() { return 16; }
-        });
-        
-        list.add(l1);
-        list.add(l2);
-        
-        notifCard.add(list, BorderLayout.CENTER);
-        
-        mainGrid.add(notifCard, gbc);
+        // Remove previous add to re-add with new constraints
+        mainGrid.remove(planningCard);
+        mainGrid.add(planningCard, gbc);
         
         content.add(mainGrid);
 

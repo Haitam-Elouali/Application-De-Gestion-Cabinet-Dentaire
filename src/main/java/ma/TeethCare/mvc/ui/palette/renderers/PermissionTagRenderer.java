@@ -3,7 +3,9 @@ package ma.TeethCare.mvc.ui.palette.renderers;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.Arrays;
@@ -13,8 +15,7 @@ public class PermissionTagRenderer extends DefaultTableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 4));
-        panel.setOpaque(true);
-        panel.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+        panel.setOpaque(false); // Transparent to show row background
         panel.setBorder(new EmptyBorder(4, 8, 4, 8));
 
         if (value != null) {

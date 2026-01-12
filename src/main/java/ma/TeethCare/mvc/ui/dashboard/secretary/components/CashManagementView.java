@@ -15,7 +15,12 @@ import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+
+import ma.TeethCare.mvc.ui.palette.data.ModernTable;
+import ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer;
+import ma.TeethCare.mvc.ui.palette.renderers.StatusPillRenderer;
 
 public class CashManagementView extends JPanel {
 
@@ -29,9 +34,26 @@ public class CashManagementView extends JPanel {
 
     private void initUI() {
         // Main Container with MigLayout (Top KPIs, Middle Stats, Bottom Chart)
-        // Rows: [TopCards] 20px [MiddleStats] 20px [Chart]
         JPanel mainContainer = new JPanel(new MigLayout("insets 0, fillx, wrap 1", "[grow]", "[]20[]20[grow]"));
         mainContainer.setOpaque(false);
+        // Top Actions Bar
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setOpaque(false);
+        topBar.setBorder(new EmptyBorder(0, 0, 20, 0));
+        
+        JLabel titleLabel = new JLabel("Gestion de Caisse");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(TailwindPalette.GRAY_900);
+        topBar.add(titleLabel, BorderLayout.WEST);
+        
+        ma.TeethCare.mvc.ui.palette.buttons.ModernButton exportBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Exporter le Rapport", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.OUTLINE);
+        exportBtn.setIcon(IconUtils.getIcon(IconUtils.IconType.ICON_PRINT, 16, TailwindPalette.GRAY_700));
+        exportBtn.addActionListener(e -> JOptionPane.showMessageDialog(this, "Export du rapport financier en cours..."));
+        topBar.add(exportBtn, BorderLayout.EAST);
+        
+        mainContainer.add(topBar, "growx");
+
+        // ... (rest of the panel setup) ...
 
         // --- 1. Top Cards (KPIs) ---
         JPanel kpiPanel = new JPanel(new MigLayout("insets 0, fill, gap 20", "[grow][grow][grow]")); // 3 Columns
@@ -59,20 +81,96 @@ public class CashManagementView extends JPanel {
         chartCard.setBorder(new EmptyBorder(20, 20, 20, 20));
         chartCard.setLayout(new BorderLayout());
         
-        // Chart Title
-        JLabel chartTitle = new JLabel("Recettes vs Dépenses (Derniers 6 mois)");
+        // Chart Header with Filters
+        JPanel chartHeader = new JPanel(new BorderLayout());
+        chartHeader.setOpaque(false);
+        chartHeader.setBorder(new EmptyBorder(0, 0, 16, 0));
+        
+        JLabel chartTitle = new JLabel("Recettes vs Dépenses"); // Text simplified, filters control range
         chartTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         chartTitle.setForeground(TailwindPalette.GRAY_800);
-        chartTitle.setBorder(new EmptyBorder(0, 0, 16, 0));
-        chartCard.add(chartTitle, BorderLayout.NORTH);
+        chartHeader.add(chartTitle, BorderLayout.WEST);
+        
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        filterPanel.setOpaque(false);
+        
+        ma.TeethCare.mvc.ui.palette.buttons.ModernButton weekBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Semaine", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
+        ma.TeethCare.mvc.ui.palette.buttons.ModernButton monthBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Mois", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.OUTLINE); // Active state simulation
+        
+        weekBtn.addActionListener(e -> {
+             weekBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.OUTLINE);
+             monthBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
+             weekBtn.repaint(); monthBtn.repaint();
+        });
+        
+        monthBtn.addActionListener(e -> {
+             monthBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.OUTLINE);
+             weekBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
+             weekBtn.repaint(); monthBtn.repaint();
+        });
+        
+        filterPanel.add(weekBtn);
+        filterPanel.add(monthBtn);
+        
+        chartHeader.add(filterPanel, BorderLayout.EAST);
+        
+        chartCard.add(chartHeader, BorderLayout.NORTH);
 
         // JFreeChart
         ChartPanel chartPanel = createChartPanel();
         chartCard.add(chartPanel, BorderLayout.CENTER);
 
-        mainContainer.add(chartCard, "grow");
+        mainContainer.add(chartCard, "grow, h 350!"); // Fixed height for chart
 
-        add(mainContainer, BorderLayout.CENTER);
+        // --- 4. Recent Transactions Table ---
+        JPanel tableCard = new RoundedPanel(20);
+        tableCard.setBackground(Color.WHITE);
+        tableCard.setBorder(new EmptyBorder(20, 20, 20, 20));
+        tableCard.setLayout(new BorderLayout());
+
+        JLabel tableTitle = new JLabel("Transactions Récentes");
+        tableTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        tableTitle.setForeground(TailwindPalette.GRAY_800);
+        tableTitle.setBorder(new EmptyBorder(0, 0, 16, 0));
+        tableCard.add(tableTitle, BorderLayout.NORTH);
+
+        // Table Setup - REMOVED ACTIONS COLUMN
+        String[] columns = {"ID", "Patient", "Date", "Type", "Montant", "Statut"};
+        Object[][] data = {
+            {"#TRX-001", "Alami Ahmed", "12/01/2026", "Consultation", "300 DH", "Payé"},
+            {"#TRX-002", "Benani Sarah", "12/01/2026", "Soins Traitement", "1500 DH", "En attente"},
+            {"#TRX-003", "Chraibi Karim", "11/01/2026", "Chirurgie", "4000 DH", "Payé"},
+            {"#TRX-004", "Drissi Nadia", "11/01/2026", "Contrôle", "0 DH", "Gratuit"}
+        };
+
+        ModernTable table = new ModernTable();
+        table.setModel(new DefaultTableModel(data, columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // No editable cells
+            }
+        });
+        table.setRowHeight(50);
+        
+        // Renderers
+        table.getColumnModel().getColumn(5).setCellRenderer(new StatusPillRenderer());
+        
+        JScrollPane sp = new JScrollPane(table);
+        sp.setBorder(BorderFactory.createLineBorder(TailwindPalette.BORDER));
+        sp.getViewport().setBackground(Color.WHITE);
+        
+        tableCard.add(sp, BorderLayout.CENTER);
+
+        mainContainer.add(tableCard, "grow");
+
+        // WRAP IN SCROLL PANE
+        JScrollPane mainScroll = new JScrollPane(mainContainer);
+        mainScroll.setBorder(null);
+        mainScroll.setOpaque(false);
+        mainScroll.getViewport().setOpaque(false);
+        mainScroll.getVerticalScrollBar().setUnitIncrement(16); // Faster scrolling
+
+        add(mainScroll, BorderLayout.CENTER);
     }
     
     private JPanel createKpiCard(String title, String value, String percent, Color bg, Color fg) {
@@ -211,4 +309,5 @@ public class CashManagementView extends JPanel {
         chartPanel.setBorder(null);
         return chartPanel;
     }
+
 }

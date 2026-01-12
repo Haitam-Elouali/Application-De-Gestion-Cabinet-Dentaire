@@ -3,7 +3,9 @@ package ma.TeethCare.mvc.ui.palette.renderers;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
@@ -14,8 +16,7 @@ public class RolePillRenderer extends DefaultTableCellRenderer {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        panel.setOpaque(true);
-        panel.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+        panel.setOpaque(false); // Transparent to show row background
         panel.setBorder(new EmptyBorder(10, 0, 10, 0)); 
 
         if (value != null) {

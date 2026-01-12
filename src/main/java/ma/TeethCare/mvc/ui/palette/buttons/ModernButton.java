@@ -21,7 +21,7 @@ public class ModernButton extends JButton {
         SUCCESS
     }
 
-    private final Variant variant;
+    private Variant variant;
     private boolean isHovered = false;
     private boolean isPressed = false;
 
@@ -81,6 +81,12 @@ public class ModernButton extends JButton {
         });
         
         updateForeground();
+    }
+
+    public void setVariant(Variant variant) {
+        this.variant = (variant != null) ? variant : Variant.DEFAULT;
+        updateForeground();
+        repaint();
     }
 
     private void updateForeground() {

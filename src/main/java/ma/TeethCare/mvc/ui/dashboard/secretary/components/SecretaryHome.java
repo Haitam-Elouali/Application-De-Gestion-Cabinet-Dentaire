@@ -64,7 +64,7 @@ public class SecretaryHome extends JPanel {
         rightCol.setOpaque(false);
         
         rightCol.add(createWaitingListWidget(), "grow");
-        rightCol.add(createNotificationsWidget(), "grow, h 250!"); // Fixed smaller height for notifs
+        rightCol.add(createNotificationsWidget(), "grow, h 250!");
 
         mainContainer.add(rightCol, "grow");
 
@@ -331,35 +331,9 @@ public class SecretaryHome extends JPanel {
         JPanel list = new JPanel(new MigLayout("insets 0, fillx, gapy 8", "[grow]"));
         list.setOpaque(false);
         
-        list.add(createNotifRow("Résultats reçus", TailwindPalette.GREEN_100), "growx, wrap");
-        list.add(createNotifRow("Rappel réunion 15h", TailwindPalette.BLUE_100), "growx, wrap");
-        list.add(createNotifRow("Facture impayée", TailwindPalette.ORANGE_100), "growx, wrap");
+        // No dummy data added here
         
         p.add(list, "growx");
         return p;
-    }
-    
-    private JPanel createNotifRow(String txt, Color bg) {
-        JPanel r = new JPanel(new BorderLayout());
-        r.setBackground(bg); // Use solid color or rounded?
-        // Let's make it rounded too
-         JPanel container = new JPanel(new BorderLayout()) {
-             @Override
-             protected void paintComponent(Graphics g) {
-                 Graphics2D g2 = (Graphics2D)g;
-                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                 g2.setColor(bg);
-                 g2.fillRoundRect(0,0,getWidth(), getHeight(), 8, 8);
-                 super.paintComponent(g);
-             }
-        };
-        container.setOpaque(false);
-        container.setBorder(new EmptyBorder(8, 12, 8, 12));
-        
-        JLabel l = new JLabel(txt);
-        l.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        container.add(l, BorderLayout.CENTER);
-        
-        return container;
     }
 }

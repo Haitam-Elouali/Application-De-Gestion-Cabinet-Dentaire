@@ -68,14 +68,7 @@ public class PatientDialog extends JDialog {
             tfNom.setText(patient.getNom());
             tfPrenom.setText(patient.getPrenom());
             if (patient.getDateNaissance() != null) 
-                 // Assuming PatientDTO has LocalDate dateNaissance field or derived
-                 // Wait, check PatientDTO fields. It had dateCreation but I added fields to Entity, did I update DTO fields?
-                 // I only added "id", "cin". I need to check if "dateNaissance" is in DTO.
-                 // Checking file view from earlier...
-                 // PatientDTO had: nom, prenom, email, telephone, adresse, sexe, cin, assurance. NO DATE NAISSANCE.
-                 // I missed adding dateNaissance to DTO. I should fix DTO first or just ignore for now? 
-                 // UI shows Date de Naissance. I MUST update DTO.
-                 tfDateNaissance.setText(""); 
+                 tfDateNaissance.setText(patient.getDateNaissance().toString()); 
             tfTel.setText(patient.getTelephone());
             tfEmail.setText(patient.getEmail());
             tfAdresse.setText(patient.getAdresse());
