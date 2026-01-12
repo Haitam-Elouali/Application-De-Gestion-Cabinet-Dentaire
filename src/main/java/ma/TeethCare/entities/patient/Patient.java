@@ -15,7 +15,7 @@ import java.util.List;
 
 @Data @AllArgsConstructor @NoArgsConstructor @lombok.experimental.SuperBuilder
 public class Patient extends baseEntity {
-    private Long Id;
+    private Long id;
     private String nom;
     private String prenom;
     private String adresse;

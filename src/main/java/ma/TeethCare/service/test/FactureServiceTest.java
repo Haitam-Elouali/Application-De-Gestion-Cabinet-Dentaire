@@ -16,8 +16,8 @@ import java.sql.SQLException;
  * @date 2025-12-09
  */
 
-import ma.TeethCare.service.modules.caisse.dto.FactureDto;
-import ma.TeethCare.common.enums.Statut;
+import ma.TeethCare.mvc.dto.facture.FactureDTO;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class FactureServiceTest {
@@ -81,21 +81,36 @@ public class FactureServiceTest {
 
     public static void testCreate(factureService service) throws Exception {
         System.out.println("Testing Create...");
-        FactureDto f = new FactureDto(null, 1L, 1L, 1L, 100.0, 0.0, 100.0, Statut.En_attente, "CASH",
-                LocalDateTime.now());
+        FactureDTO f = FactureDTO.builder()
+                .consultationId(1L)
+                .patientId(1L)
+                .totalFacture(BigDecimal.valueOf(100.0))
+                .totalPaye(BigDecimal.valueOf(0.0))
+                .reste(BigDecimal.valueOf(100.0))
+                .statut("En_attente")
+                .dateCreation(LocalDateTime.now())
+                .build();
 
-        FactureDto created = service.create(f);
-        if (created.id() == null)
+        FactureDTO created = service.create(f);
+        if (created.getId() == null)
             throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(factureService service) throws Exception {
         System.out.println("Testing FindById...");
-        FactureDto f = new FactureDto(null, 1L, 1L, 1L, 200.0, 0.0, 200.0, Statut.Payee, "CARD", LocalDateTime.now());
+        FactureDTO f = FactureDTO.builder()
+                .consultationId(1L)
+                .patientId(1L)
+                .totalFacture(BigDecimal.valueOf(200.0))
+                .totalPaye(BigDecimal.valueOf(0.0))
+                .reste(BigDecimal.valueOf(200.0))
+                .statut("Payee")
+                .dateCreation(LocalDateTime.now())
+                .build();
         f = service.create(f);
 
-        FactureDto found = service.findById(f.id());
+        Optional<FactureDTO> found = service.findById(f.getId());
         if (found == null)
             throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
@@ -105,7 +120,15 @@ public class FactureServiceTest {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
         service.create(
-                new FactureDto(null, 1L, 1L, 1L, 300.0, 0.0, 300.0, Statut.En_attente, "CASH", LocalDateTime.now()));
+                FactureDTO.builder()
+                        .consultationId(1L)
+                        .patientId(1L)
+                        .totalFacture(BigDecimal.valueOf(300.0))
+                        .totalPaye(BigDecimal.valueOf(0.0))
+                        .reste(BigDecimal.valueOf(300.0))
+                        .statut("En_attente")
+                        .dateCreation(LocalDateTime.now())
+                        .build());
 
         if (service.findAll().size() != initialCount + 1)
             throw new RuntimeException("FindAll failed: count mismatch");
@@ -114,25 +137,38 @@ public class FactureServiceTest {
 
     public static void testUpdate(factureService service) throws Exception {
         System.out.println("Testing Update...");
-        FactureDto f = new FactureDto(null, 1L, 1L, 1L, 400.0, 0.0, 400.0, Statut.En_attente, "CASH",
-                LocalDateTime.now());
+        FactureDTO f = FactureDTO.builder()
+                .consultationId(1L)
+                .patientId(1L)
+                .totalFacture(BigDecimal.valueOf(400.0))
+                .totalPaye(BigDecimal.valueOf(0.0))
+                .reste(BigDecimal.valueOf(400.0))
+                .statut("En_attente")
+                .dateCreation(LocalDateTime.now())
+                .build();
         f = service.create(f);
 
-        FactureDto toUpdate = new FactureDto(f.id(), f.consultationId(), f.patientId(), f.secretaireId(), 500.0,
-                f.totalePaye(), 500.0, f.statut(), f.modePaiement(), f.dateFacture());
+        f.setTotalFacture(BigDecimal.valueOf(500.0));
 
-        FactureDto updated = service.update(f.id(), toUpdate);
-        if (updated.totaleFacture() != 500.0)
+        FactureDTO updated = service.update(f);
+        if (updated.getTotalFacture().compareTo(BigDecimal.valueOf(500.0)) != 0)
             throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(factureService service) throws Exception {
         System.out.println("Testing Delete...");
-        FactureDto f = new FactureDto(null, 1L, 1L, 1L, 600.0, 0.0, 600.0, Statut.En_attente, "CASH",
-                LocalDateTime.now());
+        FactureDTO f = FactureDTO.builder()
+                .consultationId(1L)
+                .patientId(1L)
+                .totalFacture(BigDecimal.valueOf(600.0))
+                .totalPaye(BigDecimal.valueOf(0.0))
+                .reste(BigDecimal.valueOf(600.0))
+                .statut("En_attente")
+                .dateCreation(LocalDateTime.now())
+                .build();
         f = service.create(f);
-        Long id = f.id();
+        Long id = f.getId();
         service.delete(id);
         if (service.exists(id))
             throw new RuntimeException("Delete failed: still exists");
@@ -141,10 +177,17 @@ public class FactureServiceTest {
 
     public static void testExists(factureService service) throws Exception {
         System.out.println("Testing Exists...");
-        FactureDto f = new FactureDto(null, 1L, 1L, 1L, 700.0, 0.0, 700.0, Statut.En_attente, "CASH",
-                LocalDateTime.now());
+        FactureDTO f = FactureDTO.builder()
+                .consultationId(1L)
+                .patientId(1L)
+                .totalFacture(BigDecimal.valueOf(700.0))
+                .totalPaye(BigDecimal.valueOf(0.0))
+                .reste(BigDecimal.valueOf(700.0))
+                .statut("En_attente")
+                .dateCreation(LocalDateTime.now())
+                .build();
         f = service.create(f);
-        if (!service.exists(f.id()))
+        if (!service.exists(f.getId()))
             throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }

@@ -2,7 +2,10 @@ package ma.TeethCare.service.test;
 
 import ma.TeethCare.common.exceptions.ServiceException;
 import ma.TeethCare.entities.role.role;
+import ma.TeethCare.mvc.dto.role.RoleDTO;
 import ma.TeethCare.repository.api.RoleRepository;
+import ma.TeethCare.service.modules.users.api.roleService;
+import ma.TeethCare.service.modules.users.impl.roleServiceImpl;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -68,7 +71,7 @@ public class RoleServiceTest {
     public static void main(String[] args) {
         try {
             RoleRepositoryStub repo = new RoleRepositoryStub();
-            RoleServiceTest service = new RoleServiceTest(repo);
+            roleService service = new roleServiceImpl(repo);
 
             testCreate(service);
             testFindById(service);
@@ -84,142 +87,57 @@ public class RoleServiceTest {
         }
     }
 
-    private final RoleRepository roleRepository;
-
-    public RoleServiceTest(RoleRepository roleRepository) {
-        this.roleRepository = roleRepository;
-    }
-
-    public role create(role entity) throws Exception {
-        try {
-            if (entity == null) {
-                throw new ServiceException("Role ne peut pas être null");
-            }
-            roleRepository.create(entity);
-            return entity;
-        } catch (Exception e) {
-            throw new ServiceException("Erreur lors de la création du role", e);
-        }
-    }
-
-    public Optional<role> findById(Long id) throws Exception {
-        try {
-            if (id == null) {
-                throw new ServiceException("ID role ne peut pas être null");
-            }
-            return Optional.ofNullable(roleRepository.findById(id));
-        } catch (Exception e) {
-            throw new ServiceException("Erreur lors de la récupération du role", e);
-        }
-    }
-
-    public List<role> findAll() throws Exception {
-        try {
-            return roleRepository.findAll();
-        } catch (Exception e) {
-            throw new ServiceException("Erreur lors de la récupération de la liste des roles", e);
-        }
-    }
-
-    public role update(role entity) throws Exception {
-        try {
-            if (entity == null) {
-                throw new ServiceException("Role ne peut pas être null");
-            }
-            roleRepository.update(entity);
-            return entity;
-        } catch (Exception e) {
-            throw new ServiceException("Erreur lors de la mise à jour du role", e);
-        }
-    }
-
-    public boolean delete(Long id) throws Exception {
-        try {
-            if (!exists(id)) {
-                return false;
-            }
-            roleRepository.deleteById(id);
-            return true;
-        } catch (Exception e) {
-            throw new ServiceException("Erreur lors de la suppression du role", e);
-        }
-    }
-
-    public boolean exists(Long id) throws Exception {
-        try {
-            if (id == null) {
-                return false;
-            }
-            return roleRepository.findById(id) != null;
-        } catch (Exception e) {
-            throw new ServiceException("Erreur lors de la vérification d'existence du role", e);
-        }
-    }
-
-    public long count() throws Exception {
-        try {
-            return roleRepository.findAll().size();
-        } catch (Exception e) {
-            throw new ServiceException("Erreur lors du comptage des roles", e);
-        }
-    }
-
-    public static void testCreate(RoleServiceTest service) throws Exception {
+    public static void testCreate(roleService service) throws Exception {
         System.out.println("Testing Create...");
-        role r = role.builder()
-                .libelle("ADMIN")
-                .utilisateurId(1L)
+        RoleDTO r = RoleDTO.builder()
+                .nom("ADMIN")
                 .build();
-        role created = service.create(r);
+        RoleDTO created = service.create(r);
         if (created.getId() == null)
             throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
-    public static void testFindById(RoleServiceTest service) throws Exception {
+    public static void testFindById(roleService service) throws Exception {
         System.out.println("Testing FindById...");
-        role r = role.builder()
-                .libelle("USER")
-                .utilisateurId(2L)
+        RoleDTO r = RoleDTO.builder()
+                .nom("USER")
                 .build();
         r = service.create(r);
-        Optional<role> found = service.findById(r.getId());
+        Optional<RoleDTO> found = service.findById(r.getId());
         if (!found.isPresent())
             throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
 
-    public static void testFindAll(RoleServiceTest service) throws Exception {
+    public static void testFindAll(roleService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(role.builder()
-                .libelle("MODERATOR")
-                .utilisateurId(3L)
+        service.create(RoleDTO.builder()
+                .nom("MODERATOR")
                 .build());
         if (service.findAll().size() != initialCount + 1)
             throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
-    public static void testUpdate(RoleServiceTest service) throws Exception {
+    public static void testUpdate(roleService service) throws Exception {
         System.out.println("Testing Update...");
-        role r = role.builder()
-                .libelle("GUEST")
-                .utilisateurId(4L)
+        RoleDTO r = RoleDTO.builder()
+                .nom("GUEST")
                 .build();
         r = service.create(r);
-        r.setLibelle("SUPER_ADMIN");
-        role updated = service.update(r);
-        if (!"SUPER_ADMIN".equals(updated.getLibelle()))
+        r.setNom("SUPER_ADMIN");
+        RoleDTO updated = service.update(r);
+        if (!"SUPER_ADMIN".equals(updated.getNom()))
             throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
-    public static void testDelete(RoleServiceTest service) throws Exception {
+    public static void testDelete(roleService service) throws Exception {
         System.out.println("Testing Delete...");
-        role r = role.builder()
-                .libelle("TEMP")
-                .utilisateurId(5L)
+        RoleDTO r = RoleDTO.builder()
+                .nom("TEMP")
                 .build();
         r = service.create(r);
         Long id = r.getId();
@@ -229,11 +147,10 @@ public class RoleServiceTest {
         System.out.println("Delete passed.");
     }
 
-    public static void testExists(RoleServiceTest service) throws Exception {
+    public static void testExists(roleService service) throws Exception {
         System.out.println("Testing Exists...");
-        role r = role.builder()
-                .libelle("EDITOR")
-                .utilisateurId(6L)
+        RoleDTO r = RoleDTO.builder()
+                .nom("EDITOR")
                 .build();
         r = service.create(r);
         if (!service.exists(r.getId()))
@@ -241,7 +158,7 @@ public class RoleServiceTest {
         System.out.println("Exists passed.");
     }
 
-    public static void testCount(RoleServiceTest service) throws Exception {
+    public static void testCount(roleService service) throws Exception {
         System.out.println("Testing Count...");
         long count = service.count();
         if (count < 0)
@@ -249,4 +166,3 @@ public class RoleServiceTest {
         System.out.println("Count passed.");
     }
 }
-

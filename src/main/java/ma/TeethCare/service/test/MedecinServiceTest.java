@@ -1,6 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.medecin.medecin;
+import ma.TeethCare.mvc.dto.medecin.MedecinDTO;
 import ma.TeethCare.repository.api.MedecinRepository;
 import ma.TeethCare.service.modules.users.api.medecinService;
 import ma.TeethCare.service.modules.users.impl.medecinServiceImpl;
@@ -34,7 +35,7 @@ public class MedecinServiceTest {
         public void create(medecin entity) {
             if (entity.getId() == null) {
                 entity.setId(idCounter);
-                entity.setIdEntite(idCounter);
+                // entity.setIdEntite(idCounter); // Redundant if setId used
                 idCounter++;
             }
             data.put(entity.getId(), entity);
@@ -92,12 +93,13 @@ public class MedecinServiceTest {
 
     public static void testCreate(medecinService service) throws Exception {
         System.out.println("Testing Create...");
-        medecin m = new medecin();
-        m.setNom("Dr Alpha");
-        m.setEmail("alpha@medecin.com");
-        m.setSpecialite("Dentiste");
+        MedecinDTO m = MedecinDTO.builder()
+                .nom("Dr Alpha")
+                .email("alpha@medecin.com")
+                .specialite("Dentiste")
+                .build();
 
-        medecin created = service.create(m);
+        MedecinDTO created = service.create(m);
         if (created.getId() == null)
             throw new RuntimeException("Create failed: ID is null");
 
@@ -106,11 +108,12 @@ public class MedecinServiceTest {
 
     public static void testFindById(medecinService service) throws Exception {
         System.out.println("Testing FindById...");
-        medecin m = new medecin();
-        m.setNom("Dr Find");
+        MedecinDTO m = MedecinDTO.builder()
+                .nom("Dr Find")
+                .build();
 
         m = service.create(m);
-        Optional<medecin> found = service.findById(m.getId());
+        Optional<MedecinDTO> found = service.findById(m.getId());
 
         if (!found.isPresent())
             throw new RuntimeException("FindById failed: not found");
@@ -122,8 +125,9 @@ public class MedecinServiceTest {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
 
-        medecin m = new medecin();
-        m.setNom("Dr All");
+        MedecinDTO m = MedecinDTO.builder()
+                .nom("Dr All")
+                .build();
         service.create(m);
 
         if (service.findAll().size() != initialCount + 1)
@@ -134,13 +138,14 @@ public class MedecinServiceTest {
 
     public static void testUpdate(medecinService service) throws Exception {
         System.out.println("Testing Update...");
-        medecin m = new medecin();
-        m.setNom("Old Name");
+        MedecinDTO m = MedecinDTO.builder()
+                .nom("Old Name")
+                .build();
 
         m = service.create(m);
         m.setNom("New Name");
 
-        medecin updated = service.update(m);
+        MedecinDTO updated = service.update(m);
         if (!"New Name".equals(updated.getNom()))
             throw new RuntimeException("Update failed: value mismatch");
 
@@ -149,8 +154,9 @@ public class MedecinServiceTest {
 
     public static void testDelete(medecinService service) throws Exception {
         System.out.println("Testing Delete...");
-        medecin m = new medecin();
-        m.setNom("Delete Me");
+        MedecinDTO m = MedecinDTO.builder()
+                .nom("Delete Me")
+                .build();
 
         m = service.create(m);
         Long id = m.getId();
@@ -165,8 +171,9 @@ public class MedecinServiceTest {
 
     public static void testExists(medecinService service) throws Exception {
         System.out.println("Testing Exists...");
-        medecin m = new medecin();
-        m.setNom("Exists");
+        MedecinDTO m = MedecinDTO.builder()
+                .nom("Exists")
+                .build();
 
         m = service.create(m);
 
@@ -181,7 +188,7 @@ public class MedecinServiceTest {
         long count = service.count();
 
         if (count < 0)
-            throw new RuntimeException("Count failed: negative");
+            throw new RuntimeException("Count failed: negative value");
 
         System.out.println("Count passed.");
     }

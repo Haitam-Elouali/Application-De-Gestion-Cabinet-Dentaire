@@ -1,7 +1,8 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.admin.admin;
-import ma.TeethCare.service.modules.users.impl.AdminServiceImpl;
+import ma.TeethCare.mvc.dto.admin.AdminDTO;
+import ma.TeethCare.service.modules.users.impl.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -85,16 +86,14 @@ public class AdminServiceTest {
 
     private static void testCreate() throws Exception {
         System.out.println("\n--- TEST: CREATE ---");
-        admin newAdmin = new admin();
         long timestamp = System.currentTimeMillis();
-        newAdmin.setNom("AdminTest");
-        newAdmin.setEmail("admin." + timestamp + "@teethcare.ma");
-        newAdmin.setUsername("admin" + timestamp);
-        newAdmin.setPassword("Secret123");
-        newAdmin.setDateCreation(LocalDate.now());
+        AdminDTO newAdmin = AdminDTO.builder()
+                .nom("AdminTest")
+                .email("admin." + timestamp + "@teethcare.ma")
+                .build();
 
-        adminService.create(newAdmin);
-        createdAdminId = newAdmin.getIdEntite();
+        AdminDTO created = adminService.create(newAdmin);
+        createdAdminId = created.getId();
 
         if (createdAdminId != null) {
             System.out.println("✅ Admin créé avec ID : " + createdAdminId);
@@ -105,7 +104,7 @@ public class AdminServiceTest {
 
     private static void testFindById() throws Exception {
         System.out.println("\n--- TEST: FIND BY ID ---");
-        Optional<admin> found = adminService.findById(createdAdminId);
+        Optional<AdminDTO> found = adminService.findById(createdAdminId);
         if (found.isPresent() && "AdminTest".equals(found.get().getNom())) {
             System.out.println("✅ Admin trouvé: " + found.get().getNom());
         } else {
@@ -115,12 +114,14 @@ public class AdminServiceTest {
 
     private static void testUpdate() throws Exception {
         System.out.println("\n--- TEST: UPDATE ---");
-        Optional<admin> found = adminService.findById(createdAdminId);
-        admin a = found.get();
+        Optional<AdminDTO> found = adminService.findById(createdAdminId);
+        if(!found.isPresent()) throw new RuntimeException("Update failed: ID not found");
+        
+        AdminDTO a = found.get();
         a.setNom("UpdatedAdmin");
         adminService.update(a);
 
-        Optional<admin> updated = adminService.findById(createdAdminId);
+        Optional<AdminDTO> updated = adminService.findById(createdAdminId);
         if (updated.isPresent() && "UpdatedAdmin".equals(updated.get().getNom())) {
             System.out.println("✅ Admin mis à jour avec succès.");
         } else {
@@ -130,7 +131,7 @@ public class AdminServiceTest {
 
     private static void testFindAll() throws Exception {
         System.out.println("\n--- TEST: FIND ALL ---");
-        List<admin> list = adminService.findAll();
+        List<AdminDTO> list = adminService.findAll();
         System.out.println("ℹ️ Nombre d'admins: " + list.size());
         if (!list.isEmpty()) {
             System.out.println("✅ FindAll retourne des résultats.");
@@ -169,12 +170,13 @@ public class AdminServiceTest {
 
     private static void testFindByDomaine() throws Exception {
         System.out.println("\n--- TEST: FIND BY DOMAINE ---");
-        admin newAdmin = new admin();
-        newAdmin.setNom("DomaineAdmin");
-        newAdmin.setDomaine("Cardiology");
+        AdminDTO newAdmin = AdminDTO.builder()
+                .nom("DomaineAdmin")
+                .domaine("Cardiology")
+                .build();
         adminService.create(newAdmin);
 
-        List<admin> results = adminService.findByDomaine("Cardiology");
+        List<AdminDTO> results = adminService.findByDomaine("Cardiology");
         if (!results.isEmpty() && "DomaineAdmin".equals(results.get(0).getNom())) {
             System.out.println("✅ Admin trouvé par domaine.");
         } else {

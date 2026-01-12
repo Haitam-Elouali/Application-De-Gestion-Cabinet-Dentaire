@@ -1,22 +1,7 @@
 package ma.TeethCare.service.modules.caisse.api;
 
-import ma.TeethCare.service.modules.caisse.dto.SituationFinanciereDto;
+import ma.TeethCare.mvc.dto.situationFinanciere.SituationFinanciereDTO;
+import ma.TeethCare.service.common.BaseService;
 
-import java.util.List;
-
-public interface situationFinanciereService {
-
-    SituationFinanciereDto create(SituationFinanciereDto dto);
-
-    SituationFinanciereDto update(Long id, SituationFinanciereDto dto);
-
-    SituationFinanciereDto findById(Long id);
-
-    List<SituationFinanciereDto> findAll();
-
-    boolean delete(Long id) throws Exception;
-
-    boolean exists(Long id) throws Exception;
-
-    long count() throws Exception;
+public interface situationFinanciereService extends BaseService<SituationFinanciereDTO, Long> {
 }

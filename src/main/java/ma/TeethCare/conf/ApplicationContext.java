@@ -9,7 +9,7 @@ import ma.TeethCare.service.modules.agenda.api.agendaService;
 import ma.TeethCare.service.modules.agenda.api.rdvService;
 import ma.TeethCare.service.modules.patient.api.PatientService;
 import ma.TeethCare.service.modules.users.api.adminService;
-import ma.TeethCare.service.modules.api.logService; // Kept (Cross-cutting)
+import ma.TeethCare.service.modules.log.api.logService;
 import ma.TeethCare.service.modules.cabinet.api.cabinetMedicaleService;
 import ma.TeethCare.service.modules.caisse.api.chargesService;
 import ma.TeethCare.service.modules.caisse.api.factureService;

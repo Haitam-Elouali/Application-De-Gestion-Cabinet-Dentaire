@@ -1,6 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.notification.notification;
+import ma.TeethCare.mvc.dto.notification.NotificationDTO;
 import ma.TeethCare.repository.api.NotificationRepository;
 import ma.TeethCare.service.modules.notifications.api.notificationService;
 import ma.TeethCare.service.modules.notifications.impl.notificationServiceImpl;
@@ -91,24 +92,23 @@ public class NotificationServiceTest {
 
     public static void testCreate(notificationService service) throws Exception {
         System.out.println("Testing Create...");
-        notification n = notification.builder()
+        NotificationDTO n = NotificationDTO.builder()
             .titre("Rappel")
             .message("RDV demain")
-            .date(java.time.LocalDate.now())
-            .time(java.time.LocalTime.now())
-            .statut("NON_LUE")
+            .dateNotification(LocalDateTime.now())
+            .lue(false)
             .type("rappel")
             .build();
-        notification created = service.create(n);
+        NotificationDTO created = service.create(n);
         if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(notificationService service) throws Exception {
         System.out.println("Testing FindById...");
-        notification n = notification.builder().titre("Test ID").build();
+        NotificationDTO n = NotificationDTO.builder().titre("Test ID").build();
         n = service.create(n);
-        Optional<notification> found = service.findById(n.getId());
+        Optional<NotificationDTO> found = service.findById(n.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -116,24 +116,24 @@ public class NotificationServiceTest {
     public static void testFindAll(notificationService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(notification.builder().titre("All 1").build());
+        service.create(NotificationDTO.builder().titre("All 1").build());
         if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(notificationService service) throws Exception {
         System.out.println("Testing Update...");
-        notification n = notification.builder().titre("Old Title").build();
+        NotificationDTO n = NotificationDTO.builder().titre("Old Title").build();
         n = service.create(n);
         n.setTitre("New Title");
-        notification updated = service.update(n);
+        NotificationDTO updated = service.update(n);
         if (!updated.getTitre().equals("New Title")) throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(notificationService service) throws Exception {
         System.out.println("Testing Delete...");
-        notification n = notification.builder().titre("Delete Me").build();
+        NotificationDTO n = NotificationDTO.builder().titre("Delete Me").build();
         n = service.create(n);
         Long id = n.getId();
         service.delete(id);
@@ -143,7 +143,7 @@ public class NotificationServiceTest {
 
     public static void testExists(notificationService service) throws Exception {
         System.out.println("Testing Exists...");
-        notification n = notification.builder().titre("Exists").build();
+        NotificationDTO n = NotificationDTO.builder().titre("Exists").build();
         n = service.create(n);
         if (!service.exists(n.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
@@ -158,11 +158,16 @@ public class NotificationServiceTest {
 
     public static void testFindByNonLues(notificationService service) throws Exception {
          System.out.println("Testing FindByNonLues...");
-         notification n1 = notification.builder().statut("NON_LUE").titre("Unread").build();
-         notification n2 = notification.builder().statut("LUE").titre("Read").build();
+         NotificationDTO n1 = NotificationDTO.builder().lue(false).titre("Unread").build();
+         NotificationDTO n2 = NotificationDTO.builder().lue(true).titre("Read").build();
          service.create(n1);
          service.create(n2);
-         List<notification> unread = ((notificationServiceImpl)service).findByNonLues(); 
+         List<NotificationDTO> unread = ((notificationServiceImpl)service).findByNonLues(); 
+         
+         // Note: If Stub uses generic logic, it might not filter correctly unless 'lue' maps to 'statut=NON_LUE' which Stub checks.
+         // Assuming Mapper handles this translation.
+         // If RepositoryStub 'findByNonLues' relies on hardcoded 'statut=NON_LUE', Mapper MUST set statut="NON_LUE" when lue=false.
+         
          if (unread.stream().anyMatch(n -> n.getId().equals(n2.getId()))) throw new RuntimeException("FindByNonLues failed: returned read notification");
          if (unread.stream().noneMatch(n -> n.getId().equals(n1.getId()))) throw new RuntimeException("FindByNonLues failed: missing unread notification");
          System.out.println("FindByNonLues passed.");
@@ -170,9 +175,9 @@ public class NotificationServiceTest {
 
     public static void testFindByType(notificationService service) throws Exception {
          System.out.println("Testing FindByType...");
-         notification n = notification.builder().type("alert").titre("Alert").build();
+         NotificationDTO n = NotificationDTO.builder().type("alert").titre("Alert").build();
          service.create(n);
-         List<notification> found = ((notificationServiceImpl)service).findByType("alert");
+         List<NotificationDTO> found = ((notificationServiceImpl)service).findByType("alert");
          if (found.stream().noneMatch(x -> x.getId().equals(n.getId()))) throw new RuntimeException("FindByType failed");
          System.out.println("FindByType passed.");
     }

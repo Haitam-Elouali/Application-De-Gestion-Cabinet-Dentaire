@@ -17,10 +17,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class InterventionMedecinDTO {
     private Long id;
-    private Long medecinId;
     private Long consultationId;
-    private String typeIntervention;
-    private String description;
-    private LocalDate dateIntervention;
+    private Integer duree;
+    private String note;
+    private String resultatImagerie;
     private LocalDateTime dateCreation;
 }

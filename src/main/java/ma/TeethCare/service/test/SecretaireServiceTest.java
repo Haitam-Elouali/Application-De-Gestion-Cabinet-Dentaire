@@ -11,8 +11,7 @@ import java.util.Optional;
  * @date 2025-12-17
  */
 
-import ma.TeethCare.service.modules.users.dto.CreateSecretaireRequest;
-import ma.TeethCare.service.modules.users.dto.UserAccountDto;
+import ma.TeethCare.mvc.dto.secretaire.SecretaireDTO;
 import ma.TeethCare.common.enums.Sexe;
 
 public class SecretaireServiceTest {
@@ -78,9 +77,8 @@ public class SecretaireServiceTest {
 
             testCreate();
             testFindById();
-            // testUpdate(); // Update might not be supported/tested via DTO in this simple
-            // test or requires specific request
             testFindAll();
+            testUpdate();
             testExists();
             testCount();
             testDelete();
@@ -96,26 +94,16 @@ public class SecretaireServiceTest {
     private static void testCreate() throws Exception {
         System.out.println("\n--- TEST: CREATE ---");
         long timestamp = System.currentTimeMillis();
-        CreateSecretaireRequest req = new CreateSecretaireRequest(
-                "SecTest", // nom
-                "sec." + timestamp + "@teethcare.ma", // email
-                "Address", // adresse
-                "CIN" + timestamp, // cin
-                "0600000000", // tel
-                Sexe.Femme, // sexe
-                "sec" + timestamp, // login
-                "pass", // motDePasse
-                LocalDate.now(), // dateNaissance
-                4500.0, // salaire
-                150.0, // prime
-                LocalDate.now(), // dateRecrutement
-                18, // soldeConge
-                "CNSS" + timestamp, // numCNSS
-                10.0 // commission
-        );
+        SecretaireDTO req = SecretaireDTO.builder()
+                .nom("SecTest")
+                .email("sec." + timestamp + "@teethcare.ma")
+                .cin("CIN" + timestamp)
+                .telephone("0600000000")
+                .dateEmbauche(LocalDate.now())
+                .build();
 
-        UserAccountDto created = secretaireService.create(req);
-        createdSecId = created.id();
+        SecretaireDTO created = secretaireService.create(req);
+        createdSecId = created.getId();
 
         if (createdSecId != null) {
             System.out.println("✅ Secrétaire créé avec ID : " + createdSecId);
@@ -126,9 +114,9 @@ public class SecretaireServiceTest {
 
     private static void testFindById() throws Exception {
         System.out.println("\n--- TEST: FIND BY ID ---");
-        UserAccountDto found = secretaireService.findById(createdSecId);
-        if (found != null && "SecTest".equals(found.nom())) {
-            System.out.println("✅ Secrétaire trouvé: " + found.nom());
+        Optional<SecretaireDTO> found = secretaireService.findById(createdSecId);
+        if (found.isPresent() && "SecTest".equals(found.get().getNom())) {
+            System.out.println("✅ Secrétaire trouvé: " + found.get().getNom());
         } else {
             throw new RuntimeException("❌ ERREUR: Secrétaire non trouvé ou nom incorrect.");
         }
@@ -136,12 +124,28 @@ public class SecretaireServiceTest {
 
     private static void testFindAll() throws Exception {
         System.out.println("\n--- TEST: FIND ALL ---");
-        List<UserAccountDto> list = secretaireService.findAll();
+        List<SecretaireDTO> list = secretaireService.findAll();
         System.out.println("ℹ️ Nombre de secrétaires: " + list.size());
         if (!list.isEmpty()) {
             System.out.println("✅ FindAll retourne des résultats.");
         } else {
             throw new RuntimeException("❌ ERREUR: Liste vide.");
+        }
+    }
+    
+    private static void testUpdate() throws Exception {
+        System.out.println("\n--- TEST: UPDATE ---");
+        Optional<SecretaireDTO> opt = secretaireService.findById(createdSecId);
+        if(!opt.isPresent()) throw new RuntimeException("Update failed: ID not found");
+        
+        SecretaireDTO s = opt.get();
+        s.setNom("UpdatedName");
+        SecretaireDTO updated = secretaireService.update(s);
+        
+        if("UpdatedName".equals(updated.getNom())) {
+             System.out.println("✅ Update passed.");
+        } else {
+             throw new RuntimeException("Update failed: name mismatch");
         }
     }
 
@@ -176,27 +180,17 @@ public class SecretaireServiceTest {
     private static void testFindByCin() throws Exception {
         System.out.println("\n--- TEST: FIND BY CIN ---");
         long timestamp = System.currentTimeMillis() + 100;
-        CreateSecretaireRequest req = new CreateSecretaireRequest(
-                "CinSec", // nom
-                "sec.cin" + timestamp + "@teethcare.ma", // email
-                "Address", // adresse
-                "SEC123" + timestamp, // cin (used for search)
-                "0600000000", // tel
-                Sexe.Homme, // sexe
-                "cinsec" + timestamp, // login
-                "pass", // motDePasse
-                LocalDate.now(), // dateNaissance
-                4500.0, // salaire
-                150.0, // prime
-                LocalDate.now(), // dateRecrutement
-                18, // soldeConge
-                "CNSS" + timestamp, // numCNSS
-                10.0 // commission
-        );
+        SecretaireDTO req = SecretaireDTO.builder()
+                .nom("CinSec")
+                .email("sec.cin" + timestamp + "@teethcare.ma")
+                .cin("SEC123" + timestamp)
+                .telephone("0600000000")
+                .dateEmbauche(LocalDate.now())
+                .build();
         secretaireService.create(req);
 
-        Optional<UserAccountDto> found = secretaireService.findByCin("SEC123" + timestamp);
-        if (found.isPresent() && "CinSec".equals(found.get().nom())) {
+        Optional<SecretaireDTO> found = secretaireService.findByCin("SEC123" + timestamp);
+        if (found.isPresent() && "CinSec".equals(found.get().getNom())) {
             System.out.println("✅ Secrétaire trouvé par CIN.");
         } else {
             throw new RuntimeException("❌ ERREUR: Recherche par CIN échouée.");

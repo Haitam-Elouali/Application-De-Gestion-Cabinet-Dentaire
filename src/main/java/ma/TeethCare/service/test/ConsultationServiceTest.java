@@ -1,6 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.consultation.consultation;
+import ma.TeethCare.mvc.dto.consultation.ConsultationDTO;
 import ma.TeethCare.repository.api.ConsultationRepository;
 import ma.TeethCare.service.modules.dossierMedical.api.consultationService;
 import ma.TeethCare.service.modules.dossierMedical.impl.consultationServiceImpl;
@@ -81,12 +82,13 @@ public class ConsultationServiceTest {
 
     public static void testCreate(consultationService service) throws Exception {
         System.out.println("Testing Create...");
-        consultation c = new consultation();
-        c.setDate(LocalDate.now());
-        c.setObservation("Observation test");
-        c.setDiagnostic("Diagnostic test");
+        ConsultationDTO c = ConsultationDTO.builder()
+                .date(LocalDate.now())
+                .notes("Observation test")
+                .diagnostique("Diagnostic test")
+                .build();
 
-        consultation created = service.create(c);
+        ConsultationDTO created = service.create(c);
         if (created.getId() == null)
             throw new RuntimeException("Create failed: ID is null");
 
@@ -95,11 +97,13 @@ public class ConsultationServiceTest {
 
     public static void testFindById(consultationService service) throws Exception {
         System.out.println("Testing FindById...");
-        consultation c = new consultation();
-        c.setObservation("FindById test");
+        ConsultationDTO c = ConsultationDTO.builder()
+                .date(LocalDate.now())
+                .notes("FindById test")
+                .build();
 
         c = service.create(c);
-        Optional<consultation> found = service.findById(c.getId());
+        Optional<ConsultationDTO> found = service.findById(c.getId());
 
         if (!found.isPresent())
             throw new RuntimeException("FindById failed: not found");
@@ -111,8 +115,10 @@ public class ConsultationServiceTest {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
 
-        consultation c = new consultation();
-        c.setObservation("FindAll test");
+        ConsultationDTO c = ConsultationDTO.builder()
+                .date(LocalDate.now())
+                .notes("FindAll test")
+                .build();
         service.create(c);
 
         if (service.findAll().size() != initialCount + 1)
@@ -123,14 +129,16 @@ public class ConsultationServiceTest {
 
     public static void testUpdate(consultationService service) throws Exception {
         System.out.println("Testing Update...");
-        consultation c = new consultation();
-        c.setObservation("Old Observation");
+        ConsultationDTO c = ConsultationDTO.builder()
+                .date(LocalDate.now())
+                .notes("Old Observation")
+                .build();
 
         c = service.create(c);
-        c.setObservation("New Observation");
+        c.setNotes("New Observation");
 
-        consultation updated = service.update(c);
-        if (!"New Observation".equals(updated.getObservation()))
+        ConsultationDTO updated = service.update(c);
+        if (!"New Observation".equals(updated.getNotes()))
             throw new RuntimeException("Update failed: value mismatch");
 
         System.out.println("Update passed.");
@@ -138,8 +146,10 @@ public class ConsultationServiceTest {
 
     public static void testDelete(consultationService service) throws Exception {
         System.out.println("Testing Delete...");
-        consultation c = new consultation();
-        c.setObservation("Delete Me");
+        ConsultationDTO c = ConsultationDTO.builder()
+                .date(LocalDate.now())
+                .notes("Delete Me")
+                .build();
 
         c = service.create(c);
         Long id = c.getId();
@@ -154,8 +164,10 @@ public class ConsultationServiceTest {
 
     public static void testExists(consultationService service) throws Exception {
         System.out.println("Testing Exists...");
-        consultation c = new consultation();
-        c.setObservation("Exists test");
+        ConsultationDTO c = ConsultationDTO.builder()
+                .date(LocalDate.now())
+                .notes("Exists test")
+                .build();
 
         c = service.create(c);
 

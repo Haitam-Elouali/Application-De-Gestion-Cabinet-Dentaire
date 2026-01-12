@@ -12,7 +12,7 @@ import java.util.*;
  * @date 2025-12-17
  */
 
-import ma.TeethCare.service.modules.dossierMedical.dto.DossierMedicalDto;
+import ma.TeethCare.mvc.dto.dossierMedicale.DossierMedicaleDTO;
 import ma.TeethCare.service.modules.dossierMedical.impl.dossierMedicaleServiceImpl;
 import ma.TeethCare.service.modules.dossierMedical.api.dossierMedicaleService;
 
@@ -62,7 +62,6 @@ public class DossierMedicaleServiceTest {
     public static void main(String[] args) {
         try {
             DossierMedicaleRepositoryStub repo = new DossierMedicaleRepositoryStub();
-            // Use constructor injection if possible or setter
             dossierMedicaleService service = new dossierMedicaleServiceImpl(repo);
 
             testCreate(service);
@@ -81,21 +80,27 @@ public class DossierMedicaleServiceTest {
 
     public static void testCreate(dossierMedicaleService service) throws Exception {
         System.out.println("Testing Create...");
-        DossierMedicalDto dm = new DossierMedicalDto(null, 1L, LocalDateTime.now());
+        DossierMedicaleDTO dm = DossierMedicaleDTO.builder()
+                .patientId(1L)
+                .dateCreation(LocalDateTime.now())
+                .build();
 
-        DossierMedicalDto created = service.create(dm);
-        if (created.id() == null)
+        DossierMedicaleDTO created = service.create(dm);
+        if (created.getId() == null)
             throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(dossierMedicaleService service) throws Exception {
         System.out.println("Testing FindById...");
-        DossierMedicalDto dm = new DossierMedicalDto(null, 2L, LocalDateTime.now());
+        DossierMedicaleDTO dm = DossierMedicaleDTO.builder()
+                .patientId(2L)
+                .dateCreation(LocalDateTime.now())
+                .build();
         dm = service.create(dm);
 
-        DossierMedicalDto found = service.findById(dm.id());
-        if (found == null)
+        Optional<DossierMedicaleDTO> found = service.findById(dm.getId());
+        if (!found.isPresent())
             throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -103,7 +108,7 @@ public class DossierMedicaleServiceTest {
     public static void testFindAll(dossierMedicaleService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(new DossierMedicalDto(null, 3L, LocalDateTime.now()));
+        service.create(DossierMedicaleDTO.builder().patientId(3L).dateCreation(LocalDateTime.now()).build());
 
         if (service.findAll().size() != initialCount + 1)
             throw new RuntimeException("FindAll failed: count mismatch");
@@ -112,24 +117,29 @@ public class DossierMedicaleServiceTest {
 
     public static void testUpdate(dossierMedicaleService service) throws Exception {
         System.out.println("Testing Update...");
-        DossierMedicalDto dm = new DossierMedicalDto(null, 4L, LocalDateTime.now());
+        DossierMedicaleDTO dm = DossierMedicaleDTO.builder()
+                .patientId(4L)
+                .dateCreation(LocalDateTime.now())
+                .build();
         dm = service.create(dm);
 
-        // Update patientId to 999L. Records are immutable, so create new instance with
-        // update.
-        DossierMedicalDto toUpdate = new DossierMedicalDto(dm.id(), 999L, dm.dateDeCreation());
+        // Update patientId to 999L.
+        dm.setPatientId(999L);
 
-        DossierMedicalDto updated = service.update(dm.id(), toUpdate);
-        if (!Long.valueOf(999L).equals(updated.patientId()))
+        DossierMedicaleDTO updated = service.update(dm);
+        if (!Long.valueOf(999L).equals(updated.getPatientId()))
             throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(dossierMedicaleService service) throws Exception {
         System.out.println("Testing Delete...");
-        DossierMedicalDto dm = new DossierMedicalDto(null, 5L, LocalDateTime.now());
+        DossierMedicaleDTO dm = DossierMedicaleDTO.builder()
+                .patientId(5L)
+                .dateCreation(LocalDateTime.now())
+                .build();
         dm = service.create(dm);
-        Long id = dm.id();
+        Long id = dm.getId();
         service.delete(id);
         if (service.exists(id))
             throw new RuntimeException("Delete failed: still exists");
@@ -138,9 +148,12 @@ public class DossierMedicaleServiceTest {
 
     public static void testExists(dossierMedicaleService service) throws Exception {
         System.out.println("Testing Exists...");
-        DossierMedicalDto dm = new DossierMedicalDto(null, 6L, LocalDateTime.now());
+        DossierMedicaleDTO dm = DossierMedicaleDTO.builder()
+                .patientId(6L)
+                .dateCreation(LocalDateTime.now())
+                .build();
         dm = service.create(dm);
-        if (!service.exists(dm.id()))
+        if (!service.exists(dm.getId()))
             throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }

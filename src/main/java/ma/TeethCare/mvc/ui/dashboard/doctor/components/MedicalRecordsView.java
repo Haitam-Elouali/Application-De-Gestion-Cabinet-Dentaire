@@ -101,6 +101,7 @@ public class MedicalRecordsView extends JPanel {
         // Renderers - Using NEW TableActionCellRenderer
         // Renderers - Using NEW TableActionCellRenderer with specific actions
         ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer actionRenderer = new ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer(
+            null,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.VIEW_ICON,
             TableActionCellRenderer.ActionType.RDV_MANAGE,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.EDIT,

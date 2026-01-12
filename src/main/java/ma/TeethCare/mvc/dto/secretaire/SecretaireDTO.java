@@ -23,6 +23,7 @@ public class SecretaireDTO {
     private String email;
     private LocalDate dateEmbauche;
     private String numSecu;
+    private String cin;
     private String statut;
     private LocalDateTime dateCreation;
 }

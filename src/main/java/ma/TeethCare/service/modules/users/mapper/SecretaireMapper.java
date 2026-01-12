@@ -2,7 +2,7 @@ package ma.TeethCare.service.modules.users.mapper;
 
 import ma.TeethCare.entities.secretaire.secretaire;
 import ma.TeethCare.service.modules.users.dto.CreateSecretaireRequest;
-
+import ma.TeethCare.mvc.dto.secretaire.SecretaireDTO;
 import ma.TeethCare.service.modules.users.dto.UserAccountDto;
 import java.util.Collections;
 
@@ -46,5 +46,38 @@ public class SecretaireMapper {
                 // .numCNSS(request.numCNSS())
                 .commission(request.commission() != null ? request.commission().intValue() : 0)
                 .build();
+    }
+    public static SecretaireDTO toDTO(secretaire entity) {
+        if (entity == null) return null;
+        
+        return SecretaireDTO.builder()
+                .id(entity.getId())
+                .nom(entity.getNom())
+                .prenom(entity.getPrenom())
+                .email(entity.getEmail())
+                .telephone(entity.getTelephone())
+                .dateEmbauche(entity.getDateEmbauche())
+                .cin(entity.getCin())
+                // .numSecu() // Not in entity
+                // .statut() // Not in entity
+                .dateCreation(entity.getDateCreation() != null ? entity.getDateCreation().atStartOfDay() : null)
+                .build();
+    }
+
+    public static secretaire toEntity(SecretaireDTO dto) {
+        if (dto == null) return null;
+
+        secretaire entity = new secretaire();
+        entity.setIdEntite(dto.getId());
+        entity.setId(dto.getId());
+        
+        entity.setNom(dto.getNom());
+        entity.setPrenom(dto.getPrenom());
+        entity.setEmail(dto.getEmail());
+        entity.setTelephone(dto.getTelephone());
+        entity.setDateEmbauche(dto.getDateEmbauche());
+        entity.setCin(dto.getCin());
+        
+        return entity;
     }
 }

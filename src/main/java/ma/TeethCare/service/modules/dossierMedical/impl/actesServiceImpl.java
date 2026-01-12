@@ -1,100 +1,88 @@
 package ma.TeethCare.service.modules.dossierMedical.impl;
 
 import ma.TeethCare.entities.actes.actes;
+import ma.TeethCare.mvc.dto.actes.ActesDTO;
 import ma.TeethCare.repository.api.ActesRepository;
 import ma.TeethCare.service.modules.dossierMedical.api.actesService;
+import ma.TeethCare.service.modules.dossierMedical.mapper.ActesMapper;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
-
-/**
- * @author Hamza ALAOUI
- * @date 2025-12-17
- */
+import java.util.stream.Collectors;
 
 public class actesServiceImpl implements actesService {
 
-    private final ActesRepository actesRepository;
+    private final ActesRepository repository;
 
-    public actesServiceImpl(ActesRepository actesRepository) {
-        this.actesRepository = actesRepository;
+    public actesServiceImpl(ActesRepository repository) {
+        this.repository = repository;
     }
 
     @Override
-    public actes create(actes entity) throws Exception {
-        if (entity == null) throw new IllegalArgumentException("Acte is null");
-
+    public ActesDTO create(ActesDTO dto) throws Exception {
         try {
-            actesRepository.create(entity);
-            if (entity.getIdEntite() != null) {
-                return actesRepository.findById(entity.getIdEntite());
+            actes entity = ActesMapper.toEntity(dto);
+            repository.create(entity);
+            if(entity.getId() != null) {
+                return ActesMapper.toDTO(repository.findById(entity.getId()));
             }
-            return entity;
-
+            return ActesMapper.toDTO(entity);
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la création de l'acte", e);
+            throw new Exception("Error creating actes", e);
         }
     }
 
     @Override
-    public Optional<actes> findById(Long id) throws Exception {
-        if (id == null) return Optional.empty();
+    public ActesDTO update(ActesDTO dto) throws Exception {
         try {
-            return Optional.ofNullable(actesRepository.findById(id));
+            actes entity = ActesMapper.toEntity(dto);
+            repository.update(entity);
+            return ActesMapper.toDTO(repository.findById(entity.getId()));
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la recherche de l'acte id=" + id, e);
+            throw new Exception("Error updating actes", e);
         }
     }
 
     @Override
-    public List<actes> findAll() throws Exception {
+    public Optional<ActesDTO> findById(Long id) throws Exception {
         try {
-            return actesRepository.findAll();
-        } catch (SQLException e) {
-            throw new Exception("Erreur SQL lors de la récupération de tous les actes", e);
+            return Optional.ofNullable(ActesMapper.toDTO(repository.findById(id)));
+        } catch (Exception e) {
+            throw new Exception("Error finding actes", e);
         }
     }
 
     @Override
-    public actes update(actes entity) throws Exception {
-        if (entity == null) throw new IllegalArgumentException("Acte is null");
-        if (entity.getIdEntite() == null)
-            throw new IllegalArgumentException("Acte idEntite is required for update");
-
+    public List<ActesDTO> findAll() throws Exception {
         try {
-            actesRepository.update(entity);
-            return actesRepository.findById(entity.getIdEntite());
+            return repository.findAll().stream()
+                    .map(ActesMapper::toDTO)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la mise à jour de l'acte id=" + entity.getIdEntite(), e);
+            throw new Exception("Error finding all actes", e);
         }
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        if (id == null) return false;
-
-        try {
-            if (!exists(id)) return false;
-            actesRepository.deleteById(id);
-            return true;
-        } catch (Exception e) {
-            throw new Exception("Erreur lors de la suppression de l'acte id=" + id, e);
-        }
+        repository.deleteById(id);
+        return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        if (id == null) return false;
-        try {
-            return actesRepository.findById(id) != null;
-        } catch (Exception e) {
-            throw new Exception("Erreur lors de la vérification d'existence de l'acte id=" + id, e);
-        }
+        return repository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        return findAll().size();
+        return repository.findAll().size();
+    }
+
+    @Override
+    public List<ActesDTO> findByCategorie(String categorie) throws Exception {
+        return repository.findByCategorie(categorie).stream()
+                .map(ActesMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }

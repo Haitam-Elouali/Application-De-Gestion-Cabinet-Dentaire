@@ -1,58 +1,97 @@
 package ma.TeethCare.service.modules.dossierMedical.impl;
+
 import ma.TeethCare.entities.prescription.prescription;
-import ma.TeethCare.service.modules.dossierMedical.api.prescriptionService;
+import ma.TeethCare.mvc.dto.prescription.PrescriptionDTO;
 import ma.TeethCare.repository.api.PrescriptionRepository;
+import ma.TeethCare.service.modules.dossierMedical.api.prescriptionService;
+import ma.TeethCare.service.modules.dossierMedical.mapper.PrescriptionMapper;
+import ma.TeethCare.common.exceptions.ServiceException;
+
 import java.util.List;
 import java.util.Optional;
-
-/**
- * @author CHOUKHAIRI Noureddine
- * @date 2025-12-09
- */
+import java.util.stream.Collectors;
 
 public class prescriptionServiceImpl implements prescriptionService {
 
-    private final PrescriptionRepository repository;
+    private final PrescriptionRepository prescriptionRepository;
 
-    public prescriptionServiceImpl(PrescriptionRepository repository) {
-        this.repository = repository;
+    public prescriptionServiceImpl(PrescriptionRepository prescriptionRepository) {
+        this.prescriptionRepository = prescriptionRepository;
     }
 
     @Override
-    public prescription create(prescription entity) throws Exception {
-        repository.create(entity);
-        return entity;
+    public PrescriptionDTO create(PrescriptionDTO dto) throws Exception {
+        try {
+            if (dto == null) throw new ServiceException("DTO null");
+            prescription entity = PrescriptionMapper.toEntity(dto);
+            prescriptionRepository.create(entity);
+            return PrescriptionMapper.toDTO(entity);
+        } catch (Exception e) {
+            throw new ServiceException("Erreur création prescription", e);
+        }
     }
 
     @Override
-    public Optional<prescription> findById(Long id) throws Exception {
-        return Optional.ofNullable(repository.findById(id));
+    public Optional<PrescriptionDTO> findById(Long id) throws Exception {
+        try {
+            if (id == null) throw new ServiceException("ID null");
+            prescription entity = prescriptionRepository.findById(id);
+            return Optional.ofNullable(entity).map(PrescriptionMapper::toDTO);
+        } catch (Exception e) {
+            throw new ServiceException("Erreur recherche prescription", e);
+        }
     }
 
     @Override
-    public List<prescription> findAll() throws Exception {
-        return repository.findAll();
+    public List<PrescriptionDTO> findAll() throws Exception {
+        try {
+            return prescriptionRepository.findAll().stream()
+                    .map(PrescriptionMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new ServiceException("Erreur listing prescriptions", e);
+        }
     }
 
     @Override
-    public prescription update(prescription entity) throws Exception {
-        repository.update(entity);
-        return entity;
+    public PrescriptionDTO update(PrescriptionDTO dto) throws Exception {
+        try {
+            if (dto == null) throw new ServiceException("DTO null");
+            prescription entity = PrescriptionMapper.toEntity(dto);
+            prescriptionRepository.update(entity);
+            return dto;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur mise à jour prescription", e);
+        }
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        repository.deleteById(id);
-        return true;
+        try {
+            if (!exists(id)) return false;
+            prescriptionRepository.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur suppression prescription", e);
+        }
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        return repository.findById(id) != null;
+        try {
+            if (id == null) return false;
+            return prescriptionRepository.findById(id) != null;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur existence prescription", e);
+        }
     }
 
     @Override
     public long count() throws Exception {
-        return repository.findAll().size();
+        try {
+            return prescriptionRepository.findAll().size();
+        } catch (Exception e) {
+            throw new ServiceException("Erreur comptage prescriptions", e);
+        }
     }
 }

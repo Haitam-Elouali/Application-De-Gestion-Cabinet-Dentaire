@@ -12,7 +12,7 @@ import java.util.Optional;
  * @date 2025-12-09
  */
 
-import ma.TeethCare.service.modules.caisse.dto.RevenuesDto;
+import ma.TeethCare.mvc.dto.revenues.RevenuesDTO;
 
 public class RevenuesServiceTest {
 
@@ -23,9 +23,9 @@ public class RevenuesServiceTest {
 
         @Override
         public void create(revenues entity) {
-            if (entity.getIdEntite() == null)
-                entity.setIdEntite(idCounter++);
-            data.put(entity.getIdEntite(), entity);
+            if (entity.getId() == null)
+                entity.setId(idCounter++);
+            data.put(entity.getId(), entity);
         }
 
         @Override
@@ -40,13 +40,13 @@ public class RevenuesServiceTest {
 
         @Override
         public void update(revenues entity) {
-            data.put(entity.getIdEntite(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void delete(revenues entity) {
             if (entity != null)
-                data.remove(entity.getIdEntite());
+                data.remove(entity.getId());
         }
 
         @Override
@@ -94,12 +94,18 @@ public class RevenuesServiceTest {
 
     public static void testCreate() throws Exception {
         System.out.println("\n[Test Create]");
-        RevenuesDto r = new RevenuesDto(null, 1L, "Consultation Test", "Test Description", 300.0, "CONSULT",
-                LocalDateTime.now());
+        RevenuesDTO r = RevenuesDTO.builder()
+                .cabinetId(1L)
+                .titre("Consultation Test")
+                .description("Test Description")
+                .montant(300.0)
+                .categorie("CONSULT")
+                .date(LocalDateTime.now())
+                .build();
 
-        RevenuesDto created = service.create(r);
-        if (created != null && created.id() != null) {
-            createdId = created.id();
+        RevenuesDTO created = service.create(r);
+        if (created != null && created.getId() != null) {
+            createdId = created.getId();
             System.out.println("SUCCESS: Created Revenue with ID: " + createdId);
         } else {
             System.err.println("FAILURE: Create returned null or no ID");
@@ -113,9 +119,9 @@ public class RevenuesServiceTest {
             return;
         }
 
-        RevenuesDto found = service.findById(createdId);
-        if (found != null) {
-            System.out.println("SUCCESS: Found Revenue: " + found.titre());
+        Optional<RevenuesDTO> found = service.findById(createdId);
+        if (found.isPresent()) {
+            System.out.println("SUCCESS: Found Revenue: " + found.get().getTitre());
         } else {
             System.err.println("FAILURE: Revenue not found with ID: " + createdId);
         }
@@ -123,9 +129,9 @@ public class RevenuesServiceTest {
 
     public static void testFindAll() throws Exception {
         System.out.println("\n[Test FindAll]");
-        List<RevenuesDto> list = service.findAll();
+        List<RevenuesDTO> list = service.findAll();
         System.out.println("SUCCESS: Retrieved " + list.size() + " revenues.");
-        list.forEach(r -> System.out.println(" - " + r.id() + ": " + r.titre()));
+        list.forEach(r -> System.out.println(" - " + r.getId() + ": " + r.getTitre()));
     }
 
     public static void testUpdate() throws Exception {
@@ -135,16 +141,17 @@ public class RevenuesServiceTest {
             return;
         }
 
-        RevenuesDto r = service.findById(createdId);
-        if (r != null) {
-            RevenuesDto toUpdate = new RevenuesDto(r.id(), r.cabinetId(), "Consultation Updated", r.description(),
-                    450.0, r.categorie(), r.date());
+        Optional<RevenuesDTO> rOpt = service.findById(createdId);
+        if (rOpt.isPresent()) {
+            RevenuesDTO r = rOpt.get();
+            r.setTitre("Consultation Updated");
+            r.setMontant(450.0);
 
-            service.update(r.id(), toUpdate);
+            service.update(r);
 
-            RevenuesDto updated = service.findById(createdId);
-            if (updated != null && "Consultation Updated".equals(updated.titre())) {
-                System.out.println("SUCCESS: Updated Revenue Titre: " + updated.titre());
+            Optional<RevenuesDTO> updatedOpt = service.findById(createdId);
+            if (updatedOpt.isPresent() && "Consultation Updated".equals(updatedOpt.get().getTitre())) {
+                System.out.println("SUCCESS: Updated Revenue Titre: " + updatedOpt.get().getTitre());
             } else {
                 System.err.println("FAILURE: Update failed verification");
             }

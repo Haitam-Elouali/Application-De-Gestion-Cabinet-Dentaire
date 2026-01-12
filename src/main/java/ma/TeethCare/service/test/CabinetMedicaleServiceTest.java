@@ -1,6 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.cabinetMedicale.cabinetMedicale;
+import ma.TeethCare.mvc.dto.cabinetMedicale.CabinetMedicaleDTO;
 import ma.TeethCare.repository.api.CabinetMedicaleRepository;
 import ma.TeethCare.service.modules.cabinet.api.cabinetMedicaleService;
 import ma.TeethCare.service.modules.cabinet.impl.cabinetMedicaleServiceImpl;
@@ -82,21 +83,21 @@ public class CabinetMedicaleServiceTest {
 
     public static void testCreate(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing Create...");
-        cabinetMedicale c = cabinetMedicale.builder()
-            .nomCabinet("Cabinet Alpha")
+        CabinetMedicaleDTO c = CabinetMedicaleDTO.builder()
+            .nom("Cabinet Alpha")
             .email("alpha@cabinet.com")
             .adresse("1 First St")
             .build();
-        cabinetMedicale created = service.create(c);
+        CabinetMedicaleDTO created = service.create(c);
         if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing FindById...");
-        cabinetMedicale c = cabinetMedicale.builder().nomCabinet("Test ID").build();
+        CabinetMedicaleDTO c = CabinetMedicaleDTO.builder().nom("Test ID").build();
         c = service.create(c);
-        Optional<cabinetMedicale> found = service.findById(c.getId());
+        Optional<CabinetMedicaleDTO> found = service.findById(c.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -104,24 +105,24 @@ public class CabinetMedicaleServiceTest {
     public static void testFindAll(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(cabinetMedicale.builder().nomCabinet("All 1").build());
+        service.create(CabinetMedicaleDTO.builder().nom("All 1").build());
         if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing Update...");
-        cabinetMedicale c = cabinetMedicale.builder().nomCabinet("Old Name").build();
+        CabinetMedicaleDTO c = CabinetMedicaleDTO.builder().nom("Old Name").build();
         c = service.create(c);
-        c.setNomCabinet("New Name");
-        cabinetMedicale updated = service.update(c);
-        if (!updated.getNomCabinet().equals("New Name")) throw new RuntimeException("Update failed: value mismatch");
+        c.setNom("New Name");
+        CabinetMedicaleDTO updated = service.update(c);
+        if (!updated.getNom().equals("New Name")) throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing Delete...");
-        cabinetMedicale c = cabinetMedicale.builder().nomCabinet("Delete Me").build();
+        CabinetMedicaleDTO c = CabinetMedicaleDTO.builder().nom("Delete Me").build();
         c = service.create(c);
         Long id = c.getId();
         service.delete(id);
@@ -131,7 +132,7 @@ public class CabinetMedicaleServiceTest {
 
     public static void testExists(cabinetMedicaleService service) throws Exception {
         System.out.println("Testing Exists...");
-        cabinetMedicale c = cabinetMedicale.builder().nomCabinet("Exists").build();
+        CabinetMedicaleDTO c = CabinetMedicaleDTO.builder().nom("Exists").build();
         c = service.create(c);
         if (!service.exists(c.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");

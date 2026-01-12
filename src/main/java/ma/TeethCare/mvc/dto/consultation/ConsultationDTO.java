@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ConsultationDTO {
-    private Long idConsultation;
+    private Long id; // Standardized from idConsultation
     private Long rdvId;
     private Long patientId;
     private Long medecinId;

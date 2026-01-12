@@ -1,79 +1,98 @@
 package ma.TeethCare.service.modules.caisse.impl;
 
 import ma.TeethCare.entities.facture.facture;
+import ma.TeethCare.mvc.dto.facture.FactureDTO;
 import ma.TeethCare.repository.api.FactureRepository;
 import ma.TeethCare.service.modules.caisse.api.factureService;
-import ma.TeethCare.service.modules.caisse.dto.FactureDto;
+
 import ma.TeethCare.service.modules.caisse.mapper.FactureMapper;
+import ma.TeethCare.common.exceptions.ServiceException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class factureServiceImpl implements factureService {
 
-    private final FactureRepository repository;
+    private final FactureRepository factureRepository;
 
-    public factureServiceImpl(FactureRepository repository) {
-        this.repository = repository;
+    public factureServiceImpl(FactureRepository factureRepository) {
+        this.factureRepository = factureRepository;
     }
 
     @Override
-    public FactureDto create(FactureDto dto) {
+    public FactureDTO create(FactureDTO dto) throws Exception {
         try {
+            if (dto == null) throw new ServiceException("DTO null");
             facture entity = FactureMapper.toEntity(dto);
-            repository.create(entity);
-            return FactureMapper.toDto(entity);
+            factureRepository.create(entity);
+            return FactureMapper.toDTO(entity);
         } catch (Exception e) {
-            throw new RuntimeException("Error creating facture", e);
+            throw new ServiceException("Erreur création facture", e);
         }
     }
 
     @Override
-    public FactureDto update(Long id, FactureDto dto) {
+    public Optional<FactureDTO> findById(Long id) throws Exception {
         try {
-            facture entity = FactureMapper.toEntity(dto);
-            entity.setId(id);
-            repository.update(entity);
-            return FactureMapper.toDto(entity);
+            if (id == null) throw new ServiceException("ID null");
+            facture entity = factureRepository.findById(id);
+            return Optional.ofNullable(entity).map(FactureMapper::toDTO);
         } catch (Exception e) {
-            throw new RuntimeException("Error updating facture", e);
+            throw new ServiceException("Erreur recherche facture", e);
         }
     }
 
     @Override
-    public FactureDto findById(Long id) {
+    public List<FactureDTO> findAll() throws Exception {
         try {
-            facture entity = repository.findById(id);
-            return FactureMapper.toDto(entity);
-        } catch (Exception e) {
-            throw new RuntimeException("Error finding facture", e);
-        }
-    }
-
-    @Override
-    public List<FactureDto> findAll() {
-        try {
-            return repository.findAll().stream()
-                    .map(FactureMapper::toDto)
+            return factureRepository.findAll().stream()
+                    .map(FactureMapper::toDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException("Error finding all factures", e);
+            throw new ServiceException("Erreur listing factures", e);
+        }
+    }
+
+    @Override
+    public FactureDTO update(FactureDTO dto) throws Exception {
+        try {
+            if (dto == null) throw new ServiceException("DTO null");
+            facture entity = FactureMapper.toEntity(dto);
+            factureRepository.update(entity);
+            return dto;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur mise à jour facture", e);
         }
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        repository.deleteById(id);
-        return true;
+        try {
+            if (!exists(id)) return false;
+            factureRepository.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur suppression facture", e);
+        }
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        return repository.findById(id) != null;
+        try {
+            if (id == null) return false;
+            return factureRepository.findById(id) != null;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur existence facture", e);
+        }
     }
 
     @Override
     public long count() throws Exception {
-        return repository.findAll().size();
+        try {
+            return factureRepository.findAll().size();
+        } catch (Exception e) {
+            throw new ServiceException("Erreur comptage factures", e);
+        }
     }
 }

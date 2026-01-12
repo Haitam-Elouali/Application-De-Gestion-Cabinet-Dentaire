@@ -1,6 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.actes.actes;
+import ma.TeethCare.mvc.dto.actes.ActesDTO;
 import ma.TeethCare.repository.api.ActesRepository;
 import ma.TeethCare.service.modules.dossierMedical.api.actesService;
 import ma.TeethCare.service.modules.dossierMedical.impl.actesServiceImpl;
@@ -31,21 +32,21 @@ public class ActesServiceTest {
 
         @Override
         public void create(actes entity) {
-            if (entity.getIdEntite() == null) {
-                entity.setIdEntite(idCounter++);
+            if (entity.getId() == null) {
+                entity.setId(idCounter++);
             }
-            data.put(entity.getIdEntite(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void update(actes entity) {
-            data.put(entity.getIdEntite(), entity);
+            data.put(entity.getId(), entity);
         }
 
         @Override
         public void delete(actes entity) {
-            if (entity != null && entity.getIdEntite() != null) {
-                data.remove(entity.getIdEntite());
+            if (entity != null && entity.getId() != null) {
+                data.remove(entity.getId());
             }
         }
 
@@ -87,23 +88,25 @@ public class ActesServiceTest {
 
     public static void testCreate(actesService service) throws Exception {
         System.out.println("Testing Create...");
-        actes a = new actes();
-        a.setNom("Acte Alpha");
-        a.setCategorie("CAT1");
-        a.setPrix(120.0);
+        ActesDTO a = ActesDTO.builder()
+                .nom("Acte Alpha")
+                .categorie("CAT1")
+                .prix(120.0)
+                .build();
 
-        actes created = service.create(a);
-        if (created.getIdEntite() == null) throw new RuntimeException("Create failed: ID is null");
+        ActesDTO created = service.create(a);
+        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(actesService service) throws Exception {
         System.out.println("Testing FindById...");
-        actes a = new actes();
-        a.setNom("FindById");
+        ActesDTO a = ActesDTO.builder()
+                .nom("FindById")
+                .build();
         a = service.create(a);
 
-        Optional<actes> found = service.findById(a.getIdEntite());
+        Optional<ActesDTO> found = service.findById(a.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -112,8 +115,9 @@ public class ActesServiceTest {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
 
-        actes a = new actes();
-        a.setNom("All 1");
+        ActesDTO a = ActesDTO.builder()
+                .nom("All 1")
+                .build();
         service.create(a);
 
         if (service.findAll().size() != initialCount + 1)
@@ -123,15 +127,16 @@ public class ActesServiceTest {
 
     public static void testUpdate(actesService service) throws Exception {
         System.out.println("Testing Update...");
-        actes a = new actes();
-        a.setNom("Old Name");
-        a.setCategorie("CAT1");
-        a.setPrix(50.0);
+        ActesDTO a = ActesDTO.builder()
+                .nom("Old Name")
+                .categorie("CAT1")
+                .prix(50.0)
+                .build();
 
         a = service.create(a);
         a.setNom("New Name");
 
-        actes updated = service.update(a);
+        ActesDTO updated = service.update(a);
         if (!"New Name".equals(updated.getNom()))
             throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
@@ -139,11 +144,12 @@ public class ActesServiceTest {
 
     public static void testDelete(actesService service) throws Exception {
         System.out.println("Testing Delete...");
-        actes a = new actes();
-        a.setNom("Delete Me");
+        ActesDTO a = ActesDTO.builder()
+                .nom("Delete Me")
+                .build();
 
         a = service.create(a);
-        Long id = a.getIdEntite();
+        Long id = a.getId();
 
         service.delete(id);
 
@@ -154,12 +160,13 @@ public class ActesServiceTest {
 
     public static void testExists(actesService service) throws Exception {
         System.out.println("Testing Exists...");
-        actes a = new actes();
-        a.setNom("Exists");
+        ActesDTO a = ActesDTO.builder()
+                .nom("Exists")
+                .build();
 
         a = service.create(a);
 
-        if (!service.exists(a.getIdEntite()))
+        if (!service.exists(a.getId()))
             throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
@@ -171,4 +178,3 @@ public class ActesServiceTest {
         System.out.println("Count passed.");
     }
 }
-

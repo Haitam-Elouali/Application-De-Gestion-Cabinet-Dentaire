@@ -1,6 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.utilisateur.utilisateur;
+import ma.TeethCare.mvc.dto.utilisateur.UtilisateurDTO;
 import ma.TeethCare.repository.api.UtilisateurRepository;
 import ma.TeethCare.service.modules.users.api.utilisateurService;
 import ma.TeethCare.service.modules.users.impl.utilisateurServiceImpl;
@@ -91,22 +92,23 @@ public class UtilisateurServiceTest {
 
     public static void testCreate(utilisateurService service) throws Exception {
         System.out.println("Testing Create...");
-        utilisateur u = utilisateur.builder()
+        UtilisateurDTO u = UtilisateurDTO.builder()
                 .nom("Test User")
                 .email("user@test.com")
-                .username("testLogin")
-                .password("1234")
+                .login("testLogin")
+                .motDePasse("1234")
                 .build();
-        utilisateur created = service.create(u);
-        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
+        UtilisateurDTO created = service.create(u);
+        // DTO field is idUser.
+        if (created.getIdUser() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(utilisateurService service) throws Exception {
         System.out.println("Testing FindById...");
-        utilisateur u = utilisateur.builder().nom("User2").email("u2@test.com").username("user2").build();
+        UtilisateurDTO u = UtilisateurDTO.builder().nom("User2").email("u2@test.com").login("user2").build();
         u = service.create(u);
-        Optional<utilisateur> found = service.findById(u.getId());
+        Optional<UtilisateurDTO> found = service.findById(u.getIdUser());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -114,26 +116,26 @@ public class UtilisateurServiceTest {
     public static void testFindAll(utilisateurService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(utilisateur.builder().nom("User3").email("u3@test.com").username("user3").build());
+        service.create(UtilisateurDTO.builder().nom("User3").email("u3@test.com").login("user3").build());
         if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(utilisateurService service) throws Exception {
         System.out.println("Testing Update...");
-        utilisateur u = utilisateur.builder().nom("User4").email("u4@test.com").username("user4").build();
+        UtilisateurDTO u = UtilisateurDTO.builder().nom("User4").email("u4@test.com").login("user4").build();
         u = service.create(u);
         u.setNom("Updated Name");
-        utilisateur updated = service.update(u);
+        UtilisateurDTO updated = service.update(u);
         if (!"Updated Name".equals(updated.getNom())) throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(utilisateurService service) throws Exception {
         System.out.println("Testing Delete...");
-        utilisateur u = utilisateur.builder().nom("User5").email("u5@test.com").username("user5").build();
+        UtilisateurDTO u = UtilisateurDTO.builder().nom("User5").email("u5@test.com").login("user5").build();
         u = service.create(u);
-        Long id = u.getId();
+        Long id = u.getIdUser();
         service.delete(id);
         if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
@@ -141,9 +143,9 @@ public class UtilisateurServiceTest {
 
     public static void testExists(utilisateurService service) throws Exception {
         System.out.println("Testing Exists...");
-        utilisateur u = utilisateur.builder().nom("User6").email("u6@test.com").username("user6").build();
+        UtilisateurDTO u = UtilisateurDTO.builder().nom("User6").email("u6@test.com").login("user6").build();
         u = service.create(u);
-        if (!service.exists(u.getId())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(u.getIdUser())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 

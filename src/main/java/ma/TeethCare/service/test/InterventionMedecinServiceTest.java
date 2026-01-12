@@ -1,6 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.interventionMedecin.interventionMedecin;
+import ma.TeethCare.mvc.dto.interventionMedecin.InterventionMedecinDTO;
 import ma.TeethCare.repository.api.InterventionMedecinRepository;
 import ma.TeethCare.service.modules.dossierMedical.api.interventionMedecinService;
 import ma.TeethCare.service.modules.dossierMedical.impl.interventionMedecinServiceImpl;
@@ -12,7 +13,6 @@ import java.util.*;
  * @author Hamza ALAOUI
  * @date 2025-12-17
  */
-
 
 public class InterventionMedecinServiceTest {
 
@@ -35,7 +35,7 @@ public class InterventionMedecinServiceTest {
         public void create(interventionMedecin entity) {
             if (entity.getId() == null) {
                 entity.setId(idCounter);
-                entity.setIdEntite(idCounter);
+                entity.setIdEntite(idCounter); // Support baseEntity
                 idCounter++;
             }
             data.put(entity.getId(), entity);
@@ -80,10 +80,13 @@ public class InterventionMedecinServiceTest {
 
     public static void testCreate(interventionMedecinService service) throws Exception {
         System.out.println("Testing Create...");
-        interventionMedecin i = new interventionMedecin();
-        i.setConsultationId(1L);
+        InterventionMedecinDTO i = InterventionMedecinDTO.builder()
+                .consultationId(1L)
+                .duree(30)
+                .note("Note")
+                .build();
 
-        interventionMedecin created = service.create(i);
+        InterventionMedecinDTO created = service.create(i);
         if (created.getId() == null)
             throw new RuntimeException("Create failed: ID is null");
 
@@ -92,11 +95,12 @@ public class InterventionMedecinServiceTest {
 
     public static void testFindById(interventionMedecinService service) throws Exception {
         System.out.println("Testing FindById...");
-        interventionMedecin i = new interventionMedecin();
-        i.setConsultationId(2L);
+        InterventionMedecinDTO i = InterventionMedecinDTO.builder()
+                .consultationId(2L)
+                .build();
 
         i = service.create(i);
-        Optional<interventionMedecin> found = service.findById(i.getId());
+        Optional<InterventionMedecinDTO> found = service.findById(i.getId());
 
         if (!found.isPresent())
             throw new RuntimeException("FindById failed: not found");
@@ -108,8 +112,9 @@ public class InterventionMedecinServiceTest {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
 
-        interventionMedecin i = new interventionMedecin();
-        i.setConsultationId(3L);
+        InterventionMedecinDTO i = InterventionMedecinDTO.builder()
+                .consultationId(3L)
+                .build();
         service.create(i);
 
         if (service.findAll().size() != initialCount + 1)
@@ -120,13 +125,17 @@ public class InterventionMedecinServiceTest {
 
     public static void testUpdate(interventionMedecinService service) throws Exception {
         System.out.println("Testing Update...");
-        interventionMedecin i = new interventionMedecin();
-        i.setConsultationId(4L);
+        InterventionMedecinDTO i = InterventionMedecinDTO.builder()
+                .consultationId(4L)
+                .build();
 
         i = service.create(i);
+        
+        // Update
         i.setConsultationId(99L);
+        i.setNote("Updated Note");
 
-        interventionMedecin updated = service.update(i);
+        InterventionMedecinDTO updated = service.update(i);
         if (!updated.getConsultationId().equals(99L))
             throw new RuntimeException("Update failed: value mismatch");
 
@@ -135,8 +144,9 @@ public class InterventionMedecinServiceTest {
 
     public static void testDelete(interventionMedecinService service) throws Exception {
         System.out.println("Testing Delete...");
-        interventionMedecin i = new interventionMedecin();
-        i.setConsultationId(5L);
+        InterventionMedecinDTO i = InterventionMedecinDTO.builder()
+                .consultationId(5L)
+                .build();
 
         i = service.create(i);
         Long id = i.getId();
@@ -151,8 +161,9 @@ public class InterventionMedecinServiceTest {
 
     public static void testExists(interventionMedecinService service) throws Exception {
         System.out.println("Testing Exists...");
-        interventionMedecin i = new interventionMedecin();
-        i.setConsultationId(6L);
+        InterventionMedecinDTO i = InterventionMedecinDTO.builder()
+                .consultationId(6L)
+                .build();
 
         i = service.create(i);
 
@@ -172,4 +183,3 @@ public class InterventionMedecinServiceTest {
         System.out.println("Count passed.");
     }
 }
-

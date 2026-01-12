@@ -1,108 +1,81 @@
 package ma.TeethCare.service.modules.dossierMedical.impl;
 
 import ma.TeethCare.entities.interventionMedecin.interventionMedecin;
+import ma.TeethCare.mvc.dto.interventionMedecin.InterventionMedecinDTO;
 import ma.TeethCare.repository.api.InterventionMedecinRepository;
 import ma.TeethCare.service.modules.dossierMedical.api.interventionMedecinService;
+import ma.TeethCare.service.modules.dossierMedical.mapper.InterventionMedecinMapper;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
-
-/**
- * @author Hamza ALAOUI
- * @date 2025-12-17
- */
+import java.util.stream.Collectors;
 
 public class interventionMedecinServiceImpl implements interventionMedecinService {
 
-    private final InterventionMedecinRepository interventionMedecinRepository;
+    private final InterventionMedecinRepository repository;
 
-    public interventionMedecinServiceImpl(InterventionMedecinRepository interventionMedecinRepository) {
-        this.interventionMedecinRepository = interventionMedecinRepository;
+    public interventionMedecinServiceImpl(InterventionMedecinRepository repository) {
+        this.repository = repository;
     }
 
     @Override
-    public interventionMedecin create(interventionMedecin entity) throws Exception {
-        if (entity == null) throw new IllegalArgumentException("InterventionMedecin is null");
-
+    public InterventionMedecinDTO create(InterventionMedecinDTO dto) throws Exception {
         try {
-            interventionMedecinRepository.create(entity);
-            if (entity.getId() != null) {
-                return interventionMedecinRepository.findById(entity.getId());
+            interventionMedecin entity = InterventionMedecinMapper.toEntity(dto);
+            repository.create(entity);
+            if(entity.getId() != null) {
+                return InterventionMedecinMapper.toDTO(repository.findById(entity.getId()));
             }
-            return entity;
-
+            return InterventionMedecinMapper.toDTO(entity);
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la création de l'intervention médecin", e);
+            throw new Exception("Error creating interventionMedecin", e);
         }
     }
 
     @Override
-    public Optional<interventionMedecin> findById(Long id) throws Exception {
-        if (id == null) return Optional.empty();
+    public InterventionMedecinDTO update(InterventionMedecinDTO dto) throws Exception {
         try {
-            return Optional.ofNullable(interventionMedecinRepository.findById(id));
+            interventionMedecin entity = InterventionMedecinMapper.toEntity(dto);
+            repository.update(entity);
+            return InterventionMedecinMapper.toDTO(repository.findById(entity.getId()));
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la recherche de l'intervention médecin id=" + id, e);
+            throw new Exception("Error updating interventionMedecin", e);
         }
     }
 
     @Override
-    public List<interventionMedecin> findAll() throws Exception {
+    public Optional<InterventionMedecinDTO> findById(Long id) throws Exception {
         try {
-            return interventionMedecinRepository.findAll();
-        } catch (SQLException e) {
-            throw new Exception("Erreur SQL lors de la récupération de toutes les interventions médecin", e);
+            return Optional.ofNullable(InterventionMedecinMapper.toDTO(repository.findById(id)));
+        } catch (Exception e) {
+            throw new Exception("Error finding interventionMedecin", e);
         }
     }
 
     @Override
-    public interventionMedecin update(interventionMedecin entity) throws Exception {
-        if (entity == null) throw new IllegalArgumentException("InterventionMedecin is null");
-        if (entity.getId() == null && entity.getIdEntite() == null)
-            throw new IllegalArgumentException("InterventionMedecin id/idEntite is required for update");
-
-        if (entity.getIdEntite() == null && entity.getId() != null) {
-            entity.setIdEntite(entity.getId());
-        }
-        if (entity.getId() == null && entity.getIdEntite() != null) {
-            entity.setId(entity.getIdEntite());
-        }
-
+    public List<InterventionMedecinDTO> findAll() throws Exception {
         try {
-            interventionMedecinRepository.update(entity);
-            return interventionMedecinRepository.findById(entity.getId());
+            return repository.findAll().stream()
+                    .map(InterventionMedecinMapper::toDTO)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la mise à jour de l'intervention médecin id=" + entity.getId(), e);
+            throw new Exception("Error finding all interventionMedecin", e);
         }
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        if (id == null) return false;
-
-        try {
-            if (!exists(id)) return false;
-            interventionMedecinRepository.deleteById(id);
-            return true;
-
-        } catch (Exception e) {
-            throw new Exception("Erreur lors de la suppression de l'intervention médecin id=" + id, e);
-        }
+        repository.deleteById(id);
+        return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        if (id == null) return false;
-        try {
-            return interventionMedecinRepository.findById(id) != null;
-        } catch (Exception e) {
-            throw new Exception("Erreur lors de la vérification d'existence intervention médecin id=" + id, e);
-        }
+        return repository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        return findAll().size();
+        return repository.findAll().size();
     }
 }

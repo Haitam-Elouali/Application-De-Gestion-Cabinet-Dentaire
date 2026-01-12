@@ -17,10 +17,13 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ChargesDTO {
     private Long id;
+    private String titre;
     private String description;
     private Double montant;
     private LocalDate dateCharge;
+    private LocalDateTime date; // Added to match entity/test usage
     private String categorie;
     private String statut;
+    private Long cabinetId;
     private LocalDateTime dateCreation;
 }

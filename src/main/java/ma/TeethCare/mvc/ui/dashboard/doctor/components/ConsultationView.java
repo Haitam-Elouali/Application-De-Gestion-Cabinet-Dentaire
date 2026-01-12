@@ -56,6 +56,7 @@ public class ConsultationView extends JPanel {
 
         // Actions (Col 6)
         ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer actionRenderer = new ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer(
+            null,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.VIEW_ICON,
             TableActionCellRenderer.ActionType.BILL,
             TableActionCellRenderer.ActionType.LINK,

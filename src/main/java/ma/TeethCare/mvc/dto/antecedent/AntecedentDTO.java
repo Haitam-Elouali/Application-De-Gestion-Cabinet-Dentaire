@@ -7,10 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Data Transfer Object pour l'entité Antecedent.
- * Utilisé pour le transfert de données entre couches.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,8 +14,9 @@ import lombok.NoArgsConstructor;
 public class AntecedentDTO {
     private Long id;
     private Long dossierMedicaleId;
-    private String description;
-    private String type;
+    private String nom; // Maps to Description in UI
+    private String categorie; // Maps to Type in UI
+    private String niveauDeRisque; // Maps to Risque in UI
     private LocalDate dateAntecedent;
     private LocalDateTime dateCreation;
 }

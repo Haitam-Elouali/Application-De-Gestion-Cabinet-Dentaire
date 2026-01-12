@@ -24,5 +24,6 @@ public class AdminDTO {
     private LocalDate dateEmbauche;
     private String numSecu;
     private String statut;
+    private String domaine;
     private LocalDateTime dateCreation;
 }

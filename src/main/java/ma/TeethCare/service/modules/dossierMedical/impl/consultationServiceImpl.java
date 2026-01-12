@@ -1,17 +1,15 @@
 package ma.TeethCare.service.modules.dossierMedical.impl;
 
 import ma.TeethCare.entities.consultation.consultation;
+import ma.TeethCare.mvc.dto.consultation.ConsultationDTO;
 import ma.TeethCare.repository.api.ConsultationRepository;
 import ma.TeethCare.service.modules.dossierMedical.api.consultationService;
+import ma.TeethCare.service.modules.dossierMedical.mapper.ConsultationMapper;
+import ma.TeethCare.common.exceptions.ServiceException;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
-
-/**
- * @author Hamza ALAOUI
- * @date 2025-12-17
- */
+import java.util.stream.Collectors;
 
 public class consultationServiceImpl implements consultationService {
 
@@ -22,87 +20,84 @@ public class consultationServiceImpl implements consultationService {
     }
 
     @Override
-    public consultation create(consultation entity) throws Exception {
-        if (entity == null) throw new IllegalArgumentException("Consultation is null");
-
+    public ConsultationDTO create(ConsultationDTO dto) throws Exception {
         try {
-            consultationRepository.create(entity);
-            if (entity.getId() != null) {
-                return consultationRepository.findById(entity.getId());
+            if (dto == null) {
+                throw new ServiceException("ConsultationDTO ne peut pas être null");
             }
-            return entity;
-
+            consultation entity = ConsultationMapper.toEntity(dto);
+            consultationRepository.create(entity);
+            return ConsultationMapper.toDTO(entity);
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la création de la consultation", e);
+            throw new ServiceException("Erreur lors de la création de la consultation", e);
         }
     }
 
     @Override
-    public Optional<consultation> findById(Long id) throws Exception {
-        if (id == null) return Optional.empty();
+    public Optional<ConsultationDTO> findById(Long id) throws Exception {
         try {
-            return Optional.ofNullable(consultationRepository.findById(id));
+            if (id == null) {
+                throw new ServiceException("ID consultation ne peut pas être null");
+            }
+            consultation entity = consultationRepository.findById(id);
+            return Optional.ofNullable(entity).map(ConsultationMapper::toDTO);
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la recherche de la consultation id=" + id, e);
+            throw new ServiceException("Erreur lors de la récupération de la consultation", e);
         }
     }
 
     @Override
-    public List<consultation> findAll() throws Exception {
+    public List<ConsultationDTO> findAll() throws Exception {
         try {
-            return consultationRepository.findAll();
-        } catch (SQLException e) {
-            throw new Exception("Erreur SQL lors de la récupération de toutes les consultations", e);
+            return consultationRepository.findAll().stream()
+                    .map(ConsultationMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors de la récupération des consultations", e);
         }
     }
 
     @Override
-    public consultation update(consultation entity) throws Exception {
-        if (entity == null) throw new IllegalArgumentException("Consultation is null");
-        if (entity.getId() == null && entity.getIdEntite() == null)
-            throw new IllegalArgumentException("Consultation id/idEntite is required for update");
-
-        if (entity.getIdEntite() == null && entity.getId() != null) {
-            entity.setIdEntite(entity.getId());
-        }
-        if (entity.getId() == null && entity.getIdEntite() != null) {
-            entity.setId(entity.getIdEntite());
-        }
-
+    public ConsultationDTO update(ConsultationDTO dto) throws Exception {
         try {
+            if (dto == null) {
+                throw new ServiceException("ConsultationDTO ne peut pas être null");
+            }
+            consultation entity = ConsultationMapper.toEntity(dto);
             consultationRepository.update(entity);
-            return consultationRepository.findById(entity.getId());
+            return dto;
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la mise à jour de la consultation id=" + entity.getId(), e);
+            throw new ServiceException("Erreur lors de la mise à jour de la consultation", e);
         }
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        if (id == null) return false;
-
         try {
             if (!exists(id)) return false;
             consultationRepository.deleteById(id);
             return true;
-
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la suppression de la consultation id=" + id, e);
+            throw new ServiceException("Erreur lors de la suppression de la consultation", e);
         }
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        if (id == null) return false;
         try {
+            if (id == null) return false;
             return consultationRepository.findById(id) != null;
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la vérification d'existence consultation id=" + id, e);
+            throw new ServiceException("Erreur lors de la vérification de la consultation", e);
         }
     }
 
     @Override
     public long count() throws Exception {
-        return findAll().size();
+        try {
+            return consultationRepository.findAll().size();
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors du comptage des consultations", e);
+        }
     }
 }

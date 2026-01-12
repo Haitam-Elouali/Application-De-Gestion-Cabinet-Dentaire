@@ -102,6 +102,7 @@ public class FinancialSituationView extends JPanel {
         // Switch to TableActionCellRenderer for consistency
         // Switch to TableActionCellRenderer with specific actions: PRINT, BILL, EDIT, DELETE
         ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer actionRenderer = new ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer(
+            null,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.PRINT,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.BILL,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.EDIT,

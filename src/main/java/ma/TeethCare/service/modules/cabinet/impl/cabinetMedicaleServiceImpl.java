@@ -1,9 +1,14 @@
 package ma.TeethCare.service.modules.cabinet.impl;
+
 import ma.TeethCare.entities.cabinetMedicale.cabinetMedicale;
+import ma.TeethCare.mvc.dto.cabinetMedicale.CabinetMedicaleDTO;
 import ma.TeethCare.service.modules.cabinet.api.cabinetMedicaleService;
+import ma.TeethCare.service.modules.cabinet.mapper.CabinetMedicaleMapper;
 import ma.TeethCare.repository.api.CabinetMedicaleRepository;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Haitam ELOUALI
@@ -19,25 +24,33 @@ public class cabinetMedicaleServiceImpl implements cabinetMedicaleService {
     }
 
     @Override
-    public cabinetMedicale create(cabinetMedicale entity) throws Exception {
+    public CabinetMedicaleDTO create(CabinetMedicaleDTO dto) throws Exception {
+        cabinetMedicale entity = CabinetMedicaleMapper.toEntity(dto);
         repository.create(entity);
-        return entity;
+        if(entity.getId() != null) {
+            return CabinetMedicaleMapper.toDTO(repository.findById(entity.getId()));
+        }
+        return CabinetMedicaleMapper.toDTO(entity);
     }
 
     @Override
-    public Optional<cabinetMedicale> findById(Long id) throws Exception {
-        return Optional.ofNullable(repository.findById(id));
+    public Optional<CabinetMedicaleDTO> findById(Long id) throws Exception {
+        return Optional.ofNullable(CabinetMedicaleMapper.toDTO(repository.findById(id)));
     }
 
     @Override
-    public List<cabinetMedicale> findAll() throws Exception {
-        return repository.findAll();
+    public List<CabinetMedicaleDTO> findAll() throws Exception {
+        return repository.findAll().stream()
+                .map(CabinetMedicaleMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public cabinetMedicale update(cabinetMedicale entity) throws Exception {
+    public CabinetMedicaleDTO update(CabinetMedicaleDTO dto) throws Exception {
+        cabinetMedicale entity = CabinetMedicaleMapper.toEntity(dto);
         repository.update(entity);
-        return entity;
+        // Assuming update relies on ID being set
+        return CabinetMedicaleMapper.toDTO(repository.findById(entity.getId()));
     }
 
     @Override
@@ -54,5 +67,10 @@ public class cabinetMedicaleServiceImpl implements cabinetMedicaleService {
     @Override
     public long count() throws Exception {
         return repository.findAll().size();
+    }
+
+    @Override
+    public Optional<CabinetMedicaleDTO> findByEmail(String email) throws Exception {
+        return repository.findByEmail(email).map(CabinetMedicaleMapper::toDTO);
     }
 }

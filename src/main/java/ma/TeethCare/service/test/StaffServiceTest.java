@@ -1,6 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.staff.staff;
+import ma.TeethCare.mvc.dto.staff.StaffDTO;
 import ma.TeethCare.service.modules.users.impl.staffServiceImpl;
 import java.time.LocalDate;
 import java.util.List;
@@ -93,16 +94,17 @@ public class StaffServiceTest {
 
     private static void testCreate() throws Exception {
         System.out.println("\n--- TEST: CREATE ---");
-        staff s = new staff();
         long timestamp = System.currentTimeMillis();
-        s.setNom("StaffTest");
-        s.setEmail("staff." + timestamp + "@teethcare.ma");
-        s.setCin("CIN" + timestamp);
-        s.setSalaire(5000.0);
-        s.setDateEmbauche(LocalDate.now());
+        StaffDTO s = StaffDTO.builder()
+                .nom("StaffTest")
+                .email("staff." + timestamp + "@teethcare.ma")
+                .cin("CIN" + timestamp)
+                // .salaire(5000.0) // Not in DTO?
+                .dateEmbauche(LocalDate.now())
+                .build();
 
-        staffService.create(s);
-        createdStaffId = s.getIdEntite();
+        StaffDTO created = staffService.create(s);
+        createdStaffId = created.getId();
 
         if (createdStaffId != null) {
             System.out.println("✅ Staff créé avec ID : " + createdStaffId);
@@ -113,7 +115,7 @@ public class StaffServiceTest {
 
     private static void testFindById() throws Exception {
         System.out.println("\n--- TEST: FIND BY ID ---");
-        Optional<staff> found = staffService.findById(createdStaffId);
+        Optional<StaffDTO> found = staffService.findById(createdStaffId);
         if (found.isPresent() && "StaffTest".equals(found.get().getNom())) {
             System.out.println("✅ Staff trouvé: " + found.get().getNom());
         } else {
@@ -123,12 +125,14 @@ public class StaffServiceTest {
 
     private static void testUpdate() throws Exception {
         System.out.println("\n--- TEST: UPDATE ---");
-        Optional<staff> found = staffService.findById(createdStaffId);
-        staff s = found.get();
+        Optional<StaffDTO> found = staffService.findById(createdStaffId);
+        if(!found.isPresent()) throw new RuntimeException("Update failed: ID not found");
+        
+        StaffDTO s = found.get();
         s.setNom("UpdatedStaff");
         staffService.update(s);
 
-        Optional<staff> updated = staffService.findById(createdStaffId);
+        Optional<StaffDTO> updated = staffService.findById(createdStaffId);
         if (updated.isPresent() && "UpdatedStaff".equals(updated.get().getNom())) {
             System.out.println("✅ Staff mis à jour avec succès.");
         } else {
@@ -138,7 +142,7 @@ public class StaffServiceTest {
 
     private static void testFindAll() throws Exception {
         System.out.println("\n--- TEST: FIND ALL ---");
-        List<staff> list = staffService.findAll();
+        List<StaffDTO> list = staffService.findAll();
         System.out.println("ℹ️ Nombre de staff: " + list.size());
         if (!list.isEmpty()) {
             System.out.println("✅ FindAll retourne des résultats.");
@@ -177,12 +181,14 @@ public class StaffServiceTest {
 
     private static void testFindByEmail() throws Exception {
         System.out.println("\n--- TEST: FIND BY EMAIL ---");
-        staff s = new staff();
-        s.setNom("EmailStaff");
-        s.setEmail("emailtest@teethcare.ma");
+        StaffDTO s = StaffDTO.builder()
+                .nom("EmailStaff")
+                .email("emailtest@teethcare.ma")
+                .dateEmbauche(LocalDate.now())
+                .build();
         staffService.create(s);
 
-        Optional<staff> found = staffService.findByEmail("emailtest@teethcare.ma");
+        Optional<StaffDTO> found = staffService.findByEmail("emailtest@teethcare.ma");
         if (found.isPresent() && "EmailStaff".equals(found.get().getNom())) {
             System.out.println("✅ Staff trouvé par email.");
         } else {
@@ -192,12 +198,15 @@ public class StaffServiceTest {
 
     private static void testFindByCin() throws Exception {
         System.out.println("\n--- TEST: FIND BY CIN ---");
-        staff s = new staff();
-        s.setNom("CinStaff");
-        s.setCin("CIN12345");
+        StaffDTO s = StaffDTO.builder()
+                .nom("CinStaff")
+                .cin("CIN12345")
+                .email("cin.test@teethcare.ma")
+                .dateEmbauche(LocalDate.now())
+                .build();
         staffService.create(s);
 
-        Optional<staff> found = staffService.findByCin("CIN12345");
+        Optional<StaffDTO> found = staffService.findByCin("CIN12345");
         if (found.isPresent() && "CinStaff".equals(found.get().getNom())) {
             System.out.println("✅ Staff trouvé par CIN.");
         } else {

@@ -65,6 +65,7 @@ public class UserManagementView extends JPanel {
         
         // Actions
         ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer actionRenderer = new ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer(
+            null,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.VIEW_FULL,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.EDIT,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.SUSPEND,

@@ -1,60 +1,105 @@
 package ma.TeethCare.service.modules.agenda.impl;
 
 import ma.TeethCare.entities.rdv.rdv;
+import ma.TeethCare.mvc.dto.rdv.RdvDTO;
 import ma.TeethCare.repository.api.RdvRepository;
 import ma.TeethCare.service.modules.agenda.api.rdvService;
+import ma.TeethCare.service.modules.agenda.mapper.RdvMapper;
+import ma.TeethCare.common.exceptions.ServiceException;
 
 import java.util.List;
 import java.util.Optional;
-
-/**
- * @author Hamza ALAOUI
- * @date 2025-12-10
- */
+import java.util.stream.Collectors;
 
 public class rdvServiceImpl implements rdvService {
 
-    private final RdvRepository repository;
+    private final RdvRepository rdvRepository;
 
-    public rdvServiceImpl(RdvRepository repository) {
-        this.repository = repository;
+    public rdvServiceImpl(RdvRepository rdvRepository) {
+        this.rdvRepository = rdvRepository;
     }
 
     @Override
-    public rdv create(rdv entity) throws Exception {
-        repository.create(entity);
-        return entity;
+    public RdvDTO create(RdvDTO dto) throws Exception {
+        try {
+            if (dto == null) {
+                throw new ServiceException("RdvDTO ne peut pas être null");
+            }
+            rdv entity = RdvMapper.toEntity(dto);
+            rdvRepository.create(entity);
+            return RdvMapper.toDTO(entity);
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors de la création du RDV", e);
+        }
     }
 
     @Override
-    public Optional<rdv> findById(Long id) throws Exception {
-        return Optional.ofNullable(repository.findById(id));
+    public Optional<RdvDTO> findById(Long id) throws Exception {
+        try {
+            if (id == null) {
+                throw new ServiceException("ID RDV ne peut pas être null");
+            }
+            rdv entity = rdvRepository.findById(id);
+            return Optional.ofNullable(entity).map(RdvMapper::toDTO);
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors de la récupération du RDV", e);
+        }
     }
 
     @Override
-    public List<rdv> findAll() throws Exception {
-        return repository.findAll();
+    public List<RdvDTO> findAll() throws Exception {
+        try {
+            return rdvRepository.findAll().stream()
+                    .map(RdvMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors de la récupération de la liste des RDVs", e);
+        }
     }
 
     @Override
-    public rdv update(rdv entity) throws Exception {
-        repository.update(entity);
-        return entity;
+    public RdvDTO update(RdvDTO dto) throws Exception {
+        try {
+            if (dto == null) {
+                throw new ServiceException("RdvDTO ne peut pas être null");
+            }
+            rdv entity = RdvMapper.toEntity(dto);
+            rdvRepository.update(entity);
+            return dto;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors de la mise à jour du RDV", e);
+        }
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        repository.deleteById(id);
-        return true;
+        try {
+            if (!exists(id)) {
+                return false;
+            }
+            rdvRepository.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors de la suppression du RDV", e);
+        }
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        return repository.findById(id) != null;
+        try {
+            if (id == null) return false;
+            return rdvRepository.findById(id) != null;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors de la vérification d'existence du RDV", e);
+        }
     }
 
     @Override
     public long count() throws Exception {
-        return repository.findAll().size();
+        try {
+            return rdvRepository.findAll().size();
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors du comptage des RDVs", e);
+        }
     }
 }

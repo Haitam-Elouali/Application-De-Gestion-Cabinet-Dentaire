@@ -1,90 +1,101 @@
 package ma.TeethCare.service.modules.dossierMedical.impl;
 
 import ma.TeethCare.entities.dossierMedicale.dossierMedicale;
+import ma.TeethCare.mvc.dto.dossierMedicale.DossierMedicaleDTO;
 import ma.TeethCare.repository.api.DossierMedicaleRepository;
-import ma.TeethCare.repository.mySQLImpl.DossierMedicaleRepositoryImpl;
 import ma.TeethCare.service.modules.dossierMedical.api.dossierMedicaleService;
-import ma.TeethCare.service.modules.dossierMedical.dto.DossierMedicalDto;
 import ma.TeethCare.service.modules.dossierMedical.mapper.DossierMedicalMapper;
+import ma.TeethCare.common.exceptions.ServiceException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class dossierMedicaleServiceImpl implements dossierMedicaleService {
 
-    private final DossierMedicaleRepository dossierMedicaleRepository;
+    private final DossierMedicaleRepository dmRepository;
 
-    public dossierMedicaleServiceImpl() {
-        this.dossierMedicaleRepository = new DossierMedicaleRepositoryImpl();
-    }
-
-    public dossierMedicaleServiceImpl(DossierMedicaleRepository dossierMedicaleRepository) {
-        this.dossierMedicaleRepository = dossierMedicaleRepository;
+    public dossierMedicaleServiceImpl(DossierMedicaleRepository dmRepository) {
+        this.dmRepository = dmRepository;
     }
 
     @Override
-    public DossierMedicalDto create(DossierMedicalDto dto) {
+    public DossierMedicaleDTO create(DossierMedicaleDTO dto) throws Exception {
         try {
+            if (dto == null) {
+                throw new ServiceException("DTO ne peut pas être null");
+            }
             dossierMedicale entity = DossierMedicalMapper.toEntity(dto);
-            dossierMedicaleRepository.create(entity);
-            return DossierMedicalMapper.toDto(entity);
+            dmRepository.create(entity);
+            return DossierMedicalMapper.toDTO(entity);
         } catch (Exception e) {
-            throw new RuntimeException("Error creating dossier medical", e);
+            throw new ServiceException("Erreur lors de la création du dossier médical", e);
         }
     }
 
     @Override
-    public DossierMedicalDto update(Long id, DossierMedicalDto dto) {
+    public Optional<DossierMedicaleDTO> findById(Long id) throws Exception {
         try {
-            dossierMedicale entity = DossierMedicalMapper.toEntity(dto);
-            entity.setId(id); // Ensure ID is set for update
-            dossierMedicaleRepository.update(entity);
-            return DossierMedicalMapper.toDto(entity);
+            if (id == null) {
+                throw new ServiceException("ID cannot be null");
+            }
+            dossierMedicale entity = dmRepository.findById(id);
+            return Optional.ofNullable(entity).map(DossierMedicalMapper::toDTO);
         } catch (Exception e) {
-            throw new RuntimeException("Error updating dossier medical", e);
+            throw new ServiceException("Erreur lors de la récupération du dossier médical", e);
         }
     }
 
     @Override
-    public DossierMedicalDto findById(Long id) {
+    public List<DossierMedicaleDTO> findAll() throws Exception {
         try {
-            dossierMedicale entity = dossierMedicaleRepository.findById(id);
-            return DossierMedicalMapper.toDto(entity);
-        } catch (Exception e) {
-            throw new RuntimeException("Error finding dossier medical by id", e);
-        }
-    }
-
-    @Override
-    public List<DossierMedicalDto> findAll() {
-        try {
-            return dossierMedicaleRepository.findAll().stream()
-                    .map(DossierMedicalMapper::toDto)
+            return dmRepository.findAll().stream()
+                    .map(DossierMedicalMapper::toDTO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException("Error finding all dossier medicals", e);
+            throw new ServiceException("Erreur lors de la récupération des dossiers médicaux", e);
+        }
+    }
+
+    @Override
+    public DossierMedicaleDTO update(DossierMedicaleDTO dto) throws Exception {
+        try {
+            if (dto == null) throw new ServiceException("DTO null");
+            dossierMedicale entity = DossierMedicalMapper.toEntity(dto);
+            dmRepository.update(entity);
+            return dto;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur mise à jour dossier médical", e);
         }
     }
 
     @Override
     public boolean delete(Long id) throws Exception {
-        if (id == null) {
-            return false;
+        try {
+            if (!exists(id)) return false;
+            dmRepository.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur suppression dossier médical", e);
         }
-        dossierMedicaleRepository.deleteById(id);
-        return true;
     }
 
     @Override
     public boolean exists(Long id) throws Exception {
-        if (id == null) {
-            return false;
+        try {
+            if (id == null) return false;
+            return dmRepository.findById(id) != null;
+        } catch (Exception e) {
+            throw new ServiceException("Erreur vérification existence", e);
         }
-        return dossierMedicaleRepository.findById(id) != null;
     }
 
     @Override
     public long count() throws Exception {
-        return dossierMedicaleRepository.findAll().size();
+        try {
+            return dmRepository.findAll().size();
+        } catch (Exception e) {
+            throw new ServiceException("Erreur comptage", e);
+        }
     }
 }

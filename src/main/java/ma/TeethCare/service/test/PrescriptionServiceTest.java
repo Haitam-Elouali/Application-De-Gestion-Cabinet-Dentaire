@@ -1,6 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.prescription.prescription;
+import ma.TeethCare.mvc.dto.prescription.PrescriptionDTO;
 import ma.TeethCare.repository.api.PrescriptionRepository;
 import ma.TeethCare.service.modules.dossierMedical.api.prescriptionService;
 import ma.TeethCare.service.modules.dossierMedical.impl.prescriptionServiceImpl;
@@ -77,19 +78,20 @@ public class PrescriptionServiceTest {
 
     public static void testCreate(prescriptionService service) throws Exception {
         System.out.println("Testing Create...");
-        prescription p = prescription.builder()
-            .quantite(10)
+        PrescriptionDTO p = PrescriptionDTO.builder()
+            .duree(10)
+            .instructions("Instructions")
             .build();
-        prescription created = service.create(p);
+        PrescriptionDTO created = service.create(p);
         if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(prescriptionService service) throws Exception {
         System.out.println("Testing FindById...");
-        prescription p = prescription.builder().quantite(20).build();
+        PrescriptionDTO p = PrescriptionDTO.builder().duree(20).build();
         p = service.create(p);
-        Optional<prescription> found = service.findById(p.getId());
+        Optional<PrescriptionDTO> found = service.findById(p.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -97,24 +99,24 @@ public class PrescriptionServiceTest {
     public static void testFindAll(prescriptionService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(prescription.builder().quantite(30).build());
+        service.create(PrescriptionDTO.builder().duree(30).build());
         if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(prescriptionService service) throws Exception {
         System.out.println("Testing Update...");
-        prescription p = prescription.builder().quantite(40).build();
+        PrescriptionDTO p = PrescriptionDTO.builder().duree(40).build();
         p = service.create(p);
-        p.setQuantite(50);
-        prescription updated = service.update(p);
-        if (updated.getQuantite() != 50) throw new RuntimeException("Update failed: value mismatch");
+        p.setDuree(50);
+        PrescriptionDTO updated = service.update(p);
+        if (updated.getDuree() != 50) throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(prescriptionService service) throws Exception {
         System.out.println("Testing Delete...");
-        prescription p = prescription.builder().quantite(60).build();
+        PrescriptionDTO p = PrescriptionDTO.builder().duree(60).build();
         p = service.create(p);
         Long id = p.getId();
         service.delete(id);
@@ -124,7 +126,7 @@ public class PrescriptionServiceTest {
 
     public static void testExists(prescriptionService service) throws Exception {
         System.out.println("Testing Exists...");
-        prescription p = prescription.builder().quantite(70).build();
+        PrescriptionDTO p = PrescriptionDTO.builder().duree(70).build();
         p = service.create(p);
         if (!service.exists(p.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");

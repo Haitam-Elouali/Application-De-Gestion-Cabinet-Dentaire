@@ -1,34 +1,37 @@
 package ma.TeethCare.service.modules.caisse.mapper;
 
 import ma.TeethCare.entities.charges.charges;
-import ma.TeethCare.service.modules.caisse.dto.ChargesDto;
+import ma.TeethCare.mvc.dto.charges.ChargesDTO;
 
 public class ChargesMapper {
 
-    public static ChargesDto toDto(charges entity) {
-        if (entity == null)
-            return null;
-        return new ChargesDto(
-                entity.getId(),
-                entity.getTitre(),
-                entity.getDescription(),
-                entity.getMontant(),
-                entity.getCategorie(),
-                entity.getDate(),
-                entity.getCabinetId());
+    public static ChargesDTO toDTO(charges entity) {
+        if (entity == null) return null;
+        
+        return ChargesDTO.builder()
+                .id(entity.getId())
+                .titre(entity.getTitre())
+                .description(entity.getDescription())
+                .montant(entity.getMontant())
+                .categorie(entity.getCategorie())
+                .date(entity.getDate()) // Use generic LocalDateTime
+                .cabinetId(entity.getCabinetId())
+                .dateCreation(entity.getDateCreation() != null ? entity.getDateCreation().atStartOfDay() : null)
+                .build();
     }
 
-    public static charges toEntity(ChargesDto dto) {
-        if (dto == null)
-            return null;
-        return charges.builder()
-                .id(dto.id())
-                .titre(dto.titre())
-                .description(dto.description())
-                .montant(dto.montant())
-                .categorie(dto.categorie())
-                .date(dto.date())
-                .cabinetId(dto.cabinetId())
-                .build();
+    public static charges toEntity(ChargesDTO dto) {
+        if (dto == null) return null;
+
+        charges entity = new charges();
+        entity.setId(dto.getId());
+        entity.setTitre(dto.getTitre());
+        entity.setDescription(dto.getDescription());
+        entity.setMontant(dto.getMontant());
+        entity.setCategorie(dto.getCategorie());
+        entity.setDate(dto.getDate());
+        entity.setCabinetId(dto.getCabinetId());
+        
+        return entity;
     }
 }

@@ -1,6 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.ordonnance.ordonnance;
+import ma.TeethCare.mvc.dto.ordonnance.OrdonnanceDTO;
 import ma.TeethCare.repository.api.OrdonnanceRepository;
 import ma.TeethCare.service.modules.dossierMedical.api.ordonnanceService;
 import ma.TeethCare.service.modules.dossierMedical.impl.ordonnanceServiceImpl;
@@ -77,19 +78,19 @@ public class OrdonnanceServiceTest {
 
     public static void testCreate(ordonnanceService service) throws Exception {
         System.out.println("Testing Create...");
-        ordonnance o = ordonnance.builder()
-            .dateOrdonnance(java.time.LocalDate.now())
+        OrdonnanceDTO o = OrdonnanceDTO.builder()
+            .date(java.time.LocalDate.now())
             .build();
-        ordonnance created = service.create(o);
-        if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
+        OrdonnanceDTO created = service.create(o);
+        if (created.getIdOrd() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(ordonnanceService service) throws Exception {
         System.out.println("Testing FindById...");
-        ordonnance o = ordonnance.builder().dateOrdonnance(java.time.LocalDate.now()).build();
+        OrdonnanceDTO o = OrdonnanceDTO.builder().date(java.time.LocalDate.now()).build();
         o = service.create(o);
-        Optional<ordonnance> found = service.findById(o.getId());
+        Optional<OrdonnanceDTO> found = service.findById(o.getIdOrd());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -97,26 +98,26 @@ public class OrdonnanceServiceTest {
     public static void testFindAll(ordonnanceService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(ordonnance.builder().dateOrdonnance(java.time.LocalDate.now()).build());
+        service.create(OrdonnanceDTO.builder().date(java.time.LocalDate.now()).build());
         if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(ordonnanceService service) throws Exception {
         System.out.println("Testing Update...");
-        ordonnance o = ordonnance.builder().dateOrdonnance(java.time.LocalDate.now()).build();
+        OrdonnanceDTO o = OrdonnanceDTO.builder().date(java.time.LocalDate.now()).build();
         o = service.create(o);
-        o.setDateOrdonnance(java.time.LocalDate.of(2025, 12, 12));
-        ordonnance updated = service.update(o);
-        if (!updated.getDateOrdonnance().equals(java.time.LocalDate.of(2025, 12, 12))) throw new RuntimeException("Update failed: value mismatch");
+        o.setDate(java.time.LocalDate.of(2025, 12, 12));
+        OrdonnanceDTO updated = service.update(o);
+        if (!updated.getDate().equals(java.time.LocalDate.of(2025, 12, 12))) throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(ordonnanceService service) throws Exception {
         System.out.println("Testing Delete...");
-        ordonnance o = ordonnance.builder().dateOrdonnance(java.time.LocalDate.now()).build();
+        OrdonnanceDTO o = OrdonnanceDTO.builder().date(java.time.LocalDate.now()).build();
         o = service.create(o);
-        Long id = o.getId();
+        Long id = o.getIdOrd();
         service.delete(id);
         if (service.exists(id)) throw new RuntimeException("Delete failed: still exists");
         System.out.println("Delete passed.");
@@ -124,9 +125,9 @@ public class OrdonnanceServiceTest {
 
     public static void testExists(ordonnanceService service) throws Exception {
         System.out.println("Testing Exists...");
-        ordonnance o = ordonnance.builder().dateOrdonnance(java.time.LocalDate.now()).build();
+        OrdonnanceDTO o = OrdonnanceDTO.builder().date(java.time.LocalDate.now()).build();
         o = service.create(o);
-        if (!service.exists(o.getId())) throw new RuntimeException("Exists failed: returned false");
+        if (!service.exists(o.getIdOrd())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
     }
 

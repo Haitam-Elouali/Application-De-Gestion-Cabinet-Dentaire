@@ -1,22 +1,7 @@
 package ma.TeethCare.service.modules.caisse.api;
 
-import ma.TeethCare.service.modules.caisse.dto.ChargesDto;
+import ma.TeethCare.mvc.dto.charges.ChargesDTO;
+import ma.TeethCare.service.common.BaseService;
 
-import java.util.List;
-
-public interface chargesService {
-
-    ChargesDto create(ChargesDto dto);
-
-    ChargesDto update(Long id, ChargesDto dto);
-
-    ChargesDto findById(Long id);
-
-    List<ChargesDto> findAll();
-
-    boolean delete(Long id) throws Exception;
-
-    boolean exists(Long id) throws Exception;
-
-    long count() throws Exception;
+public interface chargesService extends BaseService<ChargesDTO, Long> {
 }

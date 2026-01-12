@@ -17,10 +17,12 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ActesDTO {
     private Long id;
-    private Long consultationId;
-    private String code;
+    private String nom;
+    private String categorie;
     private String description;
     private Double prix;
+    private String code;
+    private Long interventionId;
     private LocalDate dateActe;
     private LocalDateTime dateCreation;
 }

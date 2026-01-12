@@ -1,12 +1,15 @@
 package ma.TeethCare.service.modules.users.impl;
 
 import ma.TeethCare.entities.medecin.medecin;
+import ma.TeethCare.mvc.dto.medecin.MedecinDTO;
 import ma.TeethCare.repository.api.MedecinRepository;
 import ma.TeethCare.service.modules.users.api.medecinService;
+import ma.TeethCare.service.modules.users.mapper.MedecinMapper;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author Hamza ALAOUI
@@ -22,55 +25,53 @@ public class medecinServiceImpl implements medecinService {
     }
 
     @Override
-    public medecin create(medecin entity) throws Exception {
-        if (entity == null) throw new IllegalArgumentException("Medecin is null");
+    public MedecinDTO create(MedecinDTO dto) throws Exception {
+        if (dto == null) throw new IllegalArgumentException("MedecinDTO is null");
 
+        medecin entity = MedecinMapper.toEntity(dto);
         medecinRepository.create(entity);
 
         if (entity.getId() != null) {
-            return medecinRepository.findById(entity.getId());
+            return MedecinMapper.toDTO(medecinRepository.findById(entity.getId()));
         }
-        return entity;
-
+        return MedecinMapper.toDTO(entity);
     }
 
     @Override
-    public Optional<medecin> findById(Long id) throws Exception {
+    public Optional<MedecinDTO> findById(Long id) throws Exception {
         if (id == null) return Optional.empty();
         try {
-            return Optional.ofNullable(medecinRepository.findById(id));
+            medecin found = medecinRepository.findById(id);
+            return Optional.ofNullable(MedecinMapper.toDTO(found));
         } catch (Exception e) {
             throw new Exception("Erreur lors de la recherche du médecin par id=" + id, e);
         }
     }
 
     @Override
-    public List<medecin> findAll() throws Exception {
+    public List<MedecinDTO> findAll() throws Exception {
         try {
-            return medecinRepository.findAll();
+            return medecinRepository.findAll().stream()
+                    .map(MedecinMapper::toDTO)
+                    .collect(Collectors.toList());
         } catch (SQLException e) {
-            throw new Exception("Erreur SQL lors de la récupération de tous les médecins", e);
+            // throw new Exception("Erreur SQL lors de la récupération de tous les médecins", e); // Original exception type
+            throw new RuntimeException("Erreur lors de la récupération de tous les médecins", e);
         }
     }
 
     @Override
-    public medecin update(medecin entity) throws Exception {
-        if (entity == null) throw new IllegalArgumentException("Medecin is null");
-        if (entity.getId() == null && entity.getIdEntite() == null)
-            throw new IllegalArgumentException("Medecin id/idEntite is required for update");
+    public MedecinDTO update(MedecinDTO dto) throws Exception {
+        if (dto == null) throw new IllegalArgumentException("MedecinDTO is null");
+        if (dto.getId() == null) throw new IllegalArgumentException("Medecin id is required for update");
 
-        if (entity.getIdEntite() == null && entity.getId() != null) {
-            entity.setIdEntite(entity.getId());
-        }
-        if (entity.getId() == null && entity.getIdEntite() != null) {
-            entity.setId(entity.getIdEntite());
-        }
-
+        medecin entity = MedecinMapper.toEntity(dto);
+        
         try {
             medecinRepository.update(entity);
-            return medecinRepository.findById(entity.getId());
+            return MedecinMapper.toDTO(medecinRepository.findById(entity.getId()));
         } catch (Exception e) {
-            throw new Exception("Erreur lors de la mise à jour du médecin id=" + entity.getId(), e);
+            throw new Exception("Erreur lors de la mise à jour du médecin id=" + dto.getId(), e);
         }
     }
 
@@ -81,7 +82,7 @@ public class medecinServiceImpl implements medecinService {
         try {
             if (!exists(id)) return false;
 
-            medecinRepository.deleteById(id); // repo supprime via entite -> cascade attendu
+            medecinRepository.deleteById(id);
             return true;
 
         } catch (Exception e) {
@@ -101,6 +102,6 @@ public class medecinServiceImpl implements medecinService {
 
     @Override
     public long count() throws Exception {
-        return findAll().size();
+        return medecinRepository.findAll().size();
     }
 }

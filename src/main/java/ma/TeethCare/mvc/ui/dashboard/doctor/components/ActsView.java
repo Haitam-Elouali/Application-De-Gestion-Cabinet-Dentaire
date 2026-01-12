@@ -52,6 +52,7 @@ public class ActsView extends JPanel {
         
         // Add Action Renderer logic
         ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer actionRenderer = new ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer(
+            null,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.VIEW_ICON,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.PERCENTAGE,
             ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.EDIT,

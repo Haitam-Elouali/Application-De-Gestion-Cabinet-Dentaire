@@ -1,12 +1,15 @@
 package ma.TeethCare.service.modules.users.impl;
 
 import ma.TeethCare.entities.staff.staff;
+import ma.TeethCare.mvc.dto.staff.StaffDTO;
 import ma.TeethCare.service.modules.users.api.staffService;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import ma.TeethCare.repository.api.StaffRepository;
 import ma.TeethCare.repository.mySQLImpl.StaffRepositoryImpl;
+import ma.TeethCare.service.modules.users.mapper.StaffMapper;
 
 /**
  * @author Salma BAKAROUM
@@ -26,25 +29,32 @@ public class staffServiceImpl implements staffService {
     }
 
     @Override
-    public staff create(staff entity) throws Exception {
+    public StaffDTO create(StaffDTO dto) throws Exception {
+        staff entity = StaffMapper.toEntity(dto);
         staffRepository.create(entity);
-        return entity;
+        if(entity.getId() != null) {
+            return StaffMapper.toDTO(staffRepository.findById(entity.getId()));
+        }
+        return StaffMapper.toDTO(entity);
     }
 
     @Override
-    public Optional<staff> findById(Long id) throws Exception {
-        return Optional.ofNullable(staffRepository.findById(id));
+    public Optional<StaffDTO> findById(Long id) throws Exception {
+        return Optional.ofNullable(StaffMapper.toDTO(staffRepository.findById(id)));
     }
 
     @Override
-    public List<staff> findAll() throws Exception {
-        return staffRepository.findAll();
+    public List<StaffDTO> findAll() throws Exception {
+        return staffRepository.findAll().stream()
+                .map(StaffMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public staff update(staff entity) throws Exception {
+    public StaffDTO update(StaffDTO dto) throws Exception {
+        staff entity = StaffMapper.toEntity(dto);
         staffRepository.update(entity);
-        return entity;
+        return StaffMapper.toDTO(staffRepository.findById(entity.getId()));
     }
 
     @Override
@@ -64,12 +74,12 @@ public class staffServiceImpl implements staffService {
     }
 
     @Override
-    public Optional<staff> findByEmail(String email) throws Exception {
-        return staffRepository.findByEmail(email);
+    public Optional<StaffDTO> findByEmail(String email) throws Exception {
+        return staffRepository.findByEmail(email).map(StaffMapper::toDTO);
     }
 
     @Override
-    public Optional<staff> findByCin(String cin) throws Exception {
-        return staffRepository.findByCin(cin);
+    public Optional<StaffDTO> findByCin(String cin) throws Exception {
+        return staffRepository.findByCin(cin).map(StaffMapper::toDTO);
     }
 }

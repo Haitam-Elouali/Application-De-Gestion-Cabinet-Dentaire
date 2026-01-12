@@ -1,6 +1,5 @@
 package ma.TeethCare.mvc.dto.revenues;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,9 +16,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RevenuesDTO {
     private Long id;
-    private Double montant;
-    private LocalDate dateRevenue;
-    private String source;
+    private Long cabinetId;
+    private String titre;
     private String description;
+    private Double montant;
+    private String categorie;
+    private LocalDateTime date;
     private LocalDateTime dateCreation;
 }

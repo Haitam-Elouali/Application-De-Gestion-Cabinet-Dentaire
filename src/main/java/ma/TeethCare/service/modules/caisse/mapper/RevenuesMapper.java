@@ -1,34 +1,35 @@
 package ma.TeethCare.service.modules.caisse.mapper;
 
 import ma.TeethCare.entities.revenues.revenues;
-import ma.TeethCare.service.modules.caisse.dto.RevenuesDto;
+import ma.TeethCare.mvc.dto.revenues.RevenuesDTO;
 
 public class RevenuesMapper {
 
-    public static RevenuesDto toDto(revenues entity) {
+    public static RevenuesDTO toDto(revenues entity) {
         if (entity == null)
             return null;
-        return new RevenuesDto(
-                entity.getId(),
-                entity.getCabinetId(),
-                entity.getTitre(),
-                entity.getDescription(),
-                entity.getMontant(),
-                entity.getCategorie(),
-                entity.getDate());
+        return RevenuesDTO.builder()
+                .id(entity.getId())
+                .cabinetId(entity.getCabinetId())
+                .titre(entity.getTitre())
+                .description(entity.getDescription())
+                .montant(entity.getMontant())
+                .categorie(entity.getCategorie())
+                .date(entity.getDate())
+                .build();
     }
 
-    public static revenues toEntity(RevenuesDto dto) {
+    public static revenues toEntity(RevenuesDTO dto) {
         if (dto == null)
             return null;
         return revenues.builder()
-                .id(dto.id())
-                .cabinetId(dto.cabinetId())
-                .titre(dto.titre())
-                .description(dto.description())
-                .montant(dto.montant())
-                .categorie(dto.categorie())
-                .date(dto.date())
+                .id(dto.getId())
+                .cabinetId(dto.getCabinetId())
+                .titre(dto.getTitre())
+                .description(dto.getDescription())
+                .montant(dto.getMontant())
+                .categorie(dto.getCategorie())
+                .date(dto.getDate())
                 .build();
     }
 }

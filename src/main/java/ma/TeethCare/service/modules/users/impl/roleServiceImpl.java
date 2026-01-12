@@ -2,18 +2,19 @@ package ma.TeethCare.service.modules.users.impl;
 
 import ma.TeethCare.common.exceptions.ServiceException;
 import ma.TeethCare.entities.role.role;
+import ma.TeethCare.mvc.dto.role.RoleDTO;
 import ma.TeethCare.repository.api.RoleRepository;
-import ma.TeethCare.service.common.BaseService;
+import ma.TeethCare.service.modules.users.api.roleService;
+import ma.TeethCare.service.modules.users.mapper.RoleMapper;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author MOKADAMI Zouhair
  * @date 2025-12-17
  */
-
-import ma.TeethCare.service.modules.users.api.roleService;
 
 public class roleServiceImpl implements roleService {
 
@@ -24,47 +25,54 @@ public class roleServiceImpl implements roleService {
     }
 
     @Override
-    public role create(role entity) throws Exception {
+    public RoleDTO create(RoleDTO dto) throws Exception {
         try {
-            if (entity == null) {
+            if (dto == null) {
                 throw new ServiceException("Role ne peut pas être null");
             }
+            role entity = RoleMapper.toEntity(dto);
             roleRepository.create(entity);
-            return entity;
+            if(entity.getId() != null) {
+                return RoleMapper.toDTO(roleRepository.findById(entity.getId()));
+            }
+            return RoleMapper.toDTO(entity);
         } catch (Exception e) {
             throw new ServiceException("Erreur lors de la création du role", e);
         }
     }
 
     @Override
-    public Optional<role> findById(Long id) throws Exception {
+    public Optional<RoleDTO> findById(Long id) throws Exception {
         try {
             if (id == null) {
                 throw new ServiceException("ID role ne peut pas être null");
             }
-            return Optional.ofNullable(roleRepository.findById(id));
+            return Optional.ofNullable(RoleMapper.toDTO(roleRepository.findById(id)));
         } catch (Exception e) {
             throw new ServiceException("Erreur lors de la récupération du role", e);
         }
     }
 
     @Override
-    public List<role> findAll() throws Exception {
+    public List<RoleDTO> findAll() throws Exception {
         try {
-            return roleRepository.findAll();
+            return roleRepository.findAll().stream()
+                    .map(RoleMapper::toDTO)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             throw new ServiceException("Erreur lors de la récupération de la liste des roles", e);
         }
     }
 
     @Override
-    public role update(role entity) throws Exception {
+    public RoleDTO update(RoleDTO dto) throws Exception {
         try {
-            if (entity == null) {
+            if (dto == null) {
                 throw new ServiceException("Role ne peut pas être null");
             }
+            role entity = RoleMapper.toEntity(dto);
             roleRepository.update(entity);
-            return entity;
+            return RoleMapper.toDTO(roleRepository.findById(entity.getId()));
         } catch (Exception e) {
             throw new ServiceException("Erreur lors de la mise à jour du role", e);
         }

@@ -23,6 +23,7 @@ public class StaffDTO {
     private String telephone;
     private String email;
     private LocalDate dateEmbauche;
+    private String cin;
     private String statut;
     private LocalDateTime dateCreation;
 }

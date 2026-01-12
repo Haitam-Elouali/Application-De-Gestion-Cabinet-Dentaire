@@ -1,40 +1,50 @@
 package ma.TeethCare.service.modules.caisse.mapper;
 
 import ma.TeethCare.entities.facture.facture;
-import ma.TeethCare.service.modules.caisse.dto.FactureDto;
+import ma.TeethCare.mvc.dto.facture.FactureDTO;
+import ma.TeethCare.common.enums.Statut;
+import java.math.BigDecimal;
 
 public class FactureMapper {
 
-    public static FactureDto toDto(facture entity) {
-        if (entity == null)
-            return null;
-        return new FactureDto(
-                entity.getId(),
-                entity.getConsultationId(),
-                entity.getPatientId(),
-                entity.getSecretaireId(),
-                entity.getTotaleFacture(),
-                entity.getTotalePaye(),
-                entity.getReste(),
-                entity.getStatut(),
-                entity.getModePaiement(),
-                entity.getDateFacture());
+    public static FactureDTO toDTO(facture entity) {
+        if (entity == null) return null;
+        
+        return FactureDTO.builder()
+                .id(entity.getId())
+                .consultationId(entity.getConsultationId())
+                .patientId(entity.getPatientId())
+                .totalFacture(entity.getTotaleFacture() != null ? BigDecimal.valueOf(entity.getTotaleFacture()) : null)
+                .totalPaye(entity.getTotalePaye() != null ? BigDecimal.valueOf(entity.getTotalePaye()) : null)
+                .reste(entity.getReste() != null ? BigDecimal.valueOf(entity.getReste()) : null)
+                .statut(entity.getStatut() != null ? entity.getStatut().name() : null)
+                .dateCreation(entity.getDateFacture()) 
+                .dateDerniereModification(entity.getDateDerniereModification())
+                .build();
     }
 
-    public static facture toEntity(FactureDto dto) {
-        if (dto == null)
-            return null;
-        return facture.builder()
-                .id(dto.id())
-                .consultationId(dto.consultationId())
-                .patientId(dto.patientId())
-                .secretaireId(dto.secretaireId())
-                .totaleFacture(dto.totaleFacture())
-                .totalePaye(dto.totalePaye())
-                .reste(dto.reste())
-                .statut(dto.statut())
-                .modePaiement(dto.modePaiement())
-                .dateFacture(dto.dateFacture())
-                .build();
+    public static facture toEntity(FactureDTO dto) {
+        if (dto == null) return null;
+
+        facture entity = new facture();
+        entity.setIdEntite(dto.getId());
+        entity.setId(dto.getId());
+        
+        entity.setConsultationId(dto.getConsultationId());
+        entity.setPatientId(dto.getPatientId());
+        
+        if (dto.getTotalFacture() != null) entity.setTotaleFacture(dto.getTotalFacture().doubleValue());
+        if (dto.getTotalPaye() != null) entity.setTotalePaye(dto.getTotalPaye().doubleValue());
+        if (dto.getReste() != null) entity.setReste(dto.getReste().doubleValue());
+        
+        if (dto.getStatut() != null) {
+            try {
+                entity.setStatut(Statut.valueOf(dto.getStatut()));
+            } catch (Exception e) {}
+        }
+        
+        if (dto.getDateCreation() != null) entity.setDateFacture(dto.getDateCreation());
+        
+        return entity;
     }
 }

@@ -8,35 +8,30 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.EventObject;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.List;
 
 public class TableActionCellRenderer extends AbstractCellEditor implements TableCellRenderer, TableCellEditor {
 
+    public interface TableActionEvent {
+        void onAction(int row, int column, ActionType type);
+    }
+
     public enum ActionType {
-        VIEW_FULL, // "Dossier" + Icon
-        VIEW_ICON, // Icon only
-        EDIT,
-        DELETE,
-        PRINT,
-        BILL,
-        LINK,
-        PERCENTAGE,
-        RDV_MANAGE,
-        SUSPEND
+        VIEW_FULL, VIEW_ICON, EDIT, DELETE, PRINT, BILL, LINK, PERCENTAGE, RDV_MANAGE, SUSPEND
     }
 
     private final JPanel panel;
     private final List<JButton> buttons = new ArrayList<>();
+    private TableActionEvent event;
+    private JTable table;
 
-    public TableActionCellRenderer(ActionType... actions) {
+    public TableActionCellRenderer(TableActionEvent event, ActionType... actions) {
+        this.event = event;
         panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 4));
         panel.setOpaque(false);
 
-        // Default if empty
         if (actions.length == 0) {
             actions = new ActionType[]{ActionType.VIEW_FULL, ActionType.EDIT, ActionType.DELETE};
         }
@@ -45,14 +40,42 @@ public class TableActionCellRenderer extends AbstractCellEditor implements Table
             JButton btn = createButton(type);
             buttons.add(btn);
             panel.add(btn);
-            // Placeholder listener
-            btn.addActionListener(e -> fireEditingStopped());
+            
+            btn.addActionListener(e -> {
+                if (event != null && table != null) {
+                    int row = table.getEditingRow();
+                    int col = table.getEditingColumn();
+                    event.onAction(row, col, type);
+                    fireEditingStopped();
+                }
+            });
         }
     }
-    
-    // Default constructor for backward compatibility (std view)
+
     public TableActionCellRenderer() {
-        this(ActionType.VIEW_FULL, ActionType.EDIT, ActionType.DELETE);
+        this(null, ActionType.VIEW_FULL, ActionType.EDIT, ActionType.DELETE);
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        return panel;
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        this.table = table;
+        panel.setBackground(table.getSelectionBackground());
+        return panel;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+        return "";
+    }
+
+    @Override
+    public boolean isCellEditable(EventObject e) {
+        return true;
     }
 
     private JButton createButton(ActionType type) {
@@ -96,7 +119,7 @@ public class TableActionCellRenderer extends AbstractCellEditor implements Table
         };
         btn.setForeground(fg);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btn.setIcon(IconUtils.getIcon(icon, 16, fg)); // Icon Left
+        btn.setIcon(IconUtils.getIcon(icon, 16, fg)); 
         btn.setIconTextGap(8);
         btn.setOpaque(false);
         btn.setBorder(new EmptyBorder(6, 16, 6, 16));
@@ -113,7 +136,7 @@ public class TableActionCellRenderer extends AbstractCellEditor implements Table
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(bg);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8); // 8px radius
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8); 
                 super.paintComponent(g2);
                 g2.dispose();
             }
@@ -125,26 +148,5 @@ public class TableActionCellRenderer extends AbstractCellEditor implements Table
         btn.setFocusPainted(false);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return btn;
-    }
-
-    @Override
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        return panel;
-    }
-
-    @Override
-    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        // panel.setBackground(table.getSelectionBackground());
-        return panel;
-    }
-
-    @Override
-    public Object getCellEditorValue() {
-        return "";
-    }
-    
-    @Override
-    public boolean isCellEditable(EventObject e) {
-        return true;
     }
 }

@@ -1,6 +1,5 @@
 package ma.TeethCare.mvc.dto.situationFinanciere;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,10 +16,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SituationFinanciereDTO {
     private Long id;
-    private LocalDate date;
-    private Double totalRevenues;
-    private Double totalCharges;
-    private Double benefice;
-    private Double tresorerie;
+    private Double totalDesActes;
+    private Double totalPaye;
+    private Double credit;
+    private String statut;
+    private String enPromo;
+    private Long dossierMedicaleId;
     private LocalDateTime dateCreation;
 }

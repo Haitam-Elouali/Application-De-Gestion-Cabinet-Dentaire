@@ -107,6 +107,7 @@ public class PatientManagementView extends JPanel {
         
         // Actions (Col 6) - Use VIEW_ICON, EDIT, DELETE
         TableActionCellRenderer actionRenderer = new TableActionCellRenderer(
+             null,
              TableActionCellRenderer.ActionType.VIEW_ICON,
              TableActionCellRenderer.ActionType.EDIT, 
              TableActionCellRenderer.ActionType.DELETE

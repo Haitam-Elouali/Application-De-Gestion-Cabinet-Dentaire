@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class FactureDTO {
-    private Long idFacture;
+    private Long id; // Standardized from idFacture
     private Long consultationId;
     private Long patientId;
     private BigDecimal totalFacture;
