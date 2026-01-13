@@ -142,33 +142,14 @@ public class LoginView extends JFrame {
         loginBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         loginBtn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         
-        loginBtn.addActionListener(e -> {
-            String user = userField.getText();
-            String pass = new String(passField.getPassword());
-            
-            AuthResult result = authService.authenticate(new AuthRequest(user, pass));
+        java.awt.event.ActionListener loginAction = e -> performLogin(userField, passField);
+        
+        loginBtn.addActionListener(loginAction);
+        passField.addActionListener(loginAction);
+        // userField.addActionListener(loginAction); // Optional: Login on Enter in user field too
 
-            if (result.success()) {
-                // Check roles to redirect
-                List<String> roles = result.principal().roles();
-                
-                if (roles.contains("SECRETAIRE") || roles.contains("secretaire")) {
-                    new ma.TeethCare.mvc.ui.dashboard.secretary.SecretaryDashboardView().setVisible(true);
-                    dispose();
-                } else if (roles.contains("MEDECIN") || roles.contains("medecin") || roles.contains("DOCTEUR") || roles.contains("docteur")) {
-                    new ma.TeethCare.mvc.ui.dashboard.doctor.DoctorDashboardView().setVisible(true);
-                    dispose();
-                } else if (roles.contains("ADMIN") || roles.contains("admin")) {
-                    new ma.TeethCare.mvc.ui.dashboard.admin.AdminDashboardView().setVisible(true);
-                    dispose();
-                } else {
-                    // Default fallback or error if role not recognized
-                    JOptionPane.showMessageDialog(this, "Rôle non reconnu pour cet utilisateur", "Erreur d'accès", JOptionPane.ERROR_MESSAGE);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Echec de connexion: " + result.errorMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+
+
         
         // Forgot Password
         JLabel forgotLabel = new JLabel("Mot de passe oublié?");
@@ -195,6 +176,34 @@ public class LoginView extends JFrame {
         
         // Add card to main
         mainPanel.add(loginCard);
+    }
+
+    private void performLogin(ModernTextField userField, JPasswordField passField) {
+        String user = userField.getText();
+        String pass = new String(passField.getPassword());
+        
+        AuthResult result = authService.authenticate(new AuthRequest(user, pass));
+
+        if (result.success()) {
+            // Check roles to redirect
+            List<String> roles = result.principal().roles();
+            String fullName = result.principal().username(); 
+            
+            if (roles.contains("SECRETAIRE") || roles.contains("secretaire")) {
+                new ma.TeethCare.mvc.ui.dashboard.secretary.SecretaryDashboardView(fullName).setVisible(true);
+                dispose();
+            } else if (roles.contains("MEDECIN") || roles.contains("medecin") || roles.contains("DOCTEUR") || roles.contains("docteur")) {
+                new ma.TeethCare.mvc.ui.dashboard.doctor.DoctorDashboardView(fullName).setVisible(true);
+                dispose();
+            } else if (roles.contains("ADMIN") || roles.contains("admin")) {
+                new ma.TeethCare.mvc.ui.dashboard.admin.AdminDashboardView(fullName).setVisible(true);
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Rôle non reconnu pour cet utilisateur", "Erreur d'accès", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Echec de connexion: " + result.errorMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public static void main(String[] args) {

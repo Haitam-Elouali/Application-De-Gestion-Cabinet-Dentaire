@@ -74,10 +74,13 @@ public final class RowMappers {
     public static Patient mapPatient(ResultSet rs) throws SQLException {
         Patient p = new Patient();
 
-        if (hasColumn(rs, "id"))
+        if (hasColumn(rs, "id")) {
             p.setIdEntite(getLongOrNull(rs, "id"));
-        else
+            p.setId(getLongOrNull(rs, "id"));
+        } else {
             p.setIdEntite(getLongOrNull(rs, "idEntite"));
+            p.setId(getLongOrNull(rs, "idEntite"));
+        }
 
         p.setNom(getStringOrNull(rs, "nom"));
         p.setPrenom(getStringOrNull(rs, "prenom"));

@@ -58,6 +58,12 @@ public class FactureServiceTest {
         public void deleteById(Long id) {
             data.remove(id);
         }
+
+        @Override
+        public List<facture> findRecentPaidWithPatient(int limit) {
+             // Simple stub implementation
+             return new ArrayList<>(data.values());
+        }
     }
 
     public static void main(String[] args) {

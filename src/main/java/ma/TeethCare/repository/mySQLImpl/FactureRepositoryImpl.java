@@ -225,4 +225,47 @@ public class FactureRepositoryImpl implements FactureRepository {
         }
     }
 
+
+    @Override
+    public List<facture> findRecentPaidWithPatient(int limit) {
+        List<facture> factures = new ArrayList<>();
+        // Select Facture fields + Patient fields
+        // Note: We avoid ambiguous column names by aliasing or relying on distinct names where possible.
+        // Patient columns: id, nom, prenom.
+        // Also fetching Entite fields for Facture.
+        String sql = "SELECT f.id as idEntite, f.id as idFacture, f.totaleFacture, f.totalePaye as totalPaye, f.Reste as reste, f.statut, f.dateFacture, " + 
+                     "f.patient_id as patientId, " +
+                     "p.nom as patientNom, p.prenom as patientPrenom, " +
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM facture f " + 
+                     "JOIN entite e ON f.id = e.id " +
+                     "JOIN patient p ON f.patient_id = p.id " +
+                     "WHERE f.statut = 'Payee' " +
+                     "ORDER BY f.dateFacture DESC " +
+                     "LIMIT ?";
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, limit);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    facture f = RowMappers.mapFacture(rs);
+                    
+                    // Manually map Patient info
+                    ma.TeethCare.entities.patient.Patient p = new ma.TeethCare.entities.patient.Patient();
+                    p.setIdEntite(f.getPatientId());
+                    p.setNom(rs.getString("patientNom"));
+                    p.setPrenom(rs.getString("patientPrenom"));
+                    f.setPatient(p); 
+                    
+                    factures.add(f);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return factures;
+    }
 }

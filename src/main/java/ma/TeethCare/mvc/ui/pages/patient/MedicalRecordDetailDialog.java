@@ -61,9 +61,10 @@ public class MedicalRecordDetailDialog extends JDialog {
         content.add(Box.createVerticalStrut(20));
 
         // Details Fields
-        content.add(createDetailField("Diagnostic Principal", "Gingivite légère"));
+        // TODO: Map real diagnostic/treatment from latest Consultation or Dossier
+        content.add(createDetailField("Diagnostic Principal", "")); 
         content.add(Box.createVerticalStrut(15));
-        content.add(createDetailField("Traitement en cours", "Détartrage + bain de bouche"));
+        content.add(createDetailField("Traitement en cours", ""));
 
         add(content, BorderLayout.CENTER);
 

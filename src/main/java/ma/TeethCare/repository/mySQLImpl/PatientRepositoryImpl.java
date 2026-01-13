@@ -204,13 +204,114 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM entite WHERE id = ?";
-        try (Connection conn = SessionFactory.getInstance().getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, id);
-            stmt.executeUpdate();
+        Connection conn = null;
+        try {
+            conn = SessionFactory.getInstance().getConnection();
+            conn.setAutoCommit(false);
+
+            // 1. DossierMedicale & Antecedents
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM antecedants WHERE dossiermedicale_id IN (SELECT id FROM dossiermedicale WHERE patient_id = ?)")) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM dossiermedicale WHERE patient_id = ?")) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+
+            // 2. Consultations & Children (Intervention, Certificat, Ordonnance -> Prescription)
+            // Prescriptions via Ordonnance via Consultation
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM prescription WHERE ordonnance_id IN (SELECT id FROM ordonnance WHERE consultation_id IN (SELECT id FROM consultation WHERE patient_id = ?))")) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+            // Ordonnance via Consultation
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM ordonnance WHERE consultation_id IN (SELECT id FROM consultation WHERE patient_id = ?)")) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+            // Interventions via Consultation
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM interventionmedecin WHERE consultation_id IN (SELECT id FROM consultation WHERE patient_id = ?)")) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+            // Certificats via Consultation
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM certificat WHERE consultation_id IN (SELECT id FROM consultation WHERE patient_id = ?)")) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+            // Consultations
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM consultation WHERE patient_id = ?")) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+
+            // 3. RDVs
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM rdv WHERE patient_id = ?")) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+
+            // 4. Factures
+            // Clean up caisse if exists (assuming linked by facture_id) - ignoring error if table/column invalid to stay safe
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM caisse WHERE factureId IN (SELECT id FROM facture WHERE patient_id = ?)")) {
+                 ps.setLong(1, id);
+                 ps.executeUpdate();
+            } catch (SQLException ignored) {
+                // Table 'caisse' or column 'factureId' might not exist or match. Proceeding.
+            }
+             try (PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM caisse WHERE facture_id IN (SELECT id FROM facture WHERE patient_id = ?)")) {
+                 ps.setLong(1, id);
+                 ps.executeUpdate();
+            } catch (SQLException ignored) {}
+            
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM facture WHERE patient_id = ?")) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+
+            // 5. Patient
+            String sql = "DELETE FROM patient WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+            
+            // 6. Entite
+            // Note: We should ideally delete Entites of all children too, but priority is unblocking Patient delete.
+            // Deleting the Patient Entite row:
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM entite WHERE id = ?")) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            throw new RuntimeException("Impossible de supprimer le patient (Données liées): " + e.getMessage(), e);
+        } finally {
+            try {
+                if (conn != null) {
+                     conn.setAutoCommit(true);
+                     conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
     @Override

@@ -1,6 +1,7 @@
 package ma.TeethCare.service.modules.caisse.impl;
 
 import ma.TeethCare.repository.api.ChargesRepository;
+import ma.TeethCare.repository.api.FactureRepository;
 import ma.TeethCare.repository.api.RevenuesRepository;
 import ma.TeethCare.service.modules.caisse.api.FinancialStatisticsService;
 
@@ -12,10 +13,12 @@ public class FinancialStatisticsServiceImpl implements FinancialStatisticsServic
 
     private final RevenuesRepository revenuesRepository;
     private final ChargesRepository chargesRepository;
+    private final FactureRepository factureRepository;
 
-    public FinancialStatisticsServiceImpl(RevenuesRepository revenuesRepository, ChargesRepository chargesRepository) {
+    public FinancialStatisticsServiceImpl(RevenuesRepository revenuesRepository, ChargesRepository chargesRepository, FactureRepository factureRepository) {
         this.revenuesRepository = revenuesRepository;
         this.chargesRepository = chargesRepository;
+        this.factureRepository = factureRepository;
     }
 
     @Override
@@ -27,10 +30,11 @@ public class FinancialStatisticsServiceImpl implements FinancialStatisticsServic
 
     @Override
     public Map<String, Object> getChartData(int year) {
+        // Keeping this method signature but logic is less relevant if charts are removed from UI. 
+        // Can be kept for administrative dashboards if needed.
         Map<Integer, Double> revenuesMap = revenuesRepository.groupTotalByMonth(year);
         Map<Integer, Double> chargesMap = chargesRepository.groupTotalByMonth(year);
         
-        // Prepare arrays for chart (Index 0 = Jan, 11 = Dec)
         double[] revenueData = new double[12];
         double[] expenseData = new double[12];
         
@@ -44,38 +48,33 @@ public class FinancialStatisticsServiceImpl implements FinancialStatisticsServic
         data.put("expenses", expenseData);
         return data;
     }
+    
     @Override
     public java.util.List<FinancialStatisticsService.TransactionDTO> getRecentTransactions(int limit) {
         java.util.List<FinancialStatisticsService.TransactionDTO> transactions = new java.util.ArrayList<>();
         
         try {
-            // Fetch Revenues
-            for (ma.TeethCare.entities.revenues.revenues r : revenuesRepository.findAll()) {
+            // Fetch Only Paid Transactions from Factures
+            java.util.List<ma.TeethCare.entities.facture.facture> factures = factureRepository.findRecentPaidWithPatient(limit);
+            
+            for (ma.TeethCare.entities.facture.facture f : factures) {
+                String patientName = "Inconnu";
+                if (f.getPatient() != null) {
+                    patientName = f.getPatient().getNom() + " " + f.getPatient().getPrenom();
+                } else if (f.getPatientId() != null) {
+                    patientName = "Patient #" + f.getPatientId();
+                }
+                
                 transactions.add(new FinancialStatisticsService.TransactionDTO(
-                    "Recette", 
-                    r.getTitre() != null ? r.getTitre() : "Recette diverse", 
-                    r.getDate() != null ? r.getDate() : LocalDateTime.now(), 
-                    r.getMontant(), 
-                    "Confirmé"
+                    "Paiement", 
+                    patientName, 
+                    f.getDateFacture() != null ? f.getDateFacture() : LocalDateTime.now(), 
+                    f.getTotalePaye(), // Use amount paid
+                    f.getStatut() != null ? f.getStatut().toString() : "PAYEE"
                 ));
             }
             
-            // Fetch Charges
-            for (ma.TeethCare.entities.charges.charges c : chargesRepository.findAll()) {
-                transactions.add(new FinancialStatisticsService.TransactionDTO(
-                    "Dépense", 
-                    c.getTitre() != null ? c.getTitre() : "Dépense diverse", 
-                    c.getDate() != null ? c.getDate() : LocalDateTime.now(), 
-                    c.getMontant(), 
-                    "Payé"
-                ));
-            }
-            
-            // Sort by Date DESC
-            transactions.sort(java.util.Comparator.comparing(FinancialStatisticsService.TransactionDTO::date).reversed());
-            
-            // Limit
-            return transactions.stream().limit(limit).collect(java.util.stream.Collectors.toList());
+            return transactions;
             
         } catch (Exception e) {
             e.printStackTrace();

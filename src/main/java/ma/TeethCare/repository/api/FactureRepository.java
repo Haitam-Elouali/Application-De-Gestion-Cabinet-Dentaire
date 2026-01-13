@@ -6,4 +6,5 @@ import ma.TeethCare.repository.common.CrudRepository;
 import java.util.Optional;
 
 public interface FactureRepository extends CrudRepository<facture, Long> {
+    java.util.List<facture> findRecentPaidWithPatient(int limit);
 }

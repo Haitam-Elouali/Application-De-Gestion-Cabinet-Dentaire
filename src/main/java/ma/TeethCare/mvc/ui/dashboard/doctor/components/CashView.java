@@ -1,144 +1,124 @@
 package ma.TeethCare.mvc.ui.dashboard.doctor.components;
 
 import ma.TeethCare.mvc.ui.palette.containers.RoundedPanel;
-import ma.TeethCare.mvc.ui.palette.utils.IconUtils;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
+import ma.TeethCare.mvc.ui.palette.data.ModernTable;
+import ma.TeethCare.mvc.ui.palette.renderers.StatusPillRenderer;
+
 import ma.TeethCare.repository.mySQLImpl.ChargesRepositoryImpl;
 import ma.TeethCare.repository.mySQLImpl.RevenuesRepositoryImpl;
+import ma.TeethCare.repository.mySQLImpl.FactureRepositoryImpl;
+
 import ma.TeethCare.service.modules.caisse.api.FinancialStatisticsService;
 import ma.TeethCare.service.modules.caisse.impl.FinancialStatisticsServiceImpl;
 import net.miginfocom.swing.MigLayout;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.BarRenderer;
-import org.jfree.chart.ui.RectangleInsets;
-import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 
 public class CashView extends JPanel {
 
-    private DefaultCategoryDataset chartDataset;
     private FinancialStatisticsService financialService;
-    private JLabel kpiRecettesValue;
-    private JLabel kpiDepensesValue;
-    private JLabel kpiBeneficeValue;
 
     public CashView() {
-        // Initialize Service
-        this.financialService = new FinancialStatisticsServiceImpl(new RevenuesRepositoryImpl(), new ChargesRepositoryImpl());
+        // Initialize Service with FactureRepository
+        this.financialService = new FinancialStatisticsServiceImpl(
+            new RevenuesRepositoryImpl(), 
+            new ChargesRepositoryImpl(),
+            new FactureRepositoryImpl()
+        );
 
         setLayout(new BorderLayout());
-        setOpaque(false); // Transparent to show Blue background
-        setBorder(new EmptyBorder(24, 24, 24, 24)); // Component padding
+        setOpaque(false); 
+        setBorder(new EmptyBorder(24, 24, 24, 24)); 
 
         initUI();
     }
 
     private void initUI() {
-        // Main Container with MigLayout (Top KPIs, Middle Stats, Bottom Chart)
-        // Rows: [TopCards] 20px [MiddleStats] 20px [Chart]
+        // Simplified Layout: Recent Transactions Table + Restored Stats
         JPanel mainContainer = new JPanel(new MigLayout("insets 0, fillx, wrap 1", "[grow]", "[]20[]20[grow]"));
         mainContainer.setOpaque(false);
 
-        // --- Fetch Initial Data ---
+        // --- Fetch Data ---
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
         FinancialStatisticsService.FinancialSummary summary = financialService.getFinancialSummary(
-                LocalDateTime.now().withDayOfYear(1), LocalDateTime.now()); // Year to Date
+                now.withDayOfYear(1), now);
 
-        // --- 1. Top Cards (KPIs) ---
-        JPanel kpiCardPanel = new JPanel(new MigLayout("insets 0, fill, gap 20", "[grow][grow][grow]")); // 3 Columns
-        kpiCardPanel.setOpaque(false);
+        // --- 1. Top Cards (KPIs) - Only Total Recettes ---
+        JPanel kpiPanel = new JPanel(new MigLayout("insets 0, fill, gap 20", "[grow]")); 
+        kpiPanel.setOpaque(false);
 
-        kpiRecettesValue = new JLabel(formatCurrency(summary.totalRecettes()));
-        kpiDepensesValue = new JLabel(formatCurrency(summary.totalDepenses()));
-        kpiBeneficeValue = new JLabel(formatCurrency(summary.benefice()));
+        JLabel kpiRecettesValue = new JLabel(formatCurrency(summary.totalRecettes()));
+        kpiPanel.add(createKpiCard("Total Recettes (YTD)", kpiRecettesValue, "", TailwindPalette.GREEN_100, TailwindPalette.GREEN_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\gain.png"), "grow");
+        
+        mainContainer.add(kpiPanel, "growx");
 
-        kpiCardPanel.add(createKpiCard("Total Recettes", kpiRecettesValue, "+12%", TailwindPalette.GREEN_100, TailwindPalette.GREEN_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\gain.png"), "grow");
-        kpiCardPanel.add(createKpiCard("Total Dépenses", kpiDepensesValue, "-5%", TailwindPalette.RED_100, TailwindPalette.RED_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\depense_img.png"), "grow");
-        kpiCardPanel.add(createKpiCard("Bénéfice Net", kpiBeneficeValue, "+18%", TailwindPalette.BLUE_100, TailwindPalette.BLUE_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\benefice_img.png"), "grow");
-
-        mainContainer.add(kpiCardPanel, "growx");
-
-        // --- 2. Middle Stats ---
+        // --- 2. Middle Stats (Restored - Static for now as per original) ---
         JPanel statsPanel = new JPanel(new MigLayout("insets 0, fill, gap 20", "[grow][grow][grow]"));
         statsPanel.setOpaque(false);
 
-        statsPanel.add(createStatCard("Montant Moyen", "450 DH", IconUtils.IconType.CLIPBOARD, TailwindPalette.PURPLE_500, null), "grow");
-        statsPanel.add(createStatCard("Taux Remise", "5%", IconUtils.IconType.ICON_EDIT, TailwindPalette.ORANGE_500, null), "grow");
-        statsPanel.add(createStatCard("Total Consultations", "850", IconUtils.IconType.USERS, TailwindPalette.TEAL_500, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\consultation.png"), "grow");
+        // Original had hardcoded values, let's keep it simple or use 0 placeholders if service not avail
+        statsPanel.add(createStatCard("Montant Moyen", "0 DH", ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.CLIPBOARD, TailwindPalette.PURPLE_500, null), "grow");
+        statsPanel.add(createStatCard("Taux Remise", "0%", ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_EDIT, TailwindPalette.ORANGE_500, null), "grow");
+        statsPanel.add(createStatCard("Total Consultations", "0", ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.USERS, TailwindPalette.TEAL_500, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\consultation.png"), "grow");
 
         mainContainer.add(statsPanel, "growx");
 
-        // --- 3. Chart Section ---
-        RoundedPanel chartCard = new RoundedPanel(20);
-        chartCard.setBackground(Color.WHITE);
-        chartCard.setBorder(new EmptyBorder(20, 20, 20, 20));
-        chartCard.setLayout(new BorderLayout());
+        // --- Recent Transactions Table ---
+        JPanel tableCard = new RoundedPanel(20);
+        tableCard.setBackground(Color.WHITE);
+        tableCard.setBorder(new EmptyBorder(20, 20, 20, 20));
+        tableCard.setLayout(new BorderLayout());
+
+        JLabel tableTitle = new JLabel("Transactions Récentes (Paiements Patients)");
+        tableTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        tableTitle.setForeground(TailwindPalette.GRAY_800);
+        tableTitle.setBorder(new EmptyBorder(0, 0, 16, 0));
+        tableCard.add(tableTitle, BorderLayout.NORTH);
+
+        // Table Setup
+        String[] columns = {"Type", "Patient", "Date", "Montant Payé", "Statut"};
+        // Use real data from service
+        List<FinancialStatisticsService.TransactionDTO> recentTx = financialService.getRecentTransactions(20);
         
-        // Chart Header with Filters
-        JPanel chartHeader = new JPanel(new BorderLayout());
-        chartHeader.setOpaque(false);
-        chartHeader.setBorder(new EmptyBorder(0, 0, 16, 0));
+        Object[][] data = new Object[recentTx.size()][5];
+        java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
         
-        JLabel chartTitle = new JLabel("Recettes vs Dépenses");
-        chartTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        chartTitle.setForeground(TailwindPalette.GRAY_800);
-        chartHeader.add(chartTitle, BorderLayout.WEST);
-        
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        filterPanel.setOpaque(false);
-        
-        ma.TeethCare.mvc.ui.palette.buttons.ModernButton weekBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Semaine", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
-        weekBtn.setCustomColor(TailwindPalette.BLUE_600, TailwindPalette.BLUE_100);
-        
-        ma.TeethCare.mvc.ui.palette.buttons.ModernButton monthBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Mois", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.DEFAULT);
-        monthBtn.setCustomColor(TailwindPalette.BLUE_600, TailwindPalette.BLUE_100);
-        
-        weekBtn.addActionListener(e -> {
-             weekBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.DEFAULT);
-             monthBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
-             weekBtn.repaint(); monthBtn.repaint();
-             updateChartData("WEEK");
+        for(int i=0; i<recentTx.size(); i++) {
+            FinancialStatisticsService.TransactionDTO tx = recentTx.get(i);
+            data[i][0] = tx.type();
+            data[i][1] = tx.label(); // Now holds Patient Name
+            data[i][2] = tx.date() != null ? tx.date().format(dtf) : "-";
+            data[i][3] = String.format("%,.2f DH", tx.amount());
+            data[i][4] = tx.status();
+        }
+
+        ModernTable table = new ModernTable();
+        table.setModel(new DefaultTableModel(data, columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; 
+            }
         });
+        table.setRowHeight(50);
         
-        monthBtn.addActionListener(e -> {
-             monthBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.DEFAULT);
-             weekBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
-             weekBtn.repaint(); monthBtn.repaint();
-             updateChartData("MONTH");
-        });
+        // Renderers
+        table.getColumnModel().getColumn(4).setCellRenderer(new StatusPillRenderer());
         
-        filterPanel.add(weekBtn);
-        filterPanel.add(monthBtn);
+        JScrollPane sp = new JScrollPane(table);
+        sp.setBorder(BorderFactory.createLineBorder(TailwindPalette.BORDER));
+        sp.getViewport().setBackground(Color.WHITE);
         
-        chartHeader.add(filterPanel, BorderLayout.EAST);
-        
-        chartCard.add(chartHeader, BorderLayout.NORTH);
+        tableCard.add(sp, BorderLayout.CENTER);
 
-        // JFreeChart
-        ChartPanel chartPanel = createChartPanel();
-        chartCard.add(chartPanel, BorderLayout.CENTER);
+        mainContainer.add(tableCard, BorderLayout.CENTER);
 
-        mainContainer.add(chartCard, "grow, h 400!"); // Fix height for chart
-
-        // Scroll Pane
-        // Removed unnecessary double scroll pane if parent handles it, but kept for safety as in original
-        JScrollPane scrollPane = new JScrollPane(mainContainer);
-        scrollPane.setBorder(null);
-        scrollPane.setOpaque(false);
-        scrollPane.getViewport().setOpaque(false);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-
-        add(scrollPane, BorderLayout.CENTER);
+        add(mainContainer, BorderLayout.CENTER);
     }
-    
     private String formatCurrency(Double amount) {
         if (amount == null) return "0 DH";
         return String.format("%,.0f DH", amount);
@@ -165,14 +145,13 @@ public class CashView extends JPanel {
                      Image scaled = rawIcon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
                      iconLabel.setIcon(new ImageIcon(scaled));
                  } else {
-                     // Fallback if file not found
-                     iconLabel.setIcon(IconUtils.getIcon(IconUtils.IconType.BUILDING, 20, fg)); 
+                     iconLabel.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.BUILDING, 20, fg)); 
                  }
              } catch (Exception e) {
                  e.printStackTrace();
              }
         } else {
-             iconLabel.setIcon(IconUtils.getIcon(IconUtils.IconType.BUILDING, 20, fg));
+             iconLabel.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.BUILDING, 20, fg));
         }
         
         p.add(iconLabel, "wrap");
@@ -182,36 +161,37 @@ public class CashView extends JPanel {
         valueLabel.setForeground(TailwindPalette.GRAY_900);
         p.add(valueLabel);
 
-        // Percent Pill
-        JPanel pill = new JPanel(new BorderLayout());
-        pill.setOpaque(false);
-        JLabel pl = new JLabel(percent);
-        pl.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        pl.setForeground(fg);
-        pill.add(pl);
-        
-        JPanel pillContainer = new JPanel(new BorderLayout()) {
-             @Override
-             protected void paintComponent(Graphics g) {
-                 Graphics2D g2 = (Graphics2D)g;
-                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                 g2.setColor(bg);
-                 g2.fillRoundRect(0,0,getWidth(), getHeight(), 12, 12);
-                 super.paintComponent(g);
-             }
-        };
-        pillContainer.setOpaque(false);
-        pillContainer.setBorder(new EmptyBorder(4, 8, 4, 8));
-        pillContainer.add(pill);
-        
-        p.add(pillContainer, "align right");
+        // Percent Pill (Empty if no percent)
+        if (percent != null && !percent.isEmpty()) {
+            JPanel pill = new JPanel(new BorderLayout());
+            pill.setOpaque(false);
+            JLabel pl = new JLabel(percent);
+            pl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            pl.setForeground(fg);
+            pill.add(pl);
+            
+            JPanel pillContainer = new JPanel(new BorderLayout()) {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    Graphics2D g2 = (Graphics2D)g;
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(bg);
+                    g2.fillRoundRect(0,0,getWidth(), getHeight(), 12, 12);
+                    super.paintComponent(g);
+                }
+            };
+            pillContainer.setOpaque(false);
+            pillContainer.setBorder(new EmptyBorder(4, 8, 4, 8));
+            pillContainer.add(pill);
+            p.add(pillContainer, "align right");
+        }
 
         return p;
     }
 
-    private JPanel createStatCard(String title, String value, IconUtils.IconType iconType, Color iconColor, String imagePath) {
+    private JPanel createStatCard(String title, String value, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType iconType, Color iconColor, String imagePath) {
         RoundedPanel p = new RoundedPanel(16);
-        p.setBackground(TailwindPalette.GRAY_50); // Slightly gray to diff from main cards
+        p.setBackground(TailwindPalette.GRAY_50); 
         p.setLayout(new MigLayout("insets 16 20 16 20, fill", "[]push[]", "[]"));
         
         JPanel textInfo = new JPanel(new MigLayout("insets 0, gap 0", "[]", "[]4[]"));
@@ -238,77 +218,16 @@ public class CashView extends JPanel {
                      Image scaled = rawIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
                      icon.setIcon(new ImageIcon(scaled));
                  } else {
-                     icon.setIcon(IconUtils.getIcon(iconType, 24, iconColor));
+                     icon.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(iconType, 24, iconColor));
                  }
              } catch (Exception e) {
-                 icon.setIcon(IconUtils.getIcon(iconType, 24, iconColor));
+                 icon.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(iconType, 24, iconColor));
              }
         } else {
-             icon.setIcon(IconUtils.getIcon(iconType, 24, iconColor));
+             icon.setIcon(ma.TeethCare.mvc.ui.palette.utils.IconUtils.getIcon(iconType, 24, iconColor));
         }
         p.add(icon);
 
         return p;
-    }
-
-    private ChartPanel createChartPanel() {
-        chartDataset = new DefaultCategoryDataset();
-        // Default to Month view
-        updateChartData("MONTH");
-
-        JFreeChart chart = ChartFactory.createBarChart(
-                null,       // chart title
-                null,       // domain axis label
-                null,       // range axis label
-                chartDataset,    // data
-                PlotOrientation.VERTICAL,
-                true,       // include legend
-                true,       // tooltips
-                false       // urls
-        );
-
-        // Customize Chart
-        chart.setBackgroundPaint(Color.WHITE);
-        CategoryPlot plot = chart.getCategoryPlot();
-        plot.setBackgroundPaint(Color.WHITE);
-        plot.setDomainGridlinePaint(Color.WHITE);
-        plot.setRangeGridlinePaint(TailwindPalette.GRAY_200);
-        plot.setOutlineVisible(false);
-        plot.setAxisOffset(new RectangleInsets(0, 0, 0, 0));
-
-        // Renderer (Colors)
-        BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        renderer.setSeriesPaint(0, new Color(16, 185, 129)); // Emerald 500
-        renderer.setSeriesPaint(1, new Color(239, 68, 68));  // Red 500
-        renderer.setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter()); // Flat look
-        renderer.setShadowVisible(false);
-        renderer.setDrawBarOutline(false);
-        renderer.setItemMargin(0.1);
-
-        ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setOpaque(false);
-        chartPanel.setBorder(null);
-        return chartPanel;
-    }
-
-    private void updateChartData(String period) {
-        chartDataset.clear();
-        if ("WEEK".equals(period)) {
-            // Placeholder: Week view logic not implemented in service yet
-        } else {
-            // Month View from Service
-            Map<String, Object> data = financialService.getChartData(LocalDateTime.now().getYear());
-            double[] revenues = (double[]) data.get("revenues");
-            double[] expenses = (double[]) data.get("expenses");
-            
-            String[] months = {"Jan", "Fev", "Mar", "Avr", "Mai", "Juin", "Juil", "Aout", "Sept", "Oct", "Nov", "Dec"};
-            
-            for (int i = 0; i < 12; i++) {
-                if (revenues[i] > 0 || expenses[i] > 0) {
-                     chartDataset.addValue(revenues[i], "Recettes", months[i]);
-                     chartDataset.addValue(expenses[i], "Dépenses", months[i]);
-                }
-            }
-        }
     }
 }

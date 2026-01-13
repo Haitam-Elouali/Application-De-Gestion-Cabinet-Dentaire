@@ -16,20 +16,24 @@ public class SecretaryDashboardView extends JFrame {
     private SecretarySidebar sidebar; // Declare as field for access in listeners
 
     public SecretaryDashboardView() {
-        setTitle("TeethCare - Secretary Dashboard");
+        this("Secrétaire");
+    }
+
+    public SecretaryDashboardView(String username) {
+        setTitle("TeethCare - Secretary Dashboard - Connecté: " + username);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1366, 768);
         setLocationRelativeTo(null);
 
-        initUI();
+        initUI(username);
     }
 
-    private void initUI() {
+    private void initUI(String username) {
         Container root = getContentPane();
         root.setLayout(new BorderLayout());
 
         // Header (Top)
-        SecretaryHeader header = new SecretaryHeader("Sophie Martin", () -> {
+        SecretaryHeader header = new SecretaryHeader(username, () -> {
             new ma.TeethCare.mvc.ui.login.LoginView().setVisible(true);
             dispose();
         });

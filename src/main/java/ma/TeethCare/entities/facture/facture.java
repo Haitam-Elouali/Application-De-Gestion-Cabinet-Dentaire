@@ -31,6 +31,10 @@ public class facture extends baseEntity {
     private consultation consultation;
     private situationFinanciere situationFinanciere;
     private List<revenues> revenues;
+    
+    // Transient field for display purposes (populated via repository joins)
+    private ma.TeethCare.entities.patient.Patient patient;
+
     public static facture createTestInstance(ma.TeethCare.entities.patient.Patient patient, ma.TeethCare.entities.consultation.consultation consultation) {
         return facture.builder()
                 .dateFacture(LocalDateTime.now())

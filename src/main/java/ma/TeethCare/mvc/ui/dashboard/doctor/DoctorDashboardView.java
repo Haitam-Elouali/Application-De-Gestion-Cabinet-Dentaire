@@ -12,20 +12,24 @@ public class DoctorDashboardView extends JFrame {
     private JPanel contentArea;
 
     public DoctorDashboardView() {
-        setTitle("TeethCare - Doctor Dashboard");
+        this("Dr. Dentiste");
+    }
+
+    public DoctorDashboardView(String username) {
+        setTitle("TeethCare - Doctor Dashboard - Connecté: " + username);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Or DISPOSE based on app logic
         setSize(1366, 768); // HD resolution
         setLocationRelativeTo(null);
         
-        initUI();
+        initUI(username);
     }
 
-    private void initUI() {
+    private void initUI(String username) {
         Container root = getContentPane();
         root.setLayout(new BorderLayout());
 
         // Header (Top)
-        DashboardHeader header = new DashboardHeader("Dr. Smith", () -> {
+        DashboardHeader header = new DashboardHeader(username, () -> {
             new ma.TeethCare.mvc.ui.login.LoginView().setVisible(true);
             dispose();
         });

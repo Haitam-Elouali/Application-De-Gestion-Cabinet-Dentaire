@@ -22,7 +22,11 @@ public class SecretaryHome extends JPanel {
 
     public SecretaryHome() {
         // Initialize Services
-        this.financialService = new FinancialStatisticsServiceImpl(new RevenuesRepositoryImpl(), new ChargesRepositoryImpl());
+        this.financialService = new FinancialStatisticsServiceImpl(
+            new RevenuesRepositoryImpl(), 
+            new ChargesRepositoryImpl(),
+            new ma.TeethCare.repository.mySQLImpl.FactureRepositoryImpl()
+        );
         this.rdvService = new ma.TeethCare.service.modules.agenda.impl.rdvServiceImpl(new ma.TeethCare.repository.mySQLImpl.RdvRepositoryImpl());
         this.patientService = new ma.TeethCare.service.modules.patient.impl.PatientServiceImpl(new ma.TeethCare.repository.mySQLImpl.PatientRepositoryImpl());
 

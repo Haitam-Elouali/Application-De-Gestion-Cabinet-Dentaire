@@ -11,20 +11,24 @@ public class AdminDashboardView extends JFrame {
     private JPanel contentArea;
 
     public AdminDashboardView() {
-        setTitle("TeethCare - Admin Dashboard");
+        this("Administrateur");
+    }
+
+    public AdminDashboardView(String username) {
+        setTitle("TeethCare - Admin Dashboard - Connecté: " + username);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Or DISPOSE based on app logic
         setSize(1366, 768); // HD resolution
         setLocationRelativeTo(null);
         
-        initUI();
+        initUI(username);
     }
 
-    private void initUI() {
+    private void initUI(String username) {
         Container root = getContentPane();
         root.setLayout(new BorderLayout());
 
         // Header (Top)
-        AdminHeader header = new AdminHeader("Admin User", () -> {
+        AdminHeader header = new AdminHeader(username, () -> {
             new ma.TeethCare.mvc.ui.login.LoginView().setVisible(true);
             dispose();
         }); 
