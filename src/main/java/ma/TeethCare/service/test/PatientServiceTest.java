@@ -55,6 +55,11 @@ public class PatientServiceTest {
         public void deleteById(Long id) {
             data.remove(id);
         }
+
+        @Override
+        public List<Patient> search(String keyword) {
+            return new ArrayList<>();
+        }
     }
 
     public static void main(String[] args) {

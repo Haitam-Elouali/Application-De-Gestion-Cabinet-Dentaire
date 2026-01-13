@@ -24,4 +24,10 @@ public class CertificatDTO {
     private LocalDate dateExpiration;
     private String motif;
     private LocalDateTime dateCreation;
+    private String type;
+    private Integer duree;
+    
+    // Links
+    private String patientNom;
+    private String patientPrenom;
 }

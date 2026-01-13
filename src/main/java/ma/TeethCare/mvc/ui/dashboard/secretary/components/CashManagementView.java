@@ -3,6 +3,10 @@ package ma.TeethCare.mvc.ui.dashboard.secretary.components;
 import ma.TeethCare.mvc.ui.palette.containers.RoundedPanel;
 import ma.TeethCare.mvc.ui.palette.utils.IconUtils;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
+import ma.TeethCare.repository.mySQLImpl.ChargesRepositoryImpl;
+import ma.TeethCare.repository.mySQLImpl.RevenuesRepositoryImpl;
+import ma.TeethCare.service.modules.caisse.api.FinancialStatisticsService;
+import ma.TeethCare.service.modules.caisse.impl.FinancialStatisticsServiceImpl;
 import net.miginfocom.swing.MigLayout;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -17,6 +21,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.time.LocalDateTime;
+import java.util.Map;
 
 import ma.TeethCare.mvc.ui.palette.data.ModernTable;
 import ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer;
@@ -25,8 +31,17 @@ import ma.TeethCare.mvc.ui.palette.renderers.StatusPillRenderer;
 public class CashManagementView extends JPanel {
 
     private DefaultCategoryDataset chartDataset;
+    private FinancialStatisticsService financialService;
+    private ma.TeethCare.service.modules.agenda.api.rdvService rdvService; // Inject RDV Service
+    private JLabel kpiRecettesValue;
+    private JLabel kpiDepensesValue;
+    private JLabel kpiBeneficeValue;
 
     public CashManagementView() {
+        // Initialize Service
+        this.financialService = new FinancialStatisticsServiceImpl(new RevenuesRepositoryImpl(), new ChargesRepositoryImpl());
+        this.rdvService = new ma.TeethCare.service.modules.agenda.impl.rdvServiceImpl(new ma.TeethCare.repository.mySQLImpl.RdvRepositoryImpl());
+
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
         setBorder(new EmptyBorder(24, 24, 24, 24)); // Component padding
@@ -56,16 +71,32 @@ public class CashManagementView extends JPanel {
         topBar.add(exportBtn, BorderLayout.EAST);
         
         mainContainer.add(topBar, "growx");
-
-        // ... (rest of the panel setup) ...
+ 
+        // --- Fetch Initial Data ---
+        FinancialStatisticsService.FinancialSummary summary = financialService.getFinancialSummary(
+                LocalDateTime.now().withDayOfYear(1), LocalDateTime.now()); // Year to Date
+        
+        long totalConsultations = 0;
+        double montantMoyen = 0.0;
+        
+        try {
+             totalConsultations = rdvService.count();
+             if (totalConsultations > 0) {
+                 montantMoyen = summary.totalRecettes() / totalConsultations;
+             }
+        } catch (Exception e) {}
 
         // --- 1. Top Cards (KPIs) ---
         JPanel kpiPanel = new JPanel(new MigLayout("insets 0, fill, gap 20", "[grow][grow][grow]")); // 3 Columns
         kpiPanel.setOpaque(false);
 
-        kpiPanel.add(createKpiCard("Total Recettes", "124 500 DH", "+12%", TailwindPalette.GREEN_100, TailwindPalette.GREEN_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\gain.png"), "grow");
-        kpiPanel.add(createKpiCard("Total Dépenses", "45 200 DH", "-5%", TailwindPalette.RED_100, TailwindPalette.RED_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\depense_img.png"), "grow");
-        kpiPanel.add(createKpiCard("Bénéfice Net", "79 300 DH", "+18%", TailwindPalette.BLUE_100, TailwindPalette.BLUE_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\benefice_img.png"), "grow");
+        kpiRecettesValue = new JLabel(formatCurrency(summary.totalRecettes()));
+        kpiDepensesValue = new JLabel(formatCurrency(summary.totalDepenses()));
+        kpiBeneficeValue = new JLabel(formatCurrency(summary.benefice()));
+
+        kpiPanel.add(createKpiCard("Total Recettes", kpiRecettesValue, "", TailwindPalette.GREEN_100, TailwindPalette.GREEN_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\gain.png"), "grow");
+        kpiPanel.add(createKpiCard("Total Dépenses", kpiDepensesValue, "", TailwindPalette.RED_100, TailwindPalette.RED_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\depense_img.png"), "grow");
+        kpiPanel.add(createKpiCard("Bénéfice Net", kpiBeneficeValue, "", TailwindPalette.BLUE_100, TailwindPalette.BLUE_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\benefice_img.png"), "grow");
 
         mainContainer.add(kpiPanel, "growx");
 
@@ -73,9 +104,9 @@ public class CashManagementView extends JPanel {
         JPanel statsPanel = new JPanel(new MigLayout("insets 0, fill, gap 20", "[grow][grow][grow]"));
         statsPanel.setOpaque(false);
 
-        statsPanel.add(createStatCard("Montant Moyen", "450 DH", IconUtils.IconType.CLIPBOARD, TailwindPalette.PURPLE_500, null), "grow");
-        statsPanel.add(createStatCard("Taux Remise", "5%", IconUtils.IconType.ICON_EDIT, TailwindPalette.ORANGE_500, null), "grow");
-        statsPanel.add(createStatCard("Total Consultations", "850", IconUtils.IconType.USERS, TailwindPalette.TEAL_500, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\consultation.png"), "grow");
+        statsPanel.add(createStatCard("Montant Moyen", formatCurrency(montantMoyen), IconUtils.IconType.CLIPBOARD, TailwindPalette.PURPLE_500, null), "grow");
+        statsPanel.add(createStatCard("Taux Remise", "0%", IconUtils.IconType.ICON_EDIT, TailwindPalette.ORANGE_500, null), "grow");
+        statsPanel.add(createStatCard("Total RDV/Cons.", String.valueOf(totalConsultations), IconUtils.IconType.USERS, TailwindPalette.TEAL_500, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\consultation.png"), "grow");
 
         mainContainer.add(statsPanel, "growx");
 
@@ -143,14 +174,21 @@ public class CashManagementView extends JPanel {
         tableTitle.setBorder(new EmptyBorder(0, 0, 16, 0));
         tableCard.add(tableTitle, BorderLayout.NORTH);
 
-        // Table Setup - REMOVED ACTIONS COLUMN
-        String[] columns = {"ID", "Patient", "Date", "Type", "Montant", "Statut"};
-        Object[][] data = {
-            {"#TRX-001", "Alami Ahmed", "12/01/2026", "Consultation", "300 DH", "Payé"},
-            {"#TRX-002", "Benani Sarah", "12/01/2026", "Soins Traitement", "1500 DH", "En attente"},
-            {"#TRX-003", "Chraibi Karim", "11/01/2026", "Chirurgie", "4000 DH", "Payé"},
-            {"#TRX-004", "Drissi Nadia", "11/01/2026", "Contrôle", "0 DH", "Gratuit"}
-        };
+        // Table Setup
+        String[] columns = {"Type", "Label", "Date", "Montant", "Statut"};
+        java.util.List<FinancialStatisticsService.TransactionDTO> recentTx = financialService.getRecentTransactions(10);
+        
+        Object[][] data = new Object[recentTx.size()][5];
+        java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        
+        for(int i=0; i<recentTx.size(); i++) {
+            FinancialStatisticsService.TransactionDTO tx = recentTx.get(i);
+            data[i][0] = tx.type();
+            data[i][1] = tx.label();
+            data[i][2] = tx.date() != null ? tx.date().format(dtf) : "-";
+            data[i][3] = String.format("%,.2f DH", tx.amount());
+            data[i][4] = tx.status();
+        }
 
         ModernTable table = new ModernTable();
         table.setModel(new DefaultTableModel(data, columns) {
@@ -162,7 +200,7 @@ public class CashManagementView extends JPanel {
         table.setRowHeight(50);
         
         // Renderers
-        table.getColumnModel().getColumn(5).setCellRenderer(new StatusPillRenderer());
+        table.getColumnModel().getColumn(4).setCellRenderer(new StatusPillRenderer());
         
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createLineBorder(TailwindPalette.BORDER));
@@ -182,7 +220,12 @@ public class CashManagementView extends JPanel {
         add(mainScroll, BorderLayout.CENTER);
     }
     
-    private JPanel createKpiCard(String title, String value, String percent, Color bg, Color fg, String imagePath) {
+    private String formatCurrency(Double amount) {
+        if (amount == null) return "0 DH";
+        return String.format("%,.0f DH", amount);
+    }
+
+    private JPanel createKpiCard(String title, JLabel valueLabel, String percent, Color bg, Color fg, String imagePath) {
         RoundedPanel p = new RoundedPanel(20);
         p.setBackground(Color.WHITE);
         p.setLayout(new MigLayout("insets 24, fill", "[]push[]", "[]10[]")); // Title...Icon / Value...Percent
@@ -215,10 +258,9 @@ public class CashManagementView extends JPanel {
         p.add(iconLabel, "wrap");
 
         // Value
-        JLabel v = new JLabel(value);
-        v.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        v.setForeground(TailwindPalette.GRAY_900);
-        p.add(v);
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        valueLabel.setForeground(TailwindPalette.GRAY_900);
+        p.add(valueLabel);
 
         // Percent Pill
         JPanel pill = new JPanel(new BorderLayout());
@@ -333,33 +375,23 @@ public class CashManagementView extends JPanel {
     private void updateChartData(String period) {
         chartDataset.clear();
         if ("WEEK".equals(period)) {
-            // Mock Data for Week View
-            chartDataset.addValue(4000, "Recettes", "Lun");
-            chartDataset.addValue(2000, "Dépenses", "Lun");
-            chartDataset.addValue(5500, "Recettes", "Mar");
-            chartDataset.addValue(1500, "Dépenses", "Mar");
-            chartDataset.addValue(3000, "Recettes", "Mer");
-            chartDataset.addValue(2500, "Dépenses", "Mer");
-            chartDataset.addValue(6000, "Recettes", "Jeu");
-            chartDataset.addValue(3000, "Dépenses", "Jeu");
-            chartDataset.addValue(4500, "Recettes", "Ven");
-            chartDataset.addValue(2000, "Dépenses", "Ven");
-            chartDataset.addValue(7000, "Recettes", "Sam");
-            chartDataset.addValue(4000, "Dépenses", "Sam");
+            // Placeholder: Week view logic not implemented in service yet
+            // Just clearing for now or keeping mock data if requested
         } else {
-            // Mock Data for Month View
-            chartDataset.addValue(25000, "Recettes", "Juin");
-            chartDataset.addValue(15000, "Dépenses", "Juin");
-            chartDataset.addValue(32000, "Recettes", "Juil");
-            chartDataset.addValue(18000, "Dépenses", "Juil");
-            chartDataset.addValue(28000, "Recettes", "Aout");
-            chartDataset.addValue(12000, "Dépenses", "Aout");
-            chartDataset.addValue(45000, "Recettes", "Sept");
-            chartDataset.addValue(20000, "Dépenses", "Sept");
-            chartDataset.addValue(38000, "Recettes", "Oct");
-            chartDataset.addValue(22000, "Dépenses", "Oct");
-            chartDataset.addValue(42000, "Recettes", "Nov");
-            chartDataset.addValue(19000, "Dépenses", "Nov");
+            // Month View from Service
+            Map<String, Object> data = financialService.getChartData(LocalDateTime.now().getYear());
+            double[] revenues = (double[]) data.get("revenues");
+            double[] expenses = (double[]) data.get("expenses");
+            
+            String[] months = {"Jan", "Fev", "Mar", "Avr", "Mai", "Juin", "Juil", "Aout", "Sept", "Oct", "Nov", "Dec"};
+            
+            for (int i = 0; i < 12; i++) {
+                // Filtering 0 values if desired, or showing all
+                if (revenues[i] > 0 || expenses[i] > 0) {
+                     chartDataset.addValue(revenues[i], "Recettes", months[i]);
+                     chartDataset.addValue(expenses[i], "Dépenses", months[i]);
+                }
+            }
         }
     }
 

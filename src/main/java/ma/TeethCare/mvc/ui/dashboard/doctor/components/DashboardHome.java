@@ -4,15 +4,29 @@ import ma.TeethCare.mvc.ui.palette.containers.ModernCard;
 import ma.TeethCare.mvc.ui.palette.data.ModernBadge;
 import ma.TeethCare.mvc.ui.palette.data.ModernTable;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
+import ma.TeethCare.repository.mySQLImpl.ChargesRepositoryImpl;
+import ma.TeethCare.repository.mySQLImpl.RevenuesRepositoryImpl;
+import ma.TeethCare.service.modules.caisse.api.FinancialStatisticsService;
+import ma.TeethCare.service.modules.caisse.impl.FinancialStatisticsServiceImpl;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.time.LocalDateTime;
 
 public class DashboardHome extends JPanel {
 
+    private final FinancialStatisticsService financialService;
+    private final ma.TeethCare.service.modules.agenda.api.rdvService rdvService;
+    private final ma.TeethCare.service.modules.patient.api.PatientService patientService;
+
     public DashboardHome() {
+        // Initialize Services
+        this.financialService = new FinancialStatisticsServiceImpl(new RevenuesRepositoryImpl(), new ChargesRepositoryImpl());
+        this.rdvService = new ma.TeethCare.service.modules.agenda.impl.rdvServiceImpl(new ma.TeethCare.repository.mySQLImpl.RdvRepositoryImpl());
+        this.patientService = new ma.TeethCare.service.modules.patient.impl.PatientServiceImpl(new ma.TeethCare.repository.mySQLImpl.PatientRepositoryImpl());
+
         setLayout(new BorderLayout());
         setOpaque(false); // Transparent to show Blue background
         setBorder(new EmptyBorder(0, 0, 0, 0)); // Padding handled by parent modulePanel
@@ -21,15 +35,36 @@ public class DashboardHome extends JPanel {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setOpaque(false);
         
+        // --- Fetch Data ---
+        java.util.List<ma.TeethCare.mvc.dto.rdv.RdvDTO> todayRdvs = new java.util.ArrayList<>();
+        long patientCount = 0;
+        long consultationCount = 0;
+        String dailyRevenue = "0 MAD";
+
+        try {
+            LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime now = LocalDateTime.now();
+            FinancialStatisticsService.FinancialSummary dailySummary = financialService.getFinancialSummary(startOfDay, now);
+            dailyRevenue = String.format("%,.0f MAD", dailySummary.totalRecettes());
+
+            todayRdvs = rdvService.findTodayAppointments();
+            consultationCount = todayRdvs.size();
+            patientCount = todayRdvs.stream().map(ma.TeethCare.mvc.dto.rdv.RdvDTO::getPatientId).distinct().count();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // 1. Stats Row
         JPanel statsPanel = new JPanel(new GridLayout(1, 4, 16, 0)); // 4 cols, gap 16
         statsPanel.setOpaque(false);
         statsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
         
-        statsPanel.add(new StatsCard("Patients du jour", "8", StatsCard.Type.BLUE, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_PATIENTS));
-        statsPanel.add(new StatsCard("Consultations", "5", StatsCard.Type.GREEN, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_CONSULTATION));
-        statsPanel.add(new StatsCard("Actes réalisés", "12", StatsCard.Type.PURPLE, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_ACTS));
-        statsPanel.add(new StatsCard("Revenus du jour", "3 450 MAD", StatsCard.Type.ORANGE, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_CASH));
+        statsPanel.add(new StatsCard("Patients du jour", String.valueOf(patientCount), StatsCard.Type.BLUE, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_PATIENTS));
+        statsPanel.add(new StatsCard("Consultations", String.valueOf(consultationCount), StatsCard.Type.GREEN, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_CONSULTATION));
+        statsPanel.add(new StatsCard("Actes réalisés", "0", StatsCard.Type.PURPLE, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_ACTS));
+        // updated with real data
+        statsPanel.add(new StatsCard("Revenus du jour", dailyRevenue, StatsCard.Type.ORANGE, ma.TeethCare.mvc.ui.palette.utils.IconUtils.IconType.ICON_CASH));
         
         content.add(statsPanel);
         content.add(Box.createVerticalStrut(24)); // Gap
@@ -58,15 +93,26 @@ public class DashboardHome extends JPanel {
         pHeader.add(pTitle, BorderLayout.WEST);
         planningCard.add(pHeader, BorderLayout.NORTH);
         
-        // Table
+        // Table Prep
         String[] columns = {"Heure", "Patient", "Motif", "Statut"};
-        Object[][] data = {
-            {"09:00", "Dupont Jean", "Consultation", "Terminé"},
-            {"10:30", "Martin Sophie", "Détartrage", "En cours"},
-            {"11:15", "Bernard Luc", "Urgence", "En attente"},
-            {"14:00", "Petit Pierre", "Contrôle", "Prévu"},
-            {"15:30", "Dubois Marie", "Soins carie", "Prévu"}
-        };
+        Object[][] data = new Object[todayRdvs.size()][4];
+        
+        for (int i=0; i < todayRdvs.size(); i++) {
+             ma.TeethCare.mvc.dto.rdv.RdvDTO r = todayRdvs.get(i);
+             // Fetch Patient Name
+             String patientName = "Inconnu";
+             try {
+                  java.util.Optional<ma.TeethCare.mvc.dto.patient.PatientDTO> pat = patientService.findById(r.getPatientId());
+                  if (pat.isPresent()) {
+                      patientName = pat.get().getNom() + " " + pat.get().getPrenom();
+                  }
+             } catch (Exception e) {}
+             
+             data[i][0] = r.getHeure() != null ? r.getHeure().toString() : "--:--";
+             data[i][1] = patientName;
+             data[i][2] = r.getMotif() != null ? r.getMotif() : "Consultation";
+             data[i][3] = r.getStatut() != null ? r.getStatut() : "En attente";
+        }
         
         ModernTable table = new ModernTable();
         table.setModel(new DefaultTableModel(data, columns));

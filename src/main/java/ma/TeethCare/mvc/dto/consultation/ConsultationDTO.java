@@ -25,4 +25,8 @@ public class ConsultationDTO {
     private String notes;
     private LocalDateTime dateCreation;
     private LocalDateTime dateDerniereModification;
+    
+    private String patientNom;
+    private String patientPrenom;
+    private String statut; // Missing in DTO but present in Entity
 }

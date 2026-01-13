@@ -3,20 +3,46 @@ package ma.TeethCare.mvc.ui.dashboard.doctor.components;
 import ma.TeethCare.mvc.ui.palette.buttons.ModernButton;
 import ma.TeethCare.mvc.ui.palette.data.ModernTable;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
+import ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.List;
+import java.util.ArrayList;
 
-public class CertificateView extends JPanel {
+import ma.TeethCare.mvc.dto.certificat.CertificatDTO;
+import ma.TeethCare.service.modules.dossierMedical.api.certificatService;
+import ma.TeethCare.service.modules.dossierMedical.impl.certificatServiceImpl;
+import ma.TeethCare.repository.mySQLImpl.CertificatRepositoryImpl;
+
+public class CertificateView extends JPanel implements TableActionCellRenderer.TableActionEvent {
+
+    private final certificatService service;
+    private ModernTable table;
+    private DefaultTableModel model;
+    private List<CertificatDTO> certificats;
 
     public CertificateView() {
+        this.service = new certificatServiceImpl(new CertificatRepositoryImpl());
+        
         setLayout(new BorderLayout());
         setOpaque(false); // Transparent
         setBorder(new EmptyBorder(24, 24, 24, 24));
 
+        loadCertificats();
         initUI();
+    }
+
+    private void loadCertificats() {
+        try {
+            certificats = service.findAll();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erreur chargement certificats: " + e.getMessage());
+            certificats = new ArrayList<>();
+        }
     }
 
     private void initUI() {
@@ -33,19 +59,25 @@ public class CertificateView extends JPanel {
 
         // Add Button
         ModernButton addBtn = new ModernButton("Ajouter un certificat", ModernButton.Variant.DEFAULT);
+        addBtn.addActionListener(e -> JOptionPane.showMessageDialog(this, "Ajoutez via consultation."));
         topBar.add(addBtn, BorderLayout.EAST);
 
         card.add(topBar, BorderLayout.NORTH);
 
         // Table
         String[] columns = {"ID", "Patient", "Type", "Date", "Durée", "Actions"};
-        Object[][] data = {
-            {"1", "Dubois Marie", "Arrêt de travail", "10/12/2025", "3 jours", ""},
-            {"2", "Martin Jean", "Certificat médical", "15/12/2025", "N/A", ""}
+        
+        model = new DefaultTableModel(columns, 0) {
+             @Override
+             public boolean isCellEditable(int row, int column) {
+                 return column == 5;
+             }
         };
 
-        ModernTable table = new ModernTable();
-        table.setModel(new DefaultTableModel(data, columns));
+        table = new ModernTable();
+        table.setModel(model);
+        refreshTable();
+        
         table.setRowHeight(60);
         table.setShowGrid(false);
         
@@ -53,12 +85,12 @@ public class CertificateView extends JPanel {
         table.getColumnModel().getColumn(2).setCellRenderer(new ma.TeethCare.mvc.ui.palette.renderers.StatusPillRenderer());
 
         // Actions (Col 5)
-        ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer actionRenderer = new ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer(
-            null,
-            ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.VIEW_ICON,
-            ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.PRINT,
-            ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.EDIT,
-            ma.TeethCare.mvc.ui.palette.renderers.TableActionCellRenderer.ActionType.DELETE
+        TableActionCellRenderer actionRenderer = new TableActionCellRenderer(
+            this,
+            TableActionCellRenderer.ActionType.VIEW_ICON,
+            TableActionCellRenderer.ActionType.PRINT,
+            TableActionCellRenderer.ActionType.EDIT,
+            TableActionCellRenderer.ActionType.DELETE
         );
         table.getColumnModel().getColumn(5).setCellRenderer(actionRenderer);
         table.getColumnModel().getColumn(5).setCellEditor(actionRenderer);
@@ -70,5 +102,52 @@ public class CertificateView extends JPanel {
         card.add(sp, BorderLayout.CENTER);
         
         add(card, BorderLayout.CENTER);
+    }
+    
+    private void refreshTable() {
+        model.setRowCount(0);
+        if (certificats == null) return;
+        
+        for (CertificatDTO c : certificats) {
+            String patientName = (c.getPatientNom() != null ? c.getPatientNom() : "") + " " + 
+                                 (c.getPatientPrenom() != null ? c.getPatientPrenom() : "");
+            String dureeStr = c.getDuree() != null ? c.getDuree() + " jours" : "N/A";
+            
+            model.addRow(new Object[]{
+                c.getId(),
+                patientName,
+                c.getType() != null ? c.getType() : "Certificat",
+                c.getDateEmission() != null ? c.getDateEmission().toString() : "",
+                dureeStr,
+                ""
+            });
+        }
+    }
+
+    @Override
+    public void onAction(int row, int column, TableActionCellRenderer.ActionType type) {
+        if (row < 0) return;
+        int modelRow = table.convertRowIndexToModel(row);
+        CertificatDTO c = certificats.get(modelRow);
+
+        switch (type) {
+             case DELETE:
+                 int confirm = JOptionPane.showConfirmDialog(this, "Supprimer ?", "Confirmer", JOptionPane.YES_NO_OPTION);
+                 if (confirm == JOptionPane.YES_OPTION) {
+                     try {
+                         service.delete(c.getId());
+                         certificats.remove(modelRow);
+                         refreshTable();
+                     } catch (Exception e) {
+                         e.printStackTrace();
+                     }
+                 }
+                 break;
+             case PRINT:
+                 JOptionPane.showMessageDialog(this, "Impression certificat: " + c.getType());
+                 break;
+             default:
+                 break;
+        }
     }
 }

@@ -26,4 +26,7 @@ public class OrdonnanceDTO {
     private String notes;
     private LocalDateTime dateCreation;
     private LocalDateTime dateDerniereModification;
+    
+    private String patientNom;
+    private String patientPrenom;
 }

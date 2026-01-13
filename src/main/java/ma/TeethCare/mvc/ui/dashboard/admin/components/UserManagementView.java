@@ -11,7 +11,11 @@ import java.awt.*;
 
 public class UserManagementView extends JPanel {
 
+    private ma.TeethCare.repository.api.UtilisateurRepository utilisateurRepository;
+
     public UserManagementView() {
+        this.utilisateurRepository = new ma.TeethCare.repository.mySQLImpl.UtilisateurRepositoryImpl();
+        
         setLayout(new BorderLayout());
         setOpaque(false); // Transparent
         setBorder(new EmptyBorder(24, 24, 24, 24));
@@ -30,6 +34,8 @@ public class UserManagementView extends JPanel {
         title.setForeground(Color.decode("#1f2937"));
 
         ModernButton addBtn = new ModernButton("Nouvel Utilisateur", ModernButton.Variant.DESTRUCTIVE);
+        // Placeholder action
+        addBtn.addActionListener(e -> JOptionPane.showMessageDialog(this, "Fonctionnalité à implémenter"));
         
         toolbar.add(title, BorderLayout.WEST);
         toolbar.add(addBtn, BorderLayout.EAST);
@@ -42,18 +48,39 @@ public class UserManagementView extends JPanel {
 
         card.add(toolbar, BorderLayout.NORTH);
         
-        // Table (Rest added later, but toolbar needs to go into card)
-        // Adjust hierarchy: add(card, BorderLayout.CENTER) instead of adding toolbar directly to this.
-        
         add(card, BorderLayout.CENTER);
         
+        // Fetch Data
+        java.util.List<ma.TeethCare.entities.utilisateur.utilisateur> users = new java.util.ArrayList<>();
+        try {
+            users = utilisateurRepository.findAll();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // Table
         String[] columns = {"ID", "Utilisateur", "Rôle", "Email", "Statut", "Dernière Connexion", "Actions"};
-        Object[][] data = {
-            {"1", "Dr. Dupont Jean", "Médecin", "dr.dupont@teethcare.ma", "Actif", "08/01/2026 09:00", ""},
-            {"2", "Mme. Martin Sophie", "Secrétaire", "s.martin@teethcare.ma", "Actif", "08/01/2026 08:30", ""},
-             {"3", "Admin System", "Administrateur", "admin@teethcare.ma", "Actif", "08/01/2026 10:00", ""}
-        };
+        Object[][] data = new Object[users.size()][7];
+        
+        java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        
+        for (int i = 0; i < users.size(); i++) {
+            ma.TeethCare.entities.utilisateur.utilisateur u = users.get(i);
+            
+            // Determine Role string (assuming single role for display or joining them)
+            String roleStr = "Aucun";
+            if (u.getRoles() != null && !u.getRoles().isEmpty()) {
+                roleStr = u.getRoles().get(0).getLibelle();
+            }
+            
+            data[i][0] = u.getId();
+            data[i][1] = (u.getNom() != null ? u.getNom() : "") + " " + (u.getPrenom() != null ? u.getPrenom() : "");
+            data[i][2] = roleStr;
+            data[i][3] = u.getEmail() != null ? u.getEmail() : "";
+            data[i][4] = "Actif"; // Placeholder status, entity might not have active/inactive field yet
+            data[i][5] = u.getDateDerniereModification() != null ? u.getDateDerniereModification().format(dtf) : "-"; // Using last mod as proxy or placeholder
+            data[i][6] = ""; // Actions
+        }
 
         ModernTable table = new ModernTable();
         table.setModel(new DefaultTableModel(data, columns));

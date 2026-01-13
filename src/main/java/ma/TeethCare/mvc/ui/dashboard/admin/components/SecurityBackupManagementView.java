@@ -24,7 +24,11 @@ public class SecurityBackupManagementView extends JPanel {
     private JPanel tabsPanel;
     private JPanel contentPanel;
 
+    private ma.TeethCare.repository.api.LogRepository logRepository;
+
     public SecurityBackupManagementView() {
+        this.logRepository = new ma.TeethCare.repository.mySQLImpl.LogRepositoryImpl();
+        
         setLayout(new BorderLayout());
         setOpaque(false); // Transparent for background
         setBorder(new EmptyBorder(24, 24, 24, 24));
@@ -115,11 +119,8 @@ public class SecurityBackupManagementView extends JPanel {
         
         // --- Sessions Section ---
         String[] columns = {"Utilisateur", "IP", "Début", "Durée", "Action"};
-        Object[][] data = {
-            {"Dr. Dupont", "192.168.1.105", "10:00", "2h 15m", "DECONNECTER"},
-            {"Secrétaire Sophie", "192.168.1.102", "08:30", "4h 45m", "DECONNECTER"},
-            {"Admin", "10.0.0.1", "14:00", "15m", ""} // Admin usually can't disconnect self here
-        };
+        // Removed fake sessions data
+        Object[][] data = new Object[0][5];
         
         ModernTable table = new ModernTable();
         table.setModel(new DefaultTableModel(data, columns));
@@ -141,7 +142,7 @@ public class SecurityBackupManagementView extends JPanel {
 
         JPanel sessionContainer = new JPanel(new BorderLayout());
         sessionContainer.setOpaque(false);
-        JLabel title = new JLabel("Sessions Actives");
+        JLabel title = new JLabel("Sessions Actives (Mock - En cours d'implémentation)");
         title.setFont(new Font("Segoe UI", Font.BOLD, 16));
         title.setBorder(new EmptyBorder(0, 0, 12, 0));
         sessionContainer.add(title, BorderLayout.NORTH);
@@ -157,7 +158,7 @@ public class SecurityBackupManagementView extends JPanel {
         JPanel terminalContainer = new JPanel(new BorderLayout());
         terminalContainer.setOpaque(false);
         
-        JLabel termTitle = new JLabel("Security Logs (Live Feed)");
+        JLabel termTitle = new JLabel("Security Logs (Live Database Feed)");
         termTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         termTitle.setBorder(new EmptyBorder(16, 0, 12, 0));
         terminalContainer.add(termTitle, BorderLayout.NORTH);
@@ -167,14 +168,29 @@ public class SecurityBackupManagementView extends JPanel {
         terminal.setBackground(new Color(15, 23, 42)); // #0F172A (Slate-900)
         terminal.setBorder(new EmptyBorder(16, 16, 16, 16));
         
-        // Add Logs
-        terminal.add(createLogLine("INFO", "System initialized successfully.", TailwindPalette.GREEN_400));
-        terminal.add(createLogLine("INFO", "User 'Dr. Dupont' logged in from 192.168.1.105", TailwindPalette.GREEN_400));
-        terminal.add(createLogLine("WARN", "Failed login attempt from 192.168.1.55 (Invalid Password)", TailwindPalette.ORANGE_400));
-        terminal.add(createLogLine("INFO", "Backup service started.", TailwindPalette.GREEN_400));
-        terminal.add(createLogLine("ERROR", "Connection timeout: External SMTP Server response delayed.", TailwindPalette.RED_400));
-        terminal.add(createLogLine("INFO", "User 'Secrétaire Sophie' updated patient record #4521", TailwindPalette.GREEN_400));
-        
+        // Fetch Real Logs
+        try {
+            java.util.List<ma.TeethCare.entities.log.log> logs = logRepository.findAll();
+            // Show latest 20 logs
+            logs.stream()
+                .sorted((l1, l2) -> l2.getDateAction().compareTo(l1.getDateAction())) // Descending
+                .limit(20)
+                .forEach(l -> {
+                    String type = l.getTypeSupp() != null ? l.getTypeSupp() : "INFO";
+                    Color c = TailwindPalette.GREEN_400;
+                    if ("ERROR".equalsIgnoreCase(type)) c = TailwindPalette.RED_400;
+                    if ("WARN".equalsIgnoreCase(type)) c = TailwindPalette.ORANGE_400;
+                    
+                    terminal.add(createLogLine(type, l.getMessage() != null ? l.getMessage() : "No message", c));
+                });
+                
+            if (logs.isEmpty()) {
+                terminal.add(createLogLine("INFO", "No logs found in database.", TailwindPalette.GRAY_400));
+            }
+        } catch (Exception e) {
+             terminal.add(createLogLine("ERROR", "Failed to fetch logs: " + e.getMessage(), TailwindPalette.RED_400));
+        }
+
         // Fill remaining space
         JPanel filler = new JPanel(); 
         filler.setOpaque(false);
@@ -220,11 +236,8 @@ public class SecurityBackupManagementView extends JPanel {
         
         // History Table
         String[] columns = {"Date", "Type", "Taille", "Statut", "Action"};
-        Object[][] data = {
-            {"28/10/2025 02:00", "Automatique", "245 MB", "Succès", ""},
-            {"27/10/2025 02:00", "Automatique", "243 MB", "Succès", ""},
-            {"25/10/2025 15:30", "Manuelle", "240 MB", "Succès", ""}
-        };
+        // Removed fake backup data
+        Object[][] data = new Object[0][5];
         
         ModernTable table = new ModernTable();
         table.setModel(new DefaultTableModel(data, columns));

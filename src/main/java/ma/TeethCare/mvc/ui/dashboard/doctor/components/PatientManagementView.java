@@ -16,18 +16,17 @@ import java.awt.event.FocusEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
-import ma.TeethCare.mvc.dto.antecedent.AntecedentDTO;
-
+import ma.TeethCare.mvc.dto.patient.PatientDTO;
 import ma.TeethCare.mvc.ui.pages.patient.PatientDialog;
 import ma.TeethCare.mvc.ui.pages.patient.MedicalRecordDetailDialog;
 import ma.TeethCare.mvc.ui.pages.patient.DeleteConfirmationDialog;
-import ma.TeethCare.mvc.dto.patient.PatientDTO;
-import java.util.ArrayList;
+
+import ma.TeethCare.service.modules.patient.api.PatientService;
+import ma.TeethCare.service.modules.patient.impl.PatientServiceImpl;
+import ma.TeethCare.repository.mySQLImpl.PatientRepositoryImpl;
 
 public class PatientManagementView extends JPanel implements TableActionCellRenderer.TableActionEvent {
 
@@ -36,14 +35,18 @@ public class PatientManagementView extends JPanel implements TableActionCellRend
     private DefaultTableModel model;
     private TableRowSorter<DefaultTableModel> sorter;
     private List<PatientDTO> patients;
+    private final PatientService patientService;
 
     public PatientManagementView(ModernButton.Variant actionVariant) {
         this.actionVariant = actionVariant;
+        // Initialize Service
+        this.patientService = new PatientServiceImpl(new PatientRepositoryImpl());
+        
         setLayout(new BorderLayout());
         setOpaque(false); // Transparent
         setBorder(new EmptyBorder(24, 24, 24, 24)); // Outer padding
 
-        loadMockData(); // Initialize data
+        loadPatients(); // Load real data
         initUI();
     }
     
@@ -159,7 +162,7 @@ public class PatientManagementView extends JPanel implements TableActionCellRend
         // Don't sort the Actions column
         sorter.setSortable(6, false);
 
-        refreshTable(); // Populate table from patients list
+        refreshTable(); // Populate table
         
         table.setRowHeight(60);
         table.setShowGrid(false);
@@ -187,43 +190,20 @@ public class PatientManagementView extends JPanel implements TableActionCellRend
         add(card, BorderLayout.CENTER);
     }
 
-    private void loadMockData() {
-        patients = new ArrayList<>();
-
-        PatientDTO p1 = new PatientDTO();
-        p1.setId(1L);
-        p1.setNom("Dupont");
-        p1.setPrenom("Jean");
-        p1.setDateNaissance(LocalDate.of(1980, 5, 15));
-        p1.setTelephone("0601020304");
-        p1.setEmail("jean.dupont@email.com");
-        p1.setAdresse("123 Rue Principale, Casablanca");
-        p1.setCin("BH12345");
-
-        List<AntecedentDTO> a1 = new ArrayList<>();
-        a1.add(AntecedentDTO.builder().categorie("Maladie Chronique").nom("Diabète").niveauDeRisque("Moyen").build());
-        p1.setAntecedents(a1);
-
-        PatientDTO p2 = new PatientDTO();
-        p2.setId(2L);
-        p2.setNom("Martin");
-        p2.setPrenom("Sophie");
-        p2.setDateNaissance(LocalDate.of(1992, 11, 20));
-        p2.setTelephone("0605060708");
-        p2.setEmail("sophie.martin@email.com");
-        p2.setAdresse("45 Avenue Hassan II, Rabat");
-        p2.setCin("RB98765");
-
-        List<AntecedentDTO> a2 = new ArrayList<>();
-        a2.add(AntecedentDTO.builder().categorie("Allergie").nom("Pénicilline").niveauDeRisque("Elevé").build());
-        p2.setAntecedents(a2);
-
-        patients.add(p1);
-        patients.add(p2);
+    private void loadPatients() {
+        try {
+            patients = patientService.findAll();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erreur lors du chargement des patients : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            patients = new ArrayList<>();
+        }
     }
 
     private void refreshTable() {
         model.setRowCount(0);
+        if (patients == null) return;
+        
         for (PatientDTO p : patients) {
             String antecedentsStr = "";
             if (p.getAntecedents() != null && !p.getAntecedents().isEmpty()) {
@@ -248,11 +228,15 @@ public class PatientManagementView extends JPanel implements TableActionCellRend
         dialog.setVisible(true);
         if (dialog.isSaved()) {
             PatientDTO newPatient = dialog.getPatient();
-            // Simulate ID generation
-            newPatient.setId((long) (patients.size() + 1));
-            patients.add(newPatient);
-            refreshTable();
-            JOptionPane.showMessageDialog(this, "Patient ajouté avec succès !");
+            try {
+                patientService.create(newPatient);
+                loadPatients(); // Reload from DB
+                refreshTable();
+                JOptionPane.showMessageDialog(this, "Patient ajouté avec succès !");
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -281,11 +265,16 @@ public class PatientManagementView extends JPanel implements TableActionCellRend
         PatientDialog dialog = new PatientDialog(SwingUtilities.getWindowAncestor(this), selectedPatient);
         dialog.setVisible(true);
          if (dialog.isSaved()) {
-            // Since selectedPatient is a reference to the object in the list,
-            // changes in the dialog (which updates the DTO) are already applied.
-            // We just need to refresh the table display.
-            refreshTable();
-            JOptionPane.showMessageDialog(this, "Patient modifié avec succès !");
+            try {
+                // Dialog updates the DTO reference, but we need to persist it
+                patientService.update(selectedPatient);
+                loadPatients(); // Reload to be safe
+                refreshTable();
+                JOptionPane.showMessageDialog(this, "Patient modifié avec succès !");
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Erreur lors de la modification : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -297,9 +286,15 @@ public class PatientManagementView extends JPanel implements TableActionCellRend
         DeleteConfirmationDialog dialog = new DeleteConfirmationDialog(SwingUtilities.getWindowAncestor(this), p.getNom() + " " + p.getPrenom());
         dialog.setVisible(true);
         if (dialog.isConfirmed()) {
-            patients.remove(modelRow);
-            refreshTable();
-            JOptionPane.showMessageDialog(this, "Patient supprimé.");
+            try {
+                patientService.delete(p.getId());
+                patients.remove(modelRow);
+                refreshTable();
+                JOptionPane.showMessageDialog(this, "Patient supprimé.");
+            } catch (Exception e) {
+                 e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Erreur lors de la suppression : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -312,5 +307,3 @@ public class PatientManagementView extends JPanel implements TableActionCellRend
         dialog.setVisible(true);
     }
 }
-
-

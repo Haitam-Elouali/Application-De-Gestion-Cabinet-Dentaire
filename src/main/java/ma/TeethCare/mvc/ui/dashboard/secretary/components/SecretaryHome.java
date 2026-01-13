@@ -3,16 +3,29 @@ package ma.TeethCare.mvc.ui.dashboard.secretary.components;
 import ma.TeethCare.mvc.ui.palette.containers.RoundedPanel;
 import ma.TeethCare.mvc.ui.palette.utils.IconUtils;
 import ma.TeethCare.mvc.ui.palette.utils.TailwindPalette;
+import ma.TeethCare.repository.mySQLImpl.ChargesRepositoryImpl;
+import ma.TeethCare.repository.mySQLImpl.RevenuesRepositoryImpl;
+import ma.TeethCare.service.modules.caisse.api.FinancialStatisticsService;
+import ma.TeethCare.service.modules.caisse.impl.FinancialStatisticsServiceImpl;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
+import java.time.LocalDateTime;
 
 public class SecretaryHome extends JPanel {
 
+    private final FinancialStatisticsService financialService;
+    private final ma.TeethCare.service.modules.agenda.api.rdvService rdvService;
+    private final ma.TeethCare.service.modules.patient.api.PatientService patientService;
+
     public SecretaryHome() {
+        // Initialize Services
+        this.financialService = new FinancialStatisticsServiceImpl(new RevenuesRepositoryImpl(), new ChargesRepositoryImpl());
+        this.rdvService = new ma.TeethCare.service.modules.agenda.impl.rdvServiceImpl(new ma.TeethCare.repository.mySQLImpl.RdvRepositoryImpl());
+        this.patientService = new ma.TeethCare.service.modules.patient.impl.PatientServiceImpl(new ma.TeethCare.repository.mySQLImpl.PatientRepositoryImpl());
+
         setLayout(new BorderLayout());
         setOpaque(false);
         setBorder(new EmptyBorder(10, 0, 10, 0)); // Global Padding
@@ -21,29 +34,40 @@ public class SecretaryHome extends JPanel {
 
     private void initUI() {
         // Main Container with MigLayout
-        // "wrap 2" = 2 columns grid
-        // "[70%] [30%]" = Column sizing (Left ~70%, Right ~30%)
-        // "fill" = Components grow to fill cells
         JPanel mainContainer = new JPanel(new MigLayout("insets 0, gap 20, fill", "[grow, fill]20[320!]", "[140!]20[grow, fill]"));
         mainContainer.setOpaque(false);
 
-        // --- ROW 1: STATS (Span 2 to take full width initially, but reference shows 3 cards. 
-        // Actually reference has 3 cards: RDV, File, Recettes. They sit above the columns? 
-        // Let's put them in a dedicated top container spanning all columns.
-        
+        // --- Fetch Data ---
+        java.util.List<ma.TeethCare.mvc.dto.rdv.RdvDTO> todayRdvs = new java.util.ArrayList<>();
+        java.util.List<ma.TeethCare.mvc.dto.rdv.RdvDTO> waitingQueue = new java.util.ArrayList<>();
+        String dailyRevenue = "0 DH";
+
+        try {
+            LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime now = LocalDateTime.now();
+            FinancialStatisticsService.FinancialSummary dailySummary = financialService.getFinancialSummary(startOfDay, now);
+            dailyRevenue = String.format("%,.0f DH", dailySummary.totalRecettes());
+
+            todayRdvs = rdvService.findTodayAppointments();
+            waitingQueue = rdvService.findWaitingQueue();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // --- ROW 1: STATS
         JPanel statsContainer = new JPanel(new MigLayout("insets 0, gap 20, fill", "[grow][grow][grow]")); 
         statsContainer.setOpaque(false);
         
         // Card 1: RDV
-        statsContainer.add(createStatCard("RDV AUJOURD'HUI", "12", "", 
+        statsContainer.add(createStatCard("RDV AUJOURD'HUI", String.valueOf(todayRdvs.size()), "", 
             new Color(220, 252, 231), new Color(22, 163, 74), IconUtils.IconType.CALENDAR), "grow"); // Green
 
         // Card 2: FILE D'ATTENTE
-        statsContainer.add(createStatCard("FILE D'ATTENTE", "2", "en salle", 
+        statsContainer.add(createStatCard("FILE D'ATTENTE", String.valueOf(waitingQueue.size()), "en salle", 
             new Color(255, 237, 213), new Color(234, 88, 12), IconUtils.IconType.USERS), "grow"); // Orange
 
-        // Card 3: RECETTES
-        statsContainer.add(createStatCard("RECETTES DU JOUR", "850,00 €", "", 
+        // Card 3: RECETTES (REAL DATA)
+        statsContainer.add(createStatCard("RECETTES DU JOUR", dailyRevenue, "", 
             new Color(219, 234, 254), new Color(37, 99, 235), IconUtils.IconType.BUILDING), "grow"); // Blue
 
         mainContainer.add(statsContainer, "span 2, wrap");
@@ -54,8 +78,8 @@ public class SecretaryHome extends JPanel {
         JPanel leftCol = new JPanel(new MigLayout("insets 0, gap 20, fill, flowy", "[grow]", "[grow][grow]"));
         leftCol.setOpaque(false);
 
-        leftCol.add(createUpcomingRDVWidget(), "grow");
-        leftCol.add(createAgendaCalendarWidget(), "grow");
+        leftCol.add(createUpcomingRDVWidget(todayRdvs), "grow");
+        leftCol.add(createAgendaCalendarWidget(todayRdvs), "grow");
 
         mainContainer.add(leftCol, "grow");
 
@@ -63,7 +87,7 @@ public class SecretaryHome extends JPanel {
         JPanel rightCol = new JPanel(new MigLayout("insets 0, gap 20, fill, flowy", "[grow]", "[grow][grow]"));
         rightCol.setOpaque(false);
         
-        rightCol.add(createWaitingListWidget(), "grow");
+        rightCol.add(createWaitingListWidget(waitingQueue), "grow");
         rightCol.add(createNotificationsWidget(), "grow, h 250!");
 
         mainContainer.add(rightCol, "grow");
@@ -126,7 +150,7 @@ public class SecretaryHome extends JPanel {
         return p;
     }
 
-    private JPanel createUpcomingRDVWidget() {
+    private JPanel createUpcomingRDVWidget(java.util.List<ma.TeethCare.mvc.dto.rdv.RdvDTO> rdvs) {
         RoundedPanel p = new RoundedPanel(20);
         p.setBackground(Color.WHITE);
         p.setLayout(new MigLayout("insets 20, fillx, flowy", "[grow]", "[]16[]"));
@@ -148,9 +172,37 @@ public class SecretaryHome extends JPanel {
         JPanel list = new JPanel(new MigLayout("insets 0, fillx, gapy 0", "[grow]")); 
         list.setOpaque(false);
         
-        list.add(createRdvRow("14:00", "Sophie Bernard", "Soin Carie - Salle 2", new Color(220, 252, 231), new Color(22, 101, 52)), "growx, wrap");
-        list.add(createRdvRow("14:45", "Lucas Martin", "Consultation - Salle 1", new Color(219, 234, 254), new Color(30, 64, 175)), "growx, wrap");
-        list.add(createRdvRow("15:30", "Emma Petit", "Contrôle - Salle 2", new Color(255, 237, 213), new Color(154, 52, 18)), "growx, wrap");
+        if (rdvs.isEmpty()) {
+            JLabel empty = new JLabel("Aucun rendez-vous prévu");
+            empty.setFont(new Font("Segoe UI", Font.ITALIC, 13));
+            empty.setForeground(Color.GRAY);
+            list.add(empty, "center");
+        } else {
+            // Show only first 5
+            int count = 0;
+            for (ma.TeethCare.mvc.dto.rdv.RdvDTO r : rdvs) {
+                if (count >= 5) break;
+                // Fetch Patient Name
+                String patientName = "Inconnu";
+                try {
+                     java.util.Optional<ma.TeethCare.mvc.dto.patient.PatientDTO> pat = patientService.findById(r.getPatientId());
+                     if (pat.isPresent()) {
+                         patientName = pat.get().getNom() + " " + pat.get().getPrenom();
+                     }
+                } catch (Exception e) {}
+
+                String time = r.getHeure() != null ? r.getHeure().toString() : "--:--";
+                // Color based on status? Or random for variety? Let's use status.
+                Color bg = new Color(220, 252, 231);
+                Color fg = new Color(22, 163, 74);
+                // Simple logic for variety based on index if status logic complex
+                if (count % 3 == 1) { bg = new Color(219, 234, 254); fg = new Color(30, 64, 175); }
+                if (count % 3 == 2) { bg = new Color(255, 237, 213); fg = new Color(154, 52, 18); }
+
+                list.add(createRdvRow(time, patientName, r.getMotif() != null ? r.getMotif() : "Consultation", bg, fg), "growx, wrap");
+                count++;
+            }
+        }
 
         p.add(list, "growx");
         return p;
@@ -205,19 +257,40 @@ public class SecretaryHome extends JPanel {
         return r;
     }
 
-    private JPanel createAgendaCalendarWidget() {
+    private JPanel createAgendaCalendarWidget(java.util.List<ma.TeethCare.mvc.dto.rdv.RdvDTO> rdvs) {
         RoundedPanel p = new RoundedPanel(20);
         p.setBackground(Color.WHITE);
         p.setLayout(new MigLayout("insets 20, fill", "[grow][grow][grow]", "[]12[grow]"));
         
-        JLabel t = new JLabel("Agenda Médecin");
+        JLabel t = new JLabel("Agenda Médecin (Aujourd'hui)");
         t.setFont(new Font("Segoe UI", Font.BOLD, 16));
         p.add(t, "span 3, wrap");
         
+        // Map RDVs to strings for the day column
+        java.util.List<String> slotStrings = new java.util.ArrayList<>();
+        if (rdvs.isEmpty()) {
+            slotStrings.add("Aucun RDV");
+        } else {
+             for (ma.TeethCare.mvc.dto.rdv.RdvDTO r : rdvs) {
+                  String time = r.getHeure() != null ? r.getHeure().toString() : "??";
+                  // Simple display: Time - Patient (init)
+                  // Fetch patient name?
+                  // Doing it purely for UI display
+                  // To avoid fetching again, ideally pass already fetched map. 
+                  // But for simplicity, let's just show "RDV" or re-fetch.
+                  // Re-fetching is bad but safe for now.
+                  slotStrings.add(time + " - RDV"); 
+             }
+        }
+
         // Columns
-        p.add(createDayColumn("Lundi", "12", new String[]{"09:00 - Dispo", "11:00 - M. X"}), "grow");
-        p.add(createDayColumn("Mardi", "13", new String[]{"09:30 - Mme Y", "14:00 - Dispo"}), "grow");
-        p.add(createDayColumn("Mercredi", "14", new String[]{"Congé"}), "grow");
+        // Showing only one day with real data, others as "..."
+        String todayName = java.time.LocalDate.now().getDayOfWeek().name();
+        String todayNum = String.valueOf(java.time.LocalDate.now().getDayOfMonth());
+        
+        p.add(createDayColumn(todayName, todayNum, slotStrings.toArray(new String[0])), "grow");
+        p.add(createDayColumn("Demain", "--", new String[]{}), "grow"); 
+        p.add(createDayColumn("Après-demain", "--", new String[]{}), "grow");
 
         return p;
     }
@@ -237,7 +310,7 @@ public class SecretaryHome extends JPanel {
         c.add(nb, "center");
         
         for (String s : slots) {
-            boolean isDispo = s.contains("Dispo");
+            boolean isDispo = s.contains("Aucun");
             Color bg = isDispo ? new Color(240, 253, 244) : new Color(239, 246, 255);
             Color border = isDispo ? new Color(22, 163, 74) : new Color(37, 99, 235);
             
@@ -249,7 +322,7 @@ public class SecretaryHome extends JPanel {
             sp.setOpaque(false);
             sp.add(sl);
             
-             JPanel slotContainer = new JPanel(new BorderLayout()) {
+            JPanel slotContainer = new JPanel(new BorderLayout()) {
                  @Override
                  protected void paintComponent(Graphics g) {
                      Graphics2D g2 = (Graphics2D)g;
@@ -268,7 +341,7 @@ public class SecretaryHome extends JPanel {
         return c;
     }
 
-    private JPanel createWaitingListWidget() {
+    private JPanel createWaitingListWidget(java.util.List<ma.TeethCare.mvc.dto.rdv.RdvDTO> queue) {
         RoundedPanel p = new RoundedPanel(20);
         p.setBackground(Color.WHITE);
         p.setLayout(new MigLayout("insets 20, fillx, flowy", "[grow]", "[]16[]push[]"));
@@ -280,9 +353,21 @@ public class SecretaryHome extends JPanel {
         JPanel list = new JPanel(new MigLayout("insets 0, fillx, gapy 0", "[grow]"));
         list.setOpaque(false);
         
-        list.add(createWaitingRow("09:30", "Jean Dupont", "Salle d'attente", "Arrivé"), "growx, wrap");
-        list.add(createWaitingRow("10:20", "Marie Curie", "Salle 1", "Arrivé 10:20"), "growx, wrap");
-        list.add(createWaitingRow("10:45", "Paul Antoine", "Acceuil", "Arrivé 10:45"), "growx, wrap");
+        if (queue.isEmpty()) {
+            list.add(new JLabel("Aucun patient en file d'attente"), "wrap");
+        } else {
+             for (ma.TeethCare.mvc.dto.rdv.RdvDTO r : queue) {
+                  String patientName = "Inconnu";
+                  try {
+                       java.util.Optional<ma.TeethCare.mvc.dto.patient.PatientDTO> pat = patientService.findById(r.getPatientId());
+                       if (pat.isPresent()) {
+                           patientName = pat.get().getNom() + " " + pat.get().getPrenom();
+                       }
+                  } catch (Exception e) {}
+                  
+                  list.add(createWaitingRow(r.getHeure().toString(), patientName, "Salle d'attente", "En attente"), "growx, wrap");
+             }
+        }
         
         p.add(list, "growx");
         

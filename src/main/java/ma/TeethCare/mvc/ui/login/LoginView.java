@@ -10,11 +10,28 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import ma.TeethCare.repository.mySQLImpl.UtilisateurRepositoryImpl;
+import ma.TeethCare.service.modules.auth.api.AuthService;
+import ma.TeethCare.service.modules.auth.dto.AuthRequest;
+import ma.TeethCare.service.modules.auth.dto.AuthResult;
+import ma.TeethCare.service.modules.auth.impl.AuthServiceImpl;
+import ma.TeethCare.service.modules.auth.impl.CredentialsValidatorImpl;
+import ma.TeethCare.service.modules.auth.impl.PasswordEncoderImpl;
 import java.awt.geom.RoundRectangle2D;
+import java.util.List;
 
 public class LoginView extends JFrame {
 
+    private final AuthService authService;
+
     public LoginView() {
+        // Initialize Auth Service
+        this.authService = new AuthServiceImpl(
+            new UtilisateurRepositoryImpl(),
+            new PasswordEncoderImpl(),
+            new CredentialsValidatorImpl()
+        );
+
         setTitle("TeethCare - Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1366, 768);
@@ -126,21 +143,31 @@ public class LoginView extends JFrame {
         loginBtn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         
         loginBtn.addActionListener(e -> {
-            String user = userField.getText().toLowerCase();
+            String user = userField.getText();
             String pass = new String(passField.getPassword());
             
-             if (user.contains("secretaire")) {
-                 new ma.TeethCare.mvc.ui.dashboard.secretary.SecretaryDashboardView().setVisible(true);
-                 dispose();
-             } else if (user.contains("docteur")) {
-                 new ma.TeethCare.mvc.ui.dashboard.doctor.DoctorDashboardView().setVisible(true);
-                 dispose();
-             } else if (user.contains("admin")) {
-                 new ma.TeethCare.mvc.ui.dashboard.admin.AdminDashboardView().setVisible(true);
-                 dispose();
-             } else {
-                 JOptionPane.showMessageDialog(this, "Utilisateur non reconnu", "Erreur", JOptionPane.ERROR_MESSAGE);
-             }
+            AuthResult result = authService.authenticate(new AuthRequest(user, pass));
+
+            if (result.success()) {
+                // Check roles to redirect
+                List<String> roles = result.principal().roles();
+                
+                if (roles.contains("SECRETAIRE") || roles.contains("secretaire")) {
+                    new ma.TeethCare.mvc.ui.dashboard.secretary.SecretaryDashboardView().setVisible(true);
+                    dispose();
+                } else if (roles.contains("MEDECIN") || roles.contains("medecin") || roles.contains("DOCTEUR") || roles.contains("docteur")) {
+                    new ma.TeethCare.mvc.ui.dashboard.doctor.DoctorDashboardView().setVisible(true);
+                    dispose();
+                } else if (roles.contains("ADMIN") || roles.contains("admin")) {
+                    new ma.TeethCare.mvc.ui.dashboard.admin.AdminDashboardView().setVisible(true);
+                    dispose();
+                } else {
+                    // Default fallback or error if role not recognized
+                    JOptionPane.showMessageDialog(this, "Rôle non reconnu pour cet utilisateur", "Erreur d'accès", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Echec de connexion: " + result.errorMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
         });
         
         // Forgot Password

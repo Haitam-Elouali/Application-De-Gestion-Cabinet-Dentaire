@@ -233,4 +233,44 @@ public class ChargesRepositoryImpl implements ChargesRepository {
         }
         return Optional.empty();
     }
+    @Override
+    public Double calculateTotalAmount(LocalDateTime startDate, LocalDateTime endDate) {
+        String sql = "SELECT COALESCE(SUM(montant), 0.0) FROM charge WHERE date BETWEEN ? AND ?";
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            ps.setTimestamp(1, Timestamp.valueOf(startDate));
+            ps.setTimestamp(2, Timestamp.valueOf(endDate));
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
+    @Override
+    public java.util.Map<Integer, Double> groupTotalByMonth(int year) {
+        java.util.Map<Integer, Double> result = new java.util.HashMap<>();
+        String sql = "SELECT MONTH(date) as mois, SUM(montant) as total FROM charge WHERE YEAR(date) = ? GROUP BY MONTH(date)";
+        
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            ps.setInt(1, year);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.put(rs.getInt("mois"), rs.getDouble("total"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }

@@ -82,6 +82,10 @@ public class AdminDashboardView extends JFrame {
         root.add(contentArea, BorderLayout.CENTER);
     }
     
+    private ma.TeethCare.repository.api.ActesRepository actesRepo = new ma.TeethCare.repository.mySQLImpl.ActesRepositoryImpl();
+    private ma.TeethCare.repository.api.MedicamentRepository medRepo = new ma.TeethCare.repository.mySQLImpl.MedicamentRepositoryImpl();
+    private ma.TeethCare.repository.api.AntecedentRepository antRepo = new ma.TeethCare.repository.mySQLImpl.AntecedentRepositoryImpl();
+
     private void onModuleSelected(AdminSidebar.Module module) {
          if (contentArea.getComponentCount() < 2) return;
          JPanel modulePanel = (JPanel) contentArea.getComponent(1);
@@ -96,19 +100,83 @@ public class AdminDashboardView extends JFrame {
                 break;
             case CATALOG_ACTS:
                 modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.admin.components.GenericCatalogView(
-                    "Catalogue des Actes Médicaux", "un Acte", true), BorderLayout.CENTER);
+                    "Catalogue des Actes Médicaux", "un Acte", true, () -> {
+                        try {
+                            java.util.List<ma.TeethCare.entities.actes.actes> list = actesRepo.findAll();
+                            Object[][] data = new Object[list.size()][6];
+                            for(int i=0; i<list.size(); i++) {
+                                ma.TeethCare.entities.actes.actes a = list.get(i);
+                                data[i][0] = a.getId();
+                                data[i][1] = a.getCode() != null ? a.getCode() : "-";
+                                data[i][2] = a.getNom();
+                                data[i][3] = a.getDescription() != null ? a.getDescription() : "";
+                                data[i][4] = a.getPrix() + " DH";
+                                data[i][5] = "";
+                            }
+                            return data;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return new Object[0][0]; // Return empty on error
+                        }
+                    }), BorderLayout.CENTER);
                 break;
             case CATALOG_MEDS:
                 modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.admin.components.GenericCatalogView(
-                    "Catalogue des Médicaments", "un Médicament", false), BorderLayout.CENTER);
+                    "Catalogue des Médicaments", "un Médicament", false, () -> {
+                        try {
+                            java.util.List<ma.TeethCare.entities.medicaments.medicaments> list = medRepo.findAll();
+                            Object[][] data = new Object[list.size()][5];
+                            for(int i=0; i<list.size(); i++) {
+                                ma.TeethCare.entities.medicaments.medicaments m = list.get(i);
+                                data[i][0] = m.getId();
+                                data[i][1] = "MED-" + m.getId(); // Code fake derived from ID if missing
+                                data[i][2] = m.getNomCommercial();
+                                data[i][3] = m.getDescription() != null ? m.getDescription() : "";
+                                data[i][4] = "";
+                            }
+                            return data;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return new Object[0][0];
+                        }
+                    }), BorderLayout.CENTER);
                 break;
             case CATALOG_ANTECEDENTS:
                 modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.admin.components.GenericCatalogView(
-                    "Catalogue des Antécédents", "un Antécédent", false), BorderLayout.CENTER);
+                    "Catalogue des Antécédents", "un Antécédent", false, () -> {
+                        try {
+                            java.util.List<ma.TeethCare.entities.antecedent.antecedent> list = antRepo.findAll();
+                            Object[][] data = new Object[list.size()][5];
+                            for(int i=0; i<list.size(); i++) {
+                                ma.TeethCare.entities.antecedent.antecedent a = list.get(i);
+                                data[i][0] = a.getId();
+                                data[i][1] = a.getCategorie(); // Use category as code
+                                data[i][2] = a.getNom();
+                                data[i][3] = a.getNiveauDeRisque() != null ? a.getNiveauDeRisque().toString() : "-";
+                                data[i][4] = "";
+                            }
+                            return data;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return new Object[0][0];
+                        }
+                    }), BorderLayout.CENTER);
                 break;
             case INSURANCE:
                 modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.admin.components.GenericCatalogView(
-                    "Gestion des Assurances", "une Assurance", false), BorderLayout.CENTER);
+                    "Gestion des Assurances", "une Assurance", false, () -> {
+                        // Display Enum values
+                        ma.TeethCare.common.enums.Assurance[] values = ma.TeethCare.common.enums.Assurance.values();
+                        Object[][] data = new Object[values.length][5];
+                        for(int i=0; i<values.length; i++) {
+                            data[i][0] = i+1;
+                            data[i][1] = "ASS-" + (i+1);
+                            data[i][2] = values[i].toString();
+                            data[i][3] = "Assurance prédéfinie";
+                            data[i][4] = "";
+                        }
+                        return data;
+                    }), BorderLayout.CENTER);
                 break;
             case SECURITY:
                 modulePanel.add(new ma.TeethCare.mvc.ui.dashboard.admin.components.SecurityBackupManagementView(), BorderLayout.CENTER);

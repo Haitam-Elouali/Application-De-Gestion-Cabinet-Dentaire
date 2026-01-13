@@ -10,4 +10,8 @@ import java.util.Optional;
 public interface RevenuesRepository extends CrudRepository<revenues, Long> {
     Optional<revenues> findByTitre(String titre);
     List<revenues> findByDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+    
+    // Aggregation Methods
+    Double calculateTotalAmount(LocalDateTime startDate, LocalDateTime endDate);
+    java.util.Map<Integer, Double> groupTotalByMonth(int year);
 }

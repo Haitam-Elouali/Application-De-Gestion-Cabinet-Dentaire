@@ -62,6 +62,16 @@ public class ChargesServiceTest {
         public Optional<charges> findByTitre(String titre) {
             return data.values().stream().filter(c -> c.getTitre().equals(titre)).findFirst();
         }
+
+        @Override
+        public Double calculateTotalAmount(LocalDateTime startDate, LocalDateTime endDate) {
+            return 0.0;
+        }
+
+        @Override
+        public java.util.Map<Integer, Double> groupTotalByMonth(int year) {
+            return new HashMap<>();
+        }
     }
 
     public static void main(String[] args) {

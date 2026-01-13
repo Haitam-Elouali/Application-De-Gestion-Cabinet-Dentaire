@@ -15,11 +15,13 @@ public class GenericCatalogView extends JPanel {
     private final String title;
     private final String itemName;
     private final boolean hasPrice;
+    private final java.util.function.Supplier<Object[][]> dataProvider;
     
-    public GenericCatalogView(String title, String itemName, boolean hasPrice) {
+    public GenericCatalogView(String title, String itemName, boolean hasPrice, java.util.function.Supplier<Object[][]> dataProvider) {
         this.title = title;
         this.itemName = itemName;
         this.hasPrice = hasPrice;
+        this.dataProvider = dataProvider;
         
         setLayout(new BorderLayout());
         setOpaque(false); // Enable transparent background
@@ -36,7 +38,6 @@ public class GenericCatalogView extends JPanel {
         
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        titleLabel.setForeground(TailwindPalette.GRAY_50); // Using Gray-800 equivalent or just Dark Gray
         titleLabel.setForeground(Color.decode("#1f2937"));
         
         ModernButton addBtn = new ModernButton("Ajouter " + itemName, ModernButton.Variant.DESTRUCTIVE);
@@ -44,26 +45,17 @@ public class GenericCatalogView extends JPanel {
         header.add(titleLabel, BorderLayout.WEST);
         header.add(addBtn, BorderLayout.EAST);
         
-        // Header moved into card
-        // add(header, BorderLayout.NORTH);
-        
         // Table
         String[] columns = hasPrice 
              ? new String[]{"ID", "Code", "Nom", "Description", "Prix", "Actions"}
              : new String[]{"ID", "Code", "Nom", "Description", "Actions"};
 
-        // Mock Data
-        Object[][] data;
-        if (hasPrice) {
-            data = new Object[][]{
-                {"1", "C001", "Consultation Généraliste", "Consultation standard", "250.0", ""},
-                {"2", "D005", "Détartrage", "Nettoyage complet", "400.0", ""}
-            };
-        } else {
-             data = new Object[][]{
-                {"1", "DOL100", "Doliprane 1000mg", "Antalgique", ""},
-                {"2", "AMO500", "Amoxicilline 500mg", "Antibiotique", ""}
-            };
+        // Fetch Data using Provider
+        Object[][] data = new Object[0][0];
+        try {
+            data = dataProvider.get();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         ModernTable table = new ModernTable();

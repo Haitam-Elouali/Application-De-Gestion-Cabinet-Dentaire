@@ -213,4 +213,31 @@ public class PatientRepositoryImpl implements PatientRepository {
             e.printStackTrace();
         }
     }
+    @Override
+    public List<Patient> search(String keyword) {
+        String sql = "SELECT t.id as idEntite, t.id, t.nom, t.prenom, t.dateNaissance, t.sexe, t.telephone, t.assurance, " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "FROM patient t " + 
+                     "JOIN entite e ON t.id = e.id " +
+                     "WHERE t.nom LIKE ? OR t.prenom LIKE ? OR t.telephone LIKE ?";
+        List<Patient> patients = new ArrayList<>();
+
+        try (Connection conn = SessionFactory.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            String pattern = "%" + keyword + "%";
+            stmt.setString(1, pattern);
+            stmt.setString(2, pattern);
+            stmt.setString(3, pattern);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    patients.add(RowMappers.mapPatient(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return patients;
+    }
 }

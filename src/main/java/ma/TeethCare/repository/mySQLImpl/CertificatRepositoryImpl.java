@@ -96,15 +96,17 @@ public class CertificatRepositoryImpl implements CertificatRepository {
             }
 
             // 2. Insert into Certificat
-            // Removed 'type' from SQL as it is not in the Entity
-            String sqlCertif = "INSERT INTO certificat (id, dateDebut, dateFin, duree, note) VALUES (?, ?, ?, ?, ?)";
+            // Insert type as well
+            String sqlCertif = "INSERT INTO certificat (id, type, dateDebut, dateFin, duree, note, consultation_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
             
             stmtCertif = conn.prepareStatement(sqlCertif);
             stmtCertif.setLong(1, id);
-            stmtCertif.setDate(2, c.getDateDebut() != null ? Date.valueOf(c.getDateDebut()) : null);
-            stmtCertif.setDate(3, c.getDateFin() != null ? Date.valueOf(c.getDateFin()) : null);
-            stmtCertif.setInt(4, c.getDuree());
-            stmtCertif.setString(5, c.getNote());
+            stmtCertif.setString(2, c.getType());
+            stmtCertif.setDate(3, c.getDateDebut() != null ? Date.valueOf(c.getDateDebut()) : null);
+            stmtCertif.setDate(4, c.getDateFin() != null ? Date.valueOf(c.getDateFin()) : null);
+            stmtCertif.setInt(5, c.getDuree());
+            stmtCertif.setString(6, c.getNote());
+            stmtCertif.setLong(7, c.getConsultationId() != null ? c.getConsultationId() : 0);
 
             stmtCertif.executeUpdate();
 
@@ -159,14 +161,16 @@ public class CertificatRepositoryImpl implements CertificatRepository {
             stmtEntite.executeUpdate();
 
             // Update Certificat
-            // Removed 'type' from SQL
-            String sqlCertif = "UPDATE Certificat SET dateDebut = ?, dateFin = ?, duree = ?, note = ? WHERE id = ?";
+            // Update Certificat
+            String sqlCertif = "UPDATE Certificat SET type = ?, dateDebut = ?, dateFin = ?, duree = ?, note = ?, consultation_id = ? WHERE id = ?";
             stmtCertif = conn.prepareStatement(sqlCertif);
-            stmtCertif.setDate(1, c.getDateDebut() != null ? Date.valueOf(c.getDateDebut()) : null);
-            stmtCertif.setDate(2, c.getDateFin() != null ? Date.valueOf(c.getDateFin()) : null);
-            stmtCertif.setInt(3, c.getDuree());
-            stmtCertif.setString(4, c.getNote());
-            stmtCertif.setLong(5, c.getId());
+            stmtCertif.setString(1, c.getType());
+            stmtCertif.setDate(2, c.getDateDebut() != null ? Date.valueOf(c.getDateDebut()) : null);
+            stmtCertif.setDate(3, c.getDateFin() != null ? Date.valueOf(c.getDateFin()) : null);
+            stmtCertif.setInt(4, c.getDuree());
+            stmtCertif.setString(5, c.getNote());
+            stmtCertif.setLong(6, c.getConsultationId());
+            stmtCertif.setLong(7, c.getId());
 
             stmtCertif.executeUpdate();
             

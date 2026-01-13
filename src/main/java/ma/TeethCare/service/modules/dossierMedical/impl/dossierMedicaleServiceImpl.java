@@ -1,8 +1,11 @@
 package ma.TeethCare.service.modules.dossierMedical.impl;
 
 import ma.TeethCare.entities.dossierMedicale.dossierMedicale;
+import ma.TeethCare.entities.patient.Patient;
 import ma.TeethCare.mvc.dto.dossierMedicale.DossierMedicaleDTO;
 import ma.TeethCare.repository.api.DossierMedicaleRepository;
+import ma.TeethCare.repository.api.PatientRepository;
+import ma.TeethCare.repository.mySQLImpl.PatientRepositoryImpl;
 import ma.TeethCare.service.modules.dossierMedical.api.dossierMedicaleService;
 import ma.TeethCare.service.modules.dossierMedical.mapper.DossierMedicalMapper;
 import ma.TeethCare.common.exceptions.ServiceException;
@@ -14,9 +17,11 @@ import java.util.stream.Collectors;
 public class dossierMedicaleServiceImpl implements dossierMedicaleService {
 
     private final DossierMedicaleRepository dmRepository;
+    private final PatientRepository patientRepository;
 
     public dossierMedicaleServiceImpl(DossierMedicaleRepository dmRepository) {
         this.dmRepository = dmRepository;
+        this.patientRepository = new PatientRepositoryImpl(); // Direct instantiation for now
     }
 
     @Override
@@ -40,7 +45,11 @@ public class dossierMedicaleServiceImpl implements dossierMedicaleService {
                 throw new ServiceException("ID cannot be null");
             }
             dossierMedicale entity = dmRepository.findById(id);
-            return Optional.ofNullable(entity).map(DossierMedicalMapper::toDTO);
+            if (entity == null) return Optional.empty();
+
+            DossierMedicaleDTO dto = DossierMedicalMapper.toDTO(entity);
+            populatePatientInfo(dto);
+            return Optional.of(dto);
         } catch (Exception e) {
             throw new ServiceException("Erreur lors de la récupération du dossier médical", e);
         }
@@ -51,10 +60,22 @@ public class dossierMedicaleServiceImpl implements dossierMedicaleService {
         try {
             return dmRepository.findAll().stream()
                     .map(DossierMedicalMapper::toDTO)
+                    .map(this::populatePatientInfo)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             throw new ServiceException("Erreur lors de la récupération des dossiers médicaux", e);
         }
+    }
+
+    private DossierMedicaleDTO populatePatientInfo(DossierMedicaleDTO dto) {
+        if (dto.getPatientId() != null) {
+            Patient p = patientRepository.findById(dto.getPatientId());
+            if (p != null) {
+                dto.setPatientNom(p.getNom());
+                dto.setPatientPrenom(p.getPrenom());
+            }
+        }
+        return dto;
     }
 
     @Override

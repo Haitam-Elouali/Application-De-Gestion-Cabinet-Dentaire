@@ -23,16 +23,20 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
         List<utilisateur> utilisateurList = new ArrayList<>();
         String sql = "SELECT t.id as idUser, t.id as idEntite, " +
                      "t.nom, t.prenom, t.email, t.tele as tel, t.username as login, t.password as motDePasse, t.sexe, t.dateNaissance, " +
-                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar, " + 
+                     "r.libelle as roleName, r.id as roleId " +
                      "FROM utilisateur t " + 
-                     "JOIN entite e ON t.id = e.id";
+                     "JOIN entite e ON t.id = e.id " +
+                     "LEFT JOIN role r ON t.role_id = r.id";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                utilisateurList.add(RowMappers.mapUtilisateur(rs));
+                utilisateur u = RowMappers.mapUtilisateur(rs);
+                populateRole(u, rs);
+                utilisateurList.add(u);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -45,9 +49,11 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
     public utilisateur findById(Long id) {
         String sql = "SELECT t.id as idUser, t.id as idEntite, " +
                      "t.nom, t.prenom, t.email, t.tele as tel, t.username as login, t.password as motDePasse, t.sexe, t.dateNaissance, " +
-                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar, " +
+                     "r.libelle as roleName, r.id as roleId " +
                      "FROM utilisateur t " + 
                      "JOIN entite e ON t.id = e.id " + 
+                     "LEFT JOIN role r ON t.role_id = r.id " +
                      "WHERE t.id = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
@@ -56,7 +62,9 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return RowMappers.mapUtilisateur(rs);
+                    utilisateur u = RowMappers.mapUtilisateur(rs);
+                    populateRole(u, rs);
+                    return u;
                 }
             }
         } catch (SQLException e) {
@@ -64,6 +72,9 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
         }
         return null;
     }
+
+    // ... create/update methods ... (skipping modification for brevity if not strictly needed for login, but good for consistency)
+    // For now only read methods are critical for login. create/update already fixed for seed/data.
 
     @Override
     public void create(utilisateur u) {
@@ -95,9 +106,6 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
             }
 
             // 2. Insert into Utilisateur
-            // Table: utilisateur (id, nom, prenom, email, tele, username, password, sexe, dateNaissance, role_id)
-            // Note: login -> username, motDePasse -> password, tel -> tele. cin, adresse not in schema?
-            // Assuming simplified schema based on previous interactions (role_id nullable or not handled?)
             String sqlUser = "INSERT INTO utilisateur (id, nom, email, tele, username, password, sexe, dateNaissance) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             
             stmtUser = conn.prepareStatement(sqlUser);
@@ -223,9 +231,11 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
     public Optional<utilisateur> findByEmail(String email) {
         String sql = "SELECT t.id as idUser, t.id as idEntite, " +
                      "t.nom, t.prenom, t.email, t.tele as tel, t.username as login, t.password as motDePasse, t.sexe, t.dateNaissance, " +
-                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar, " +
+                     "r.libelle as roleName, r.id as roleId " +
                      "FROM utilisateur t " + 
                      "JOIN entite e ON t.id = e.id " + 
+                     "LEFT JOIN role r ON t.role_id = r.id " +
                      "WHERE t.email = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
@@ -234,7 +244,9 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(RowMappers.mapUtilisateur(rs));
+                    utilisateur u = RowMappers.mapUtilisateur(rs);
+                    populateRole(u, rs);
+                    return Optional.of(u);
                 }
             }
         } catch (SQLException e) {
@@ -247,9 +259,11 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
     public Optional<utilisateur> findByLogin(String login) {
         String sql = "SELECT t.id as idUser, t.id as idEntite, " +
                      "t.nom, t.prenom, t.email, t.tele as tel, t.username as login, t.password as motDePasse, t.sexe, t.dateNaissance, " +
-                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar " + 
+                     "e.dateCreation, e.creePar, e.dateDerniereModification, e.modifiePar, " +
+                     "r.libelle as roleName, r.id as roleId " +
                      "FROM utilisateur t " + 
                      "JOIN entite e ON t.id = e.id " + 
+                     "LEFT JOIN role r ON t.role_id = r.id " +
                      "WHERE t.username = ?";
 
         try (Connection conn = SessionFactory.getInstance().getConnection();
@@ -258,12 +272,29 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
             ps.setString(1, login);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(RowMappers.mapUtilisateur(rs));
+                    utilisateur u = RowMappers.mapUtilisateur(rs);
+                    populateRole(u, rs);
+                    return Optional.of(u);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+
+    private void populateRole(utilisateur u, ResultSet rs) throws SQLException {
+        String roleName = rs.getString("roleName");
+        Long roleId = rs.getLong("roleId");
+        if (roleName != null) {
+            ma.TeethCare.entities.role.role r = new ma.TeethCare.entities.role.role();
+            r.setId(roleId);
+            r.setLibelle(roleName);
+            // Initialize list if null (should be initialized in constructor generally but safe here)
+            if (u.getRoles() == null) {
+                u.setRoles(new ArrayList<>());
+            }
+            u.getRoles().add(r);
+        }
     }
 }

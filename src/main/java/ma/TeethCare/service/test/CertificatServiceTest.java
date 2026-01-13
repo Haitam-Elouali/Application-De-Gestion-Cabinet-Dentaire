@@ -1,6 +1,7 @@
 package ma.TeethCare.service.test;
 
 import ma.TeethCare.entities.certificat.certificat;
+import ma.TeethCare.mvc.dto.certificat.CertificatDTO;
 import ma.TeethCare.repository.api.CertificatRepository;
 import ma.TeethCare.service.modules.dossierMedical.api.certificatService;
 import ma.TeethCare.service.modules.dossierMedical.impl.certificatServiceImpl;
@@ -60,6 +61,8 @@ public class CertificatServiceTest {
     public static void main(String[] args) {
         try {
             CertificatRepositoryStub repo = new CertificatRepositoryStub();
+            // Note: Service impl now instantiates ConsultationRepo and PatientRepo internally.
+            // This might cause runtime errors if DB not available, but fixes compilation.
             certificatService service = new certificatServiceImpl(repo);
 
             testCreate(service);
@@ -78,21 +81,21 @@ public class CertificatServiceTest {
 
     public static void testCreate(certificatService service) throws Exception {
         System.out.println("Testing Create...");
-        certificat c = certificat.builder()
-            .note("Repos 3 jours")
+        CertificatDTO c = CertificatDTO.builder()
+            .motif("Repos 3 jours")
             .duree(3)
-            .dateDebut(LocalDate.now())
+            .dateEmission(LocalDate.now())
             .build();
-        certificat created = service.create(c);
+        CertificatDTO created = service.create(c);
         if (created.getId() == null) throw new RuntimeException("Create failed: ID is null");
         System.out.println("Create passed.");
     }
 
     public static void testFindById(certificatService service) throws Exception {
         System.out.println("Testing FindById...");
-        certificat c = certificat.builder().note("Test ID").build();
+        CertificatDTO c = CertificatDTO.builder().motif("Test ID").build();
         c = service.create(c);
-        Optional<certificat> found = service.findById(c.getId());
+        Optional<CertificatDTO> found = service.findById(c.getId());
         if (!found.isPresent()) throw new RuntimeException("FindById failed: not found");
         System.out.println("FindById passed.");
     }
@@ -100,24 +103,25 @@ public class CertificatServiceTest {
     public static void testFindAll(certificatService service) throws Exception {
         System.out.println("Testing FindAll...");
         int initialCount = service.findAll().size();
-        service.create(certificat.builder().note("All 1").build());
+        service.create(CertificatDTO.builder().motif("All 1").build());
         if (service.findAll().size() != initialCount + 1) throw new RuntimeException("FindAll failed: count mismatch");
         System.out.println("FindAll passed.");
     }
 
     public static void testUpdate(certificatService service) throws Exception {
         System.out.println("Testing Update...");
-        certificat c = certificat.builder().note("Old Note").build();
+        CertificatDTO c = CertificatDTO.builder().motif("Old Note").build();
         c = service.create(c);
-        c.setNote("New Note");
-        certificat updated = service.update(c);
-        if (!updated.getNote().equals("New Note")) throw new RuntimeException("Update failed: value mismatch");
+        c.setMotif("New Note");
+        CertificatDTO updated = service.update(c);
+        // Note: Implicitly check if update logic works via service return or re-fetch
+        if (!"New Note".equals(updated.getMotif())) throw new RuntimeException("Update failed: value mismatch");
         System.out.println("Update passed.");
     }
 
     public static void testDelete(certificatService service) throws Exception {
         System.out.println("Testing Delete...");
-        certificat c = certificat.builder().note("Delete Me").build();
+        CertificatDTO c = CertificatDTO.builder().motif("Delete Me").build();
         c = service.create(c);
         Long id = c.getId();
         service.delete(id);
@@ -127,7 +131,7 @@ public class CertificatServiceTest {
 
     public static void testExists(certificatService service) throws Exception {
         System.out.println("Testing Exists...");
-        certificat c = certificat.builder().note("Exists").build();
+        CertificatDTO c = CertificatDTO.builder().motif("Exists").build();
         c = service.create(c);
         if (!service.exists(c.getId())) throw new RuntimeException("Exists failed: returned false");
         System.out.println("Exists passed.");
@@ -140,4 +144,3 @@ public class CertificatServiceTest {
         System.out.println("Count passed.");
     }
 }
-

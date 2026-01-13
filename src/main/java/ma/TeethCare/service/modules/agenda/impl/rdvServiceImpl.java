@@ -102,4 +102,27 @@ public class rdvServiceImpl implements rdvService {
             throw new ServiceException("Erreur lors du comptage des RDVs", e);
         }
     }
+
+    @Override
+    public java.util.List<RdvDTO> findTodayAppointments() throws Exception {
+        try {
+            return rdvRepository.findByDate(java.time.LocalDate.now()).stream()
+                    .map(RdvMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors de la récupération des RDVs d'aujourd'hui", e);
+        }
+    }
+
+    @Override
+    public java.util.List<RdvDTO> findWaitingQueue() throws Exception {
+        try {
+            return rdvRepository.findByDate(java.time.LocalDate.now()).stream()
+                    .filter(r -> r.getStatut() == ma.TeethCare.common.enums.Statut.En_attente)
+                    .map(RdvMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors de la récupération de la file d'attente", e);
+        }
+    }
 }

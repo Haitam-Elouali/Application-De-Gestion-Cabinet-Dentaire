@@ -23,4 +23,8 @@ public class DossierMedicaleDTO {
     private String historique;
     private LocalDateTime dateCreation;
     private LocalDateTime dateDerniereModification;
+    
+    // UI convenience fields
+    private String patientNom;
+    private String patientPrenom;
 }

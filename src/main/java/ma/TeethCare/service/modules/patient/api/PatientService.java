@@ -4,4 +4,5 @@ import ma.TeethCare.mvc.dto.patient.PatientDTO;
 import ma.TeethCare.service.common.BaseService;
 
 public interface PatientService extends BaseService<PatientDTO, Long> {
+    java.util.List<PatientDTO> search(String keyword) throws Exception;
 }

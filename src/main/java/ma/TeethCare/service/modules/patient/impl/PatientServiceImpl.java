@@ -153,4 +153,15 @@ public class PatientServiceImpl implements PatientService {
             throw new ServiceException("Erreur lors du comptage des patients", e);
         }
     }
+    @Override
+    public List<PatientDTO> search(String keyword) throws Exception {
+        try {
+            List<Patient> entities = patientRepository.search(keyword);
+            return entities.stream()
+                    .map(PatientMapper::toDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new ServiceException("Erreur lors de la recherche des patients", e);
+        }
+    }
 }

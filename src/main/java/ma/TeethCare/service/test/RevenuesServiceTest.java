@@ -70,6 +70,15 @@ public class RevenuesServiceTest {
                             && (r.getDate().isEqual(endDate) || r.getDate().isBefore(endDate)))
                     .collect(java.util.stream.Collectors.toList());
         }
+        @Override
+        public Double calculateTotalAmount(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
+            return 0.0;
+        }
+
+        @Override
+        public java.util.Map<Integer, Double> groupTotalByMonth(int year) {
+            return new java.util.HashMap<>();
+        }
     }
 
     private static revenuesService service;

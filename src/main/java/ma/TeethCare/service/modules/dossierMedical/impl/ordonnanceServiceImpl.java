@@ -1,8 +1,11 @@
 package ma.TeethCare.service.modules.dossierMedical.impl;
 
 import ma.TeethCare.entities.ordonnance.ordonnance;
+import ma.TeethCare.entities.patient.Patient;
 import ma.TeethCare.mvc.dto.ordonnance.OrdonnanceDTO;
 import ma.TeethCare.repository.api.OrdonnanceRepository;
+import ma.TeethCare.repository.api.PatientRepository;
+import ma.TeethCare.repository.mySQLImpl.PatientRepositoryImpl;
 import ma.TeethCare.service.modules.dossierMedical.api.ordonnanceService;
 import ma.TeethCare.service.modules.dossierMedical.mapper.OrdonnanceMapper;
 import ma.TeethCare.common.exceptions.ServiceException;
@@ -14,9 +17,11 @@ import java.util.stream.Collectors;
 public class ordonnanceServiceImpl implements ordonnanceService {
 
     private final OrdonnanceRepository ordonnanceRepository;
+    private final PatientRepository patientRepository;
 
     public ordonnanceServiceImpl(OrdonnanceRepository ordonnanceRepository) {
         this.ordonnanceRepository = ordonnanceRepository;
+        this.patientRepository = new PatientRepositoryImpl();
     }
 
     @Override
@@ -36,7 +41,11 @@ public class ordonnanceServiceImpl implements ordonnanceService {
         try {
             if (id == null) throw new ServiceException("ID null");
             ordonnance entity = ordonnanceRepository.findById(id);
-            return Optional.ofNullable(entity).map(OrdonnanceMapper::toDTO);
+            if (entity == null) return Optional.empty();
+            
+            OrdonnanceDTO dto = OrdonnanceMapper.toDTO(entity);
+            populatePatient(dto);
+            return Optional.of(dto);
         } catch (Exception e) {
             throw new ServiceException("Erreur recherche ordonnance", e);
         }
@@ -47,10 +56,22 @@ public class ordonnanceServiceImpl implements ordonnanceService {
         try {
             return ordonnanceRepository.findAll().stream()
                     .map(OrdonnanceMapper::toDTO)
+                    .map(this::populatePatient)
                     .collect(Collectors.toList());
         } catch (Exception e) {
             throw new ServiceException("Erreur listing ordonnances", e);
         }
+    }
+
+    private OrdonnanceDTO populatePatient(OrdonnanceDTO dto) {
+        if (dto.getPatientId() != null) {
+            Patient p = patientRepository.findById(dto.getPatientId());
+            if (p != null) {
+                dto.setPatientNom(p.getNom());
+                dto.setPatientPrenom(p.getPrenom());
+            }
+        }
+        return dto;
     }
 
     @Override

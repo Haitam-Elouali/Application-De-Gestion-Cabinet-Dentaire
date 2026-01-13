@@ -1,5 +1,6 @@
 package ma.TeethCare.service.modules.dossierMedical.mapper;
 
+import ma.TeethCare.common.enums.Statut;
 import ma.TeethCare.entities.consultation.consultation;
 import ma.TeethCare.mvc.dto.consultation.ConsultationDTO;
 
@@ -17,6 +18,7 @@ public class ConsultationMapper {
                 .notes(entity.getObservation())
                 .dateCreation(entity.getDateCreation() != null ? entity.getDateCreation().atStartOfDay() : null)
                 .dateDerniereModification(entity.getDateDerniereModification())
+                .statut(entity.getStatut() != null ? entity.getStatut().name() : null)
                 .build();
     }
 
@@ -33,6 +35,14 @@ public class ConsultationMapper {
         entity.setDate(dto.getDate());
         entity.setDiagnostic(dto.getDiagnostique());
         entity.setObservation(dto.getNotes());
+        if (dto.getStatut() != null) {
+            try {
+                entity.setStatut(ma.TeethCare.common.enums.Statut.valueOf(dto.getStatut()));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid enum
+                entity.setStatut(Statut.Planifiee);
+            }
+        }
         
         return entity;
     }
