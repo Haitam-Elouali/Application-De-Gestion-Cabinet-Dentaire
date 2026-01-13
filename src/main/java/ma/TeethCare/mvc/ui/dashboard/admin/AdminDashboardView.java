@@ -24,7 +24,10 @@ public class AdminDashboardView extends JFrame {
         root.setLayout(new BorderLayout());
 
         // Header (Top)
-        AdminHeader header = new AdminHeader("Admin User", () -> System.out.println("Logout clicked")); 
+        AdminHeader header = new AdminHeader("Admin User", () -> {
+            new ma.TeethCare.mvc.ui.login.LoginView().setVisible(true);
+            dispose();
+        }); 
         root.add(header, BorderLayout.NORTH);
 
         // Sidebar (Left)

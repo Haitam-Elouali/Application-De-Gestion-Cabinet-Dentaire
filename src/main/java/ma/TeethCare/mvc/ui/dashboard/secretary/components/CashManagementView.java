@@ -24,6 +24,8 @@ import ma.TeethCare.mvc.ui.palette.renderers.StatusPillRenderer;
 
 public class CashManagementView extends JPanel {
 
+    private DefaultCategoryDataset chartDataset;
+
     public CashManagementView() {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
@@ -46,8 +48,10 @@ public class CashManagementView extends JPanel {
         titleLabel.setForeground(TailwindPalette.GRAY_900);
         topBar.add(titleLabel, BorderLayout.WEST);
         
-        ma.TeethCare.mvc.ui.palette.buttons.ModernButton exportBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Exporter le Rapport", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.OUTLINE);
-        exportBtn.setIcon(IconUtils.getIcon(IconUtils.IconType.ICON_PRINT, 16, TailwindPalette.GRAY_700));
+        ma.TeethCare.mvc.ui.palette.buttons.ModernButton exportBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Exporter le Rapport", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.DEFAULT);
+        exportBtn.setIcon(IconUtils.getIcon(IconUtils.IconType.ICON_PRINT, 16, Color.WHITE));
+        // Use Emerald 500 (#10B981) matching "Nouveau Patient" (Variant.SUCCESS)
+        exportBtn.setCustomColor(new Color(16, 185, 129), new Color(209, 250, 229)); 
         exportBtn.addActionListener(e -> JOptionPane.showMessageDialog(this, "Export du rapport financier en cours..."));
         topBar.add(exportBtn, BorderLayout.EAST);
         
@@ -59,9 +63,9 @@ public class CashManagementView extends JPanel {
         JPanel kpiPanel = new JPanel(new MigLayout("insets 0, fill, gap 20", "[grow][grow][grow]")); // 3 Columns
         kpiPanel.setOpaque(false);
 
-        kpiPanel.add(createKpiCard("Total Recettes", "124 500 DH", "+12%", TailwindPalette.GREEN_100, TailwindPalette.GREEN_600), "grow");
-        kpiPanel.add(createKpiCard("Total Dépenses", "45 200 DH", "-5%", TailwindPalette.RED_100, TailwindPalette.RED_600), "grow");
-        kpiPanel.add(createKpiCard("Bénéfice Net", "79 300 DH", "+18%", TailwindPalette.BLUE_100, TailwindPalette.BLUE_600), "grow");
+        kpiPanel.add(createKpiCard("Total Recettes", "124 500 DH", "+12%", TailwindPalette.GREEN_100, TailwindPalette.GREEN_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\gain.png"), "grow");
+        kpiPanel.add(createKpiCard("Total Dépenses", "45 200 DH", "-5%", TailwindPalette.RED_100, TailwindPalette.RED_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\depense_img.png"), "grow");
+        kpiPanel.add(createKpiCard("Bénéfice Net", "79 300 DH", "+18%", TailwindPalette.BLUE_100, TailwindPalette.BLUE_600, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\benefice_img.png"), "grow");
 
         mainContainer.add(kpiPanel, "growx");
 
@@ -69,9 +73,9 @@ public class CashManagementView extends JPanel {
         JPanel statsPanel = new JPanel(new MigLayout("insets 0, fill, gap 20", "[grow][grow][grow]"));
         statsPanel.setOpaque(false);
 
-        statsPanel.add(createStatCard("Montant Moyen", "450 DH", IconUtils.IconType.CLIPBOARD, TailwindPalette.PURPLE_500), "grow");
-        statsPanel.add(createStatCard("Taux Remise", "5%", IconUtils.IconType.ICON_EDIT, TailwindPalette.ORANGE_500), "grow");
-        statsPanel.add(createStatCard("Total Consultations", "850", IconUtils.IconType.USERS, TailwindPalette.TEAL_500), "grow");
+        statsPanel.add(createStatCard("Montant Moyen", "450 DH", IconUtils.IconType.CLIPBOARD, TailwindPalette.PURPLE_500, null), "grow");
+        statsPanel.add(createStatCard("Taux Remise", "5%", IconUtils.IconType.ICON_EDIT, TailwindPalette.ORANGE_500, null), "grow");
+        statsPanel.add(createStatCard("Total Consultations", "850", IconUtils.IconType.USERS, TailwindPalette.TEAL_500, "c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\consultation.png"), "grow");
 
         mainContainer.add(statsPanel, "growx");
 
@@ -95,18 +99,23 @@ public class CashManagementView extends JPanel {
         filterPanel.setOpaque(false);
         
         ma.TeethCare.mvc.ui.palette.buttons.ModernButton weekBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Semaine", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
-        ma.TeethCare.mvc.ui.palette.buttons.ModernButton monthBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Mois", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.OUTLINE); // Active state simulation
+        weekBtn.setCustomColor(new Color(16, 185, 129), new Color(209, 250, 229));
+        
+        ma.TeethCare.mvc.ui.palette.buttons.ModernButton monthBtn = new ma.TeethCare.mvc.ui.palette.buttons.ModernButton("Mois", ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.DEFAULT); // Active state simulation
+        monthBtn.setCustomColor(new Color(16, 185, 129), new Color(209, 250, 229));
         
         weekBtn.addActionListener(e -> {
-             weekBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.OUTLINE);
+             weekBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.DEFAULT);
              monthBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
              weekBtn.repaint(); monthBtn.repaint();
+             updateChartData("WEEK");
         });
         
         monthBtn.addActionListener(e -> {
-             monthBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.OUTLINE);
+             monthBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.DEFAULT);
              weekBtn.setVariant(ma.TeethCare.mvc.ui.palette.buttons.ModernButton.Variant.GHOST);
              weekBtn.repaint(); monthBtn.repaint();
+             updateChartData("MONTH");
         });
         
         filterPanel.add(weekBtn);
@@ -173,7 +182,7 @@ public class CashManagementView extends JPanel {
         add(mainScroll, BorderLayout.CENTER);
     }
     
-    private JPanel createKpiCard(String title, String value, String percent, Color bg, Color fg) {
+    private JPanel createKpiCard(String title, String value, String percent, Color bg, Color fg, String imagePath) {
         RoundedPanel p = new RoundedPanel(20);
         p.setBackground(Color.WHITE);
         p.setLayout(new MigLayout("insets 24, fill", "[]push[]", "[]10[]")); // Title...Icon / Value...Percent
@@ -184,22 +193,26 @@ public class CashManagementView extends JPanel {
         t.setForeground(TailwindPalette.GRAY_500);
         p.add(t);
 
-        // Icon (Circle)
-        JPanel iconPanel = new JPanel(new BorderLayout());
-        iconPanel.setOpaque(false);
-        JLabel icon = new JLabel(IconUtils.getIcon(IconUtils.IconType.BUILDING, 20, fg)) { // Default icon
-             @Override
-             protected void paintComponent(Graphics g) {
-                 Graphics2D g2 = (Graphics2D)g;
-                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                 g2.setColor(bg);
-                 g2.fillOval(0,0,getWidth(), getHeight());
-                 super.paintComponent(g);
+        // Icon
+        JLabel iconLabel = new JLabel();
+        if (imagePath != null && !imagePath.isEmpty()) {
+             try {
+                 java.io.File imgFile = new java.io.File(imagePath);
+                 if (imgFile.exists()) {
+                     ImageIcon rawIcon = new ImageIcon(imagePath);
+                     Image scaled = rawIcon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
+                     iconLabel.setIcon(new ImageIcon(scaled));
+                 } else {
+                     iconLabel.setIcon(IconUtils.getIcon(IconUtils.IconType.BUILDING, 20, fg)); 
+                 }
+             } catch (Exception e) {
+                 e.printStackTrace();
              }
-        };
-        // Fix icon center logic if needed, simplify for now
-        icon.setBorder(new EmptyBorder(8,8,8,8));
-        p.add(icon, "wrap");
+        } else {
+             iconLabel.setIcon(IconUtils.getIcon(IconUtils.IconType.BUILDING, 20, fg));
+        }
+        
+        p.add(iconLabel, "wrap");
 
         // Value
         JLabel v = new JLabel(value);
@@ -234,7 +247,7 @@ public class CashManagementView extends JPanel {
         return p;
     }
 
-    private JPanel createStatCard(String title, String value, IconUtils.IconType iconType, Color iconColor) {
+    private JPanel createStatCard(String title, String value, IconUtils.IconType iconType, Color iconColor, String imagePath) {
         RoundedPanel p = new RoundedPanel(16);
         p.setBackground(TailwindPalette.GRAY_50); // Slightly gray to diff from main cards
         p.setLayout(new MigLayout("insets 16 20 16 20, fill", "[]push[]", "[]"));
@@ -254,32 +267,39 @@ public class CashManagementView extends JPanel {
         
         p.add(textInfo);
         
-        JLabel icon = new JLabel(IconUtils.getIcon(iconType, 24, iconColor));
+        JLabel icon = new JLabel();
+        if (imagePath != null && !imagePath.isEmpty()) {
+             try {
+                 java.io.File imgFile = new java.io.File(imagePath);
+                 if (imgFile.exists()) {
+                     ImageIcon rawIcon = new ImageIcon(imagePath);
+                     Image scaled = rawIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+                     icon.setIcon(new ImageIcon(scaled));
+                 } else {
+                     icon.setIcon(IconUtils.getIcon(iconType, 24, iconColor));
+                 }
+             } catch (Exception e) {
+                 icon.setIcon(IconUtils.getIcon(iconType, 24, iconColor));
+             }
+        } else {
+             icon.setIcon(IconUtils.getIcon(iconType, 24, iconColor));
+        }
+
         p.add(icon);
 
         return p;
     }
 
     private ChartPanel createChartPanel() {
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        dataset.addValue(25000, "Recettes", "Juin");
-        dataset.addValue(15000, "Dépenses", "Juin");
-        dataset.addValue(32000, "Recettes", "Juil");
-        dataset.addValue(18000, "Dépenses", "Juil");
-        dataset.addValue(28000, "Recettes", "Aout");
-        dataset.addValue(12000, "Dépenses", "Aout");
-        dataset.addValue(45000, "Recettes", "Sept");
-        dataset.addValue(20000, "Dépenses", "Sept");
-        dataset.addValue(38000, "Recettes", "Oct");
-        dataset.addValue(22000, "Dépenses", "Oct");
-        dataset.addValue(42000, "Recettes", "Nov");
-        dataset.addValue(19000, "Dépenses", "Nov");
+        chartDataset = new DefaultCategoryDataset();
+        // Default to Month view
+        updateChartData("MONTH");
 
         JFreeChart chart = ChartFactory.createBarChart(
                 null,       // chart title
                 null,       // domain axis label
                 null,       // range axis label
-                dataset,    // data
+                chartDataset,    // data
                 PlotOrientation.VERTICAL,
                 true,       // include legend
                 true,       // tooltips
@@ -308,6 +328,39 @@ public class CashManagementView extends JPanel {
         chartPanel.setOpaque(false);
         chartPanel.setBorder(null);
         return chartPanel;
+    }
+
+    private void updateChartData(String period) {
+        chartDataset.clear();
+        if ("WEEK".equals(period)) {
+            // Mock Data for Week View
+            chartDataset.addValue(4000, "Recettes", "Lun");
+            chartDataset.addValue(2000, "Dépenses", "Lun");
+            chartDataset.addValue(5500, "Recettes", "Mar");
+            chartDataset.addValue(1500, "Dépenses", "Mar");
+            chartDataset.addValue(3000, "Recettes", "Mer");
+            chartDataset.addValue(2500, "Dépenses", "Mer");
+            chartDataset.addValue(6000, "Recettes", "Jeu");
+            chartDataset.addValue(3000, "Dépenses", "Jeu");
+            chartDataset.addValue(4500, "Recettes", "Ven");
+            chartDataset.addValue(2000, "Dépenses", "Ven");
+            chartDataset.addValue(7000, "Recettes", "Sam");
+            chartDataset.addValue(4000, "Dépenses", "Sam");
+        } else {
+            // Mock Data for Month View
+            chartDataset.addValue(25000, "Recettes", "Juin");
+            chartDataset.addValue(15000, "Dépenses", "Juin");
+            chartDataset.addValue(32000, "Recettes", "Juil");
+            chartDataset.addValue(18000, "Dépenses", "Juil");
+            chartDataset.addValue(28000, "Recettes", "Aout");
+            chartDataset.addValue(12000, "Dépenses", "Aout");
+            chartDataset.addValue(45000, "Recettes", "Sept");
+            chartDataset.addValue(20000, "Dépenses", "Sept");
+            chartDataset.addValue(38000, "Recettes", "Oct");
+            chartDataset.addValue(22000, "Dépenses", "Oct");
+            chartDataset.addValue(42000, "Recettes", "Nov");
+            chartDataset.addValue(19000, "Dépenses", "Nov");
+        }
     }
 
 }

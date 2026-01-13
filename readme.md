@@ -537,7 +537,7 @@ mysql --version
 5. **Exécuter l'application**
    ```bash
    # Depuis le terminal
-   mvn exec:java -Dexec.mainClass="ma.TeethCare.MainApp"
+   mvn exec:java -Dexec.mainClass="ma.TeethCare.Main"
    
    # Ou depuis IntelliJ IDEA
    # Clic droit sur MainApp.java → Run 'MainApp'

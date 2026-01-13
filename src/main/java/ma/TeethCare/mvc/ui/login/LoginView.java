@@ -52,7 +52,7 @@ public class LoginView extends JFrame {
         JLabel logoLabel = new JLabel();
         logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         try {
-             java.io.File logoFile = new java.io.File("c:/Users/Choukhairi/Desktop/Maquette JAVA FINAL/LOGO.jpeg");
+             java.io.File logoFile = new java.io.File("c:\\Users\\Choukhairi\\Desktop\\Application-De-Gestion-Cabinet-Dentaire-2\\Screenshots\\LOGO.png");
              if (logoFile.exists()) {
                  java.awt.image.BufferedImage img = javax.imageio.ImageIO.read(logoFile);
                  if (img != null) {
@@ -91,7 +91,7 @@ public class LoginView extends JFrame {
         l1.setForeground(TailwindPalette.FOREGROUND);
         l1.setAlignmentX(Component.LEFT_ALIGNMENT);
         
-        ModernTextField userField = new ModernTextField("Email ou Nom d'utilisateur");
+        ModernTextField userField = new ModernTextField("");
         userField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44)); // Taller field
         userField.setAlignmentX(Component.LEFT_ALIGNMENT);
         
@@ -126,17 +126,20 @@ public class LoginView extends JFrame {
         loginBtn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         
         loginBtn.addActionListener(e -> {
-            String user = userField.getText();
+            String user = userField.getText().toLowerCase();
             String pass = new String(passField.getPassword());
             
-            dispose(); // Close login
-            
              if (user.contains("secretaire")) {
-                 JOptionPane.showMessageDialog(LoginView.this, "Login Successful: Redirecting to Secretary Dashboard (Mock)");
+                 new ma.TeethCare.mvc.ui.dashboard.secretary.SecretaryDashboardView().setVisible(true);
+                 dispose();
+             } else if (user.contains("docteur")) {
+                 new ma.TeethCare.mvc.ui.dashboard.doctor.DoctorDashboardView().setVisible(true);
+                 dispose();
              } else if (user.contains("admin")) {
-                 JOptionPane.showMessageDialog(LoginView.this, "Login Successful: Redirecting to Admin Dashboard (Mock)");
+                 new ma.TeethCare.mvc.ui.dashboard.admin.AdminDashboardView().setVisible(true);
+                 dispose();
              } else {
-                 JOptionPane.showMessageDialog(LoginView.this, "Login Successful: Redirecting to Doctor Dashboard (Mock)");
+                 JOptionPane.showMessageDialog(this, "Utilisateur non reconnu", "Erreur", JOptionPane.ERROR_MESSAGE);
              }
         });
         

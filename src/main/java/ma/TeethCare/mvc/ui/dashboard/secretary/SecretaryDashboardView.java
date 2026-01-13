@@ -29,7 +29,10 @@ public class SecretaryDashboardView extends JFrame {
         root.setLayout(new BorderLayout());
 
         // Header (Top)
-        SecretaryHeader header = new SecretaryHeader("Sophie Martin", () -> System.out.println("Logout clicked"));
+        SecretaryHeader header = new SecretaryHeader("Sophie Martin", () -> {
+            new ma.TeethCare.mvc.ui.login.LoginView().setVisible(true);
+            dispose();
+        });
         root.add(header, BorderLayout.NORTH);
 
         // Sidebar (Left)

@@ -25,7 +25,10 @@ public class DoctorDashboardView extends JFrame {
         root.setLayout(new BorderLayout());
 
         // Header (Top)
-        DashboardHeader header = new DashboardHeader("Dr. Smith", () -> System.out.println("Logout clicked"));
+        DashboardHeader header = new DashboardHeader("Dr. Smith", () -> {
+            new ma.TeethCare.mvc.ui.login.LoginView().setVisible(true);
+            dispose();
+        });
         root.add(header, BorderLayout.NORTH);
 
         // Sidebar (Left)

@@ -24,6 +24,8 @@ public class ModernButton extends JButton {
     private Variant variant;
     private boolean isHovered = false;
     private boolean isPressed = false;
+    private Color customColor = null; // Override for PRIMARY
+    private Color customAccent = null; // Override for ACCENT
 
     public ModernButton(String text) {
         this(text, null, Variant.DEFAULT);
@@ -89,6 +91,13 @@ public class ModernButton extends JButton {
         repaint();
     }
 
+    public void setCustomColor(Color primary, Color accent) {
+        this.customColor = primary;
+        this.customAccent = accent;
+        updateForeground();
+        repaint();
+    }
+
     private void updateForeground() {
         switch (variant) {
             case DEFAULT:
@@ -101,7 +110,7 @@ public class ModernButton extends JButton {
             case GHOST:
             case SECONDARY:
             case LINK:
-                setForeground(TailwindPalette.PRIMARY); 
+                setForeground(customColor != null ? customColor : TailwindPalette.PRIMARY); 
                 break;
             case SUCCESS:
                 setForeground(Color.WHITE);
@@ -168,9 +177,10 @@ public class ModernButton extends JButton {
         switch (variant) {
             case DEFAULT:
                 // hover:bg-primary/90
-                if (isPressed) return new Color(TailwindPalette.PRIMARY.getRed(), TailwindPalette.PRIMARY.getGreen(), TailwindPalette.PRIMARY.getBlue(), 200);
-                if (isHovered) return new Color(TailwindPalette.PRIMARY.getRed(), TailwindPalette.PRIMARY.getGreen(), TailwindPalette.PRIMARY.getBlue(), 230); // ~90%
-                return TailwindPalette.PRIMARY;
+                Color p = (customColor != null) ? customColor : TailwindPalette.PRIMARY;
+                if (isPressed) return new Color(p.getRed(), p.getGreen(), p.getBlue(), 200);
+                if (isHovered) return new Color(p.getRed(), p.getGreen(), p.getBlue(), 230); // ~90%
+                return p;
                 
             case DESTRUCTIVE:
                 if (isHovered) return new Color(TailwindPalette.DESTRUCTIVE.getRed(), TailwindPalette.DESTRUCTIVE.getGreen(), TailwindPalette.DESTRUCTIVE.getBlue(), 230);
@@ -178,7 +188,7 @@ public class ModernButton extends JButton {
                 
             case OUTLINE:
                 // hover:bg-accent
-                if (isHovered) return TailwindPalette.ACCENT;
+                if (isHovered) return (customAccent != null) ? customAccent : TailwindPalette.ACCENT;
                 return TailwindPalette.BACKGROUND; // bg-background (white usually)
                 
             case SECONDARY:
@@ -187,7 +197,7 @@ public class ModernButton extends JButton {
                 return TailwindPalette.SECONDARY;
 
             case GHOST:
-                if (isHovered) return TailwindPalette.ACCENT;
+                if (isHovered) return (customAccent != null) ? customAccent : TailwindPalette.ACCENT;
                 return null;
 
             case LINK:
